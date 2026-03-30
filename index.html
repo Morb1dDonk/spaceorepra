@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Ore Mining Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:#060810; --bg-card:#0c0f18; --bg-header:#10141f; --bg-input:#080b14;
+  --border:rgba(80,140,255,0.12); --border-bright:rgba(80,140,255,0.28);
+  --orange:#e88d2d; --cyan:#00d4ff; --red:#ff4060; --purple:#a855f7; --blue:#4a9ef2;
+  --text-main:#9ab0cc; --text-dim:#3d5070; --text-bright:#e8f0ff;
+  --c-speed:var(--orange); --c-quality:var(--blue); --c-cost:var(--purple);
+  --c-success:#1a6644; --c-fail:#1a0a0a; --c-pending:#0e1120;
+  --accent:#00d4ff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg-deep);color:var(--text-main);
+  font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.55;min-height:100vh;letter-spacing:.01em;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,100,200,0.1) 0%,transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(80,140,255,0.012) 40px,rgba(80,140,255,0.012) 41px),
+    repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(80,140,255,0.008) 60px,rgba(80,140,255,0.008) 61px);
+}
+
+/* HEADER */
+.site-header{
+  background:rgba(6,8,16,0.96);border-bottom:1px solid var(--border-bright);
+  padding:16px 36px;display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 1px 0 rgba(0,212,255,0.08),0 4px 24px rgba(0,0,0,0.5);
+}
+.hdr-left .sys-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:4px;text-shadow:0 0 10px rgba(0,212,255,0.7);}
+.hdr-left .sys-title{font-size:20px;font-weight:700;color:var(--text-bright);text-transform:uppercase;letter-spacing:.06em;text-shadow:0 0 20px rgba(0,212,255,0.2);}
+.hdr-right{display:flex;align-items:center;gap:20px;}
+.wallet-box{text-align:right;}
+.wallet-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
+.wallet-val{font-family:'DM Mono',monospace;font-size:20px;color:var(--cyan);font-weight:500;text-shadow:0 0 14px rgba(0,212,255,0.55);}
+.btn-sys{background:transparent;border:1px solid var(--border-bright);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:5px 12px;cursor:pointer;transition:all .2s;}
+.btn-sys:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 8px rgba(0,212,255,0.2);}
+.stripe-accent{width:80px;height:10px;background:repeating-linear-gradient(45deg,var(--cyan),var(--cyan) 8px,transparent 8px,transparent 16px);opacity:.18;}
+
+/* CARD */
+.card{
+  background:var(--bg-card);border:1px solid var(--border);position:relative;margin-bottom:20px;
+  box-shadow:0 0 0 1px rgba(0,212,255,0.03),0 4px 32px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.card::before{content:'';position:absolute;top:-1px;left:-1px;width:14px;height:14px;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan);box-shadow:-2px -2px 8px rgba(0,212,255,0.15);}
+.card::after{content:'';position:absolute;bottom:-1px;right:-1px;width:14px;height:14px;border-bottom:1px solid var(--orange);border-right:1px solid var(--orange);box-shadow:2px 2px 8px rgba(232,141,45,0.12);}
+.card-hdr{background:var(--bg-header);padding:8px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(0,212,255,0.05);}
+.card-title{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;color:var(--cyan);letter-spacing:.1em;text-shadow:0 0 8px rgba(0,212,255,0.4);}
+.card-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);}
+.card-body{padding:20px;}
+
+/* LAYOUT */
+.page{max-width:1200px;margin:0 auto;padding:32px 20px 80px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+
+/* FORM ELEMENTS */
+label.field-label{display:block;font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;border-left:2px solid var(--cyan);padding-left:8px;margin-bottom:6px;}
+input[type=number],select{background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:18px;padding:10px 12px;width:100%;outline:none;transition:border-color .2s,box-shadow .2s;}
+input[type=number]:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,0.15),inset 0 0 8px rgba(0,212,255,0.04);}
+select option{background:var(--bg-card);}
+
+/* GRADE TABLE */
+.grade-table{border:1px solid var(--border);margin-top:14px;}
+.grade-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:10px;}
+.grade-row:last-child{border-bottom:none;}
+.gr-label{font-weight:500;text-transform:uppercase;}
+.gr-range{color:var(--text-dim);}
+
+/* PRESETS */
+.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:16px;}
+.preset-btn{background:rgba(0,212,255,.02);border:1px solid var(--border);color:var(--text-dim);padding:10px 4px;cursor:pointer;text-align:center;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.preset-btn .pb-name{font-size:11px;font-weight:700;text-transform:uppercase;}
+.preset-btn .pb-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:2px;line-height:1.3;}
+.preset-btn.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 10px rgba(0,212,255,0.15),inset 0 0 8px rgba(0,212,255,0.04);}
+.preset-btn.active .pb-sub{color:var(--text-dim);}
+.preset-btn:hover:not(.active){border-color:var(--border-bright);}
+
+/* AXIS SLIDERS */
+.axis-sliders{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.axis-row-wrap{display:flex;flex-direction:column;gap:3px;}
+.axis-meta{display:flex;justify-content:space-between;}
+.axis-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;}
+.axis-pct{font-family:'DM Mono',monospace;font-size:10px;}
+.axis-track{height:6px;background:var(--bg-input);border:1px solid var(--border);position:relative;overflow:hidden;}
+.axis-fill{height:100%;transition:width .15s;}
+input.axis-range{-webkit-appearance:none;appearance:none;position:absolute;width:100%;height:100%;top:0;left:0;background:transparent;cursor:pointer;margin:0;}
+input.axis-range::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:18px;background:var(--text-bright);border:1px solid var(--cyan);margin-top:-6px;box-shadow:0 0 6px rgba(0,212,255,0.4);}
+input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparent;}
+
+/* POINTS POOL */
+.pool-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 10px;background:rgba(0,212,255,.02);border:1px solid var(--border);}
+.pool-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
+.pool-track{flex:1;height:4px;background:var(--bg-input);border:1px solid var(--border);}
+.pool-fill{height:100%;background:var(--cyan);box-shadow:0 0 6px rgba(0,212,255,0.5);}
+.pool-val{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);flex-shrink:0;width:44px;text-align:right;}
+
+/* RADAR */
+.radar-desc-row{display:flex;gap:14px;margin-bottom:10px;}
+.mode-desc-box{background:rgba(0,212,255,.02);border:1px solid var(--border);padding:10px 12px;font-size:11px;color:var(--text-dim);line-height:1.6;flex:1;border-left:2px solid var(--cyan);}
+
+/* SPEED CALLOUT */
+.speed-callout{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);background:rgba(0,212,255,.02);border:1px solid var(--border);padding:8px 10px;margin-bottom:10px;}
+
+/* FEE BOX */
+.fee-box{background:rgba(0,0,0,.3);border:1px solid var(--border);padding:14px 16px;}
+.fee-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;}
+.fee-row:last-child{margin-bottom:0;font-weight:700;}
+.fee-label{color:var(--text-dim);}
+.fee-total-label{color:var(--orange);}
+
+/* NAV ACTION BAR */
+.nav-action-bar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:20px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  margin:8px 0 20px;
+}
+.nav-action-bar .btn-confirm,
+.nav-action-bar .btn-sell,
+.nav-action-bar .btn-abort{
+  flex:1;
+  padding:16px 12px;
+  text-align:center;
+  white-space:nowrap;
+}
+.nav-action-bar .btn-confirm{ flex:2; }
+
+/* BUTTONS */
+.btn-confirm{
+  background:transparent;color:var(--cyan);
+  border:1px solid var(--cyan);
+  font-weight:700;font-size:13px;text-transform:uppercase;
+  padding:14px 44px;cursor:pointer;letter-spacing:.1em;
+  font-family:'DM Mono',monospace;
+  box-shadow:0 0 12px rgba(0,212,255,0.2),inset 0 0 12px rgba(0,212,255,0.04);
+  transition:all .2s;
+}
+.btn-confirm:hover:not(:disabled){
+  background:rgba(0,212,255,0.08);
+  box-shadow:0 0 22px rgba(0,212,255,0.4),inset 0 0 16px rgba(0,212,255,0.08);
+  text-shadow:0 0 8px rgba(0,212,255,0.8);
+}
+.btn-confirm:disabled{border-color:var(--text-dim);color:var(--text-dim);opacity:.35;cursor:not-allowed;box-shadow:none;}
+.btn-abort{
+  background:transparent;color:var(--red);
+  border:1px solid var(--red);
+  padding:14px 28px;font-weight:700;font-size:13px;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.08em;
+  display:none;transition:all .2s;
+  box-shadow:0 0 8px rgba(255,64,96,0.15);
+}
+.btn-abort:hover{background:rgba(255,64,96,0.08);box-shadow:0 0 16px rgba(255,64,96,0.3);}
+.btn-sell{
+  background:transparent;color:var(--purple);
+  border:1px solid var(--purple);
+  font-weight:700;font-size:13px;text-transform:uppercase;
+  padding:14px 36px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.08em;
+  display:none;transition:all .2s;
+  box-shadow:0 0 10px rgba(168,85,247,0.2);
+}
+.btn-sell:hover{background:rgba(168,85,247,0.08);box-shadow:0 0 20px rgba(168,85,247,0.35);text-shadow:0 0 8px rgba(168,85,247,0.8);}
+.btn-modal-ok{
+  flex:1;background:transparent;border:1px solid var(--cyan);
+  padding:12px;font-weight:700;text-transform:uppercase;cursor:pointer;
+  color:var(--cyan);font-family:'DM Mono',monospace;letter-spacing:.08em;
+  box-shadow:0 0 10px rgba(0,212,255,0.2);transition:all .2s;
+}
+.btn-modal-ok:hover{background:rgba(0,212,255,0.08);box-shadow:0 0 18px rgba(0,212,255,0.35);}
+.btn-modal-cancel{
+  flex:1;background:transparent;border:1px solid var(--text-dim);
+  padding:12px;font-weight:700;text-transform:uppercase;cursor:pointer;
+  color:var(--text-dim);font-family:'DM Mono',monospace;letter-spacing:.08em;transition:all .2s;
+}
+.btn-modal-cancel:hover{border-color:var(--text-main);color:var(--text-main);}
+
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:20px;padding:16px 20px;background:#060a14;border-bottom:1px solid var(--border);}
+.rs-timer{font-family:'DM Mono',monospace;font-size:30px;color:var(--cyan);line-height:1;min-width:76px;text-shadow:0 0 16px rgba(0,212,255,0.6);}
+.rs-progress-wrap{flex:1;height:8px;background:rgba(0,212,255,.04);border:1px solid var(--border);}
+.rs-progress-fill{height:100%;background:var(--cyan);width:0%;transition:width .3s linear;box-shadow:0 0 8px rgba(0,212,255,0.5);}
+.live-stats{text-align:right;}
+.live-fee-label{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;}
+.live-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--cyan);text-shadow:0 0 10px rgba(0,212,255,0.5);}
+.live-roi{font-family:'DM Mono',monospace;font-size:9px;margin-top:2px;letter-spacing:.06em;}
+
+/* DEFRAG */
+.defrag-wrap{padding:16px 20px;}
+.defrag-legend-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.defrag-title-txt{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--text-dim);letter-spacing:.06em;}
+.defrag-legend{display:flex;gap:12px;}
+.dl-item{display:flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);}
+.dl-sw{width:12px;height:12px;flex-shrink:0;}
+.defrag-grid{display:grid;gap:3px;}
+.defrag-block{height:16px;background:var(--c-pending);border:1px solid rgba(80,140,255,0.06);}
+.defrag-block.processing{background:var(--orange);animation:blink .5s infinite;box-shadow:0 0 6px rgba(232,141,45,0.5);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+.defrag-block.success{border-color:rgba(0,212,255,0.1);}
+.defrag-block.fail{background:#000;border-color:#0a0a0a;}
+.defrag-block.gangue{background:#0e1120;border-color:rgba(80,140,255,0.05);}
+.defrag-block.pristine{animation:sparkle 1.5s infinite alternate;}
+@keyframes sparkle{0%{box-shadow:0 0 4px var(--purple);}100%{box-shadow:0 0 14px var(--purple),0 0 4px #fff;filter:brightness(1.4);}}
+
+/* SCROLLABLE RESULTS */
+.results-scroll-wrap{margin:0 20px 16px;border:1px solid var(--border);}
+.results-scroll-inner{overflow-y:auto;max-height:200px;}
+.results-table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:10px;}
+.results-table th{background:var(--bg-header);padding:8px 12px;text-align:left;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;}
+.results-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03);}
+.results-table tr:last-child td{border-bottom:none;}
+
+/* FINAL SUMMARY */
+.final-summary{padding:20px;border-top:1px solid var(--border);display:none;}
+.summary-hero{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.hero-card{background:rgba(0,0,0,.3);border:1px solid var(--border);padding:16px;}
+.hero-card.refined{border-left:3px solid var(--cyan);}
+.hero-card.inert{border-left:3px solid #1a2040;}
+.hero-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.hero-label.refined{color:var(--cyan);}
+.hero-label.inert{color:var(--text-dim);}
+.hero-label.breakdown{color:var(--text-dim);}
+.hero-big{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--text-bright);line-height:1;margin-bottom:4px;}
+.hero-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);}
+.breakdown-rows{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+.bdr{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;font-size:11px;}
+.bdr-label{color:var(--text-dim);}
+.bdr hr{border:none;border-top:1px solid var(--border);margin:3px 0;}
+
+/* PURITY DISTRIBUTION */
+.purity-dist{background:rgba(0,0,0,.2);border:1px solid var(--border);padding:14px 16px;}
+.purity-dist-title{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:10px;}
+.purity-bar{display:flex;height:16px;gap:1px;border-radius:1px;overflow:hidden;}
+.purity-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+.pl-item{display:flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;}
+.pl-sw{width:10px;height:10px;flex-shrink:0;}
+
+/* SESSION LOG */
+.log-entry{display:grid;grid-template-columns:44px 80px 1fr 1fr 1fr;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);animation:slideIn .3s ease;}
+.log-entry:last-child{border-bottom:none;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:none;}}
+.log-run{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);}
+.log-badge{font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border:1px solid var(--border);color:var(--text-dim);text-align:center;text-transform:uppercase;}
+.log-col-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px;}
+
+/* GRADE CHIPS */
+.g-chip{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:2px;display:inline-block;}
+
+/* SELL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;}
+.modal-hud{width:480px;background:var(--bg-card);border:1px solid var(--orange);position:relative;}
+.modal-hud::before{content:'// TRADE MANIFEST';position:absolute;top:-18px;left:0;color:var(--orange);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;}
+.modal-hdr{background:var(--bg-header);padding:12px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
+.modal-body{padding:20px;}
+.modal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:'DM Mono',monospace;font-size:11px;}
+.modal-label{color:var(--text-dim);text-transform:uppercase;}
+.modal-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;}
+.btn-modal-ok{flex:1;background:var(--green);border:none;padding:12px;font-weight:700;text-transform:uppercase;cursor:pointer;color:var(--bg-deep);font-family:'DM Sans',sans-serif;}
+.btn-modal-cancel{flex:1;background:transparent;border:1px solid var(--text-dim);padding:12px;font-weight:700;text-transform:uppercase;cursor:pointer;color:var(--text-dim);font-family:'DM Sans',sans-serif;}
+.conv-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:8px 10px;background:rgba(255,255,255,.02);border:1px solid var(--border);margin-top:8px;}
+.conv-toggle input{display:none;}
+.conv-box{width:12px;height:12px;border:1px solid var(--orange);flex-shrink:0;position:relative;}
+.conv-toggle input:checked+.conv-box::after{content:'';position:absolute;inset:2px;background:var(--orange);}
+
+/* ADMIN */
+#adminPanel{display:none;border:1px solid var(--orange);background:var(--bg-header);padding:24px;margin-bottom:20px;}
+.admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.admin-section-title{font-family:'DM Mono',monospace;color:var(--orange);font-size:9px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:12px;}
+.admin-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.admin-row span{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;width:56px;flex-shrink:0;}
+.admin-row input{font-size:11px;padding:4px 6px;width:64px;}
+
+#fundsWarning{color:var(--red);font-family:'DM Mono',monospace;font-size:9px;text-align:center;display:none;text-transform:uppercase;margin-top:6px;letter-spacing:.06em;}
+
+/* TOGGLE SWITCH */
+.tog-wrap{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);transition:border-color .2s;}
+.tog-wrap.active{border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.04);}
+.tog-left{display:flex;align-items:center;gap:10px;}
+.tog-mat{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
+.tog-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:1px;}
+.tog-right{display:flex;align-items:center;gap:12px;}
+.tog-val{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-align:right;min-width:80px;}
+.toggle-sw{position:relative;width:36px;height:18px;flex-shrink:0;}
+.toggle-sw input{display:none;}
+.toggle-sw .track{position:absolute;inset:0;background:#1a1e28;border:1px solid var(--border);border-radius:9px;transition:all .2s;cursor:pointer;}
+.toggle-sw input:checked+.track{background:rgba(0,212,255,.18);border-color:var(--cyan);}
+.toggle-sw .thumb{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text-dim);transition:all .2s;pointer-events:none;}
+.toggle-sw input:checked~.thumb{left:20px;background:var(--cyan);box-shadow:0 0 6px rgba(0,212,255,.6);}
+
+/* STAR */
+.star{position:absolute;background:white;border-radius:50%;}
+
+@media(max-width:800px){.two-col{grid-template-columns:1fr;}.summary-hero{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- GAME LOCK OVERLAY (blurs content until logged in) -->
+<div id="gameLock" style="position:fixed;inset:0;z-index:800;backdrop-filter:blur(8px);background:rgba(6,8,16,0.7);pointer-events:none;transition:opacity .4s;"></div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" style="position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;">
+  <div style="width:440px;background:var(--bg-card);border:1px solid var(--border-bright);position:relative;box-shadow:0 0 60px rgba(0,212,255,0.1),0 24px 64px rgba(0,0,0,0.8);">
+    <!-- Corner accents -->
+    <div style="position:absolute;top:-1px;left:-1px;width:16px;height:16px;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan);"></div>
+    <div style="position:absolute;bottom:-1px;right:-1px;width:16px;height:16px;border-bottom:1px solid var(--orange);border-right:1px solid var(--orange);"></div>
+
+    <!-- Header -->
+    <div style="background:var(--bg-header);padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <div style="width:28px;height:28px;background:var(--bg-deep);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:14px;">⬡</div>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:.1em;text-shadow:0 0 8px rgba(0,212,255,.5);">ARC-L2 Identity Terminal</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:2px;">Space Ore Mining Simulator — Pilot Authentication</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <button id="tabSignIn" onclick="switchAuthTab('signin')"
+        style="padding:12px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;background:transparent;border:none;color:var(--cyan);cursor:pointer;border-bottom:2px solid var(--cyan);">
+        Sign In
+      </button>
+      <button id="tabSignUp" onclick="switchAuthTab('signup')"
+        style="padding:12px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;background:transparent;border:none;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;">
+        Create Account
+      </button>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <div id="formSignIn" style="padding:24px;">
+      <div style="margin-bottom:16px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--cyan);padding-left:8px;">Email</label>
+        <input id="siEmail" type="email" placeholder="pilot@example.com"
+          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border-bright)'"
+          onkeydown="if(event.key==='Enter')signIn()">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--cyan);padding-left:8px;">Password</label>
+        <input id="siPassword" type="password" placeholder="••••••••"
+          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border-bright)'"
+          onkeydown="if(event.key==='Enter')signIn()">
+      </div>
+      <div id="siError" style="display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-bottom:14px;padding:8px 10px;background:rgba(255,64,96,.08);border:1px solid rgba(255,64,96,.3);"></div>
+      <button onclick="signIn()" id="siBtn"
+        style="width:100%;padding:14px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(0,212,255,.15);transition:all .2s;"
+        onmouseover="this.style.background='rgba(0,212,255,.08)'" onmouseout="this.style.background='transparent'">
+        ⬡ Authenticate Pilot
+      </button>
+      <div style="margin-top:12px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">
+        No account? <span onclick="switchAuthTab('signup')" style="color:var(--cyan);cursor:pointer;text-decoration:underline;">Create one</span>
+      </div>
+    </div>
+
+    <!-- SIGN UP FORM -->
+    <div id="formSignUp" style="padding:24px;display:none;">
+      <div style="margin-bottom:14px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Pilot Name</label>
+        <input id="suName" type="text" placeholder="Your callsign" maxlength="20"
+          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Email</label>
+        <input id="suEmail" type="email" placeholder="pilot@example.com"
+          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'">
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Password</label>
+        <input id="suPassword" type="password" placeholder="Min 8 characters"
+          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'"
+          oninput="updatePasswordStrength(this.value)">
+        <!-- Password strength bar -->
+        <div style="margin-top:6px;height:3px;background:var(--bg-deep);border:1px solid var(--border);">
+          <div id="pwStrengthBar" style="height:100%;width:0%;transition:all .3s;"></div>
+        </div>
+        <div id="pwStrengthLabel" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;"></div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Confirm Password</label>
+        <input id="suConfirm" type="password" placeholder="••••••••"
+          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'"
+          onkeydown="if(event.key==='Enter')signUp()">
+      </div>
+      <div id="suError" style="display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-bottom:14px;padding:8px 10px;background:rgba(255,64,96,.08);border:1px solid rgba(255,64,96,.3);"></div>
+      <button onclick="signUp()" id="suBtn"
+        style="width:100%;padding:14px;background:transparent;border:1px solid var(--orange);color:var(--orange);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(232,141,45,.15);transition:all .2s;"
+        onmouseover="this.style.background='rgba(232,141,45,.08)'" onmouseout="this.style.background='transparent'">
+        ⬡ Register Pilot
+      </button>
+      <div style="margin-top:12px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">
+        Have an account? <span onclick="switchAuthTab('signin')" style="color:var(--cyan);cursor:pointer;text-decoration:underline;">Sign in</span>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="authLoading" style="display:none;padding:40px 24px;text-align:center;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:.08em;margin-bottom:16px;">AUTHENTICATING...</div>
+      <div style="width:40px;height:40px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NEWS TICKER BANNER -->
+<div id="newsBanner" style="
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  background:linear-gradient(135deg,rgba(6,8,16,0.98),rgba(16,20,31,0.98));
+  border-bottom:1px solid var(--border-bright);
+  transform:translateY(-100%);transition:transform .5s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 4px 32px rgba(0,0,0,0.6);">
+  <div style="max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:flex-start;gap:16px;">
+    <div id="newsSeverityTag" style="font-family:'DM Mono',monospace;font-size:9px;padding:4px 10px;border:1px solid;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;margin-top:2px;"></div>
+    <div style="flex:1;">
+      <div id="newsHeadline" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text-bright);margin-bottom:4px;"></div>
+      <div id="newsBody" style="font-size:11px;color:var(--text-dim);line-height:1.5;"></div>
+    </div>
+    <div id="newsPriceImpact" style="text-align:right;flex-shrink:0;min-width:100px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;margin-bottom:3px;">Market Impact</div>
+      <div id="newsImpactVal" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;"></div>
+      <div id="newsImpactMat" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:2px;"></div>
+    </div>
+  </div>
+  <!-- Progress bar showing time until banner hides -->
+  <div style="height:2px;background:rgba(255,255,255,.05);">
+    <div id="newsBannerTimer" style="height:100%;width:100%;transition:width linear;"></div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="hdr-left">
+    <div class="sys-tag">// REFINERY SYSTEM C47.02</div>
+    <div class="sys-title">Space Ore Mining Simulator</div>
+  </div>
+  <div class="hdr-right">
+    <div id="authUserBox" style="display:none;align-items:center;gap:12px;">
+      <div style="display:flex;flex-direction:column;gap:1px;text-align:right;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Pilot</div>
+        <div id="pilotNameDisplay" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cyan);text-shadow:0 0 8px rgba(0,212,255,.5);">—</div>
+      </div>
+      <button class="btn-sys" id="signOutBtn" onclick="signOut()" style="color:var(--red);border-color:rgba(255,64,96,.3);">Sign Out</button>
+    </div>
+    <input id="pilotName" type="hidden" value="Pilot">
+    <button class="btn-sys" onclick="toggleAdmin()">System Config</button>
+    <div class="wallet-box">
+      <div class="wallet-label">User Balance</div>
+      <div class="wallet-val" id="userWallet">—</div>
+    </div>
+    <div class="stripe-accent"></div>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <span class="admin-section-title" style="margin-bottom:0;">Administrator Override Terminal</span>
+      <button class="btn-sys" onclick="toggleAdmin()">Close</button>
+    </div>
+    <div class="admin-grid">
+      <div><span class="admin-section-title">Base Value (aUEC/SCU)</span><div id="adminMats"></div></div>
+      <div><span class="admin-section-title">Grade Config</span><div id="adminGrades"></div></div>
+      <div><span class="admin-section-title">Scale Weights</span><div id="adminWeights"></div></div>
+      <div><span class="admin-section-title">Logistics</span><div id="adminLogistics"></div></div>
+    </div>
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+      <span class="admin-section-title">Player Wallet Management</span>
+      <div id="adminPlayersDiv" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Loading pilots...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+
+    <!-- STEP 0: DISPATCH MINER -->
+    <div class="card" id="dispatchCard">
+      <div class="card-hdr">
+        <div class="card-title">00 // Miner Dispatch</div>
+        <div class="card-sub" id="dispatchStatus">Ready</div>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding:28px 20px;">
+
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;line-height:1.7;max-width:320px;">
+          Send your miner to the <span style="color:var(--cyan);">Aaron Belt</span> to extract ore from an asteroid. He will return with up to <span style="color:var(--orange);">48 SCU</span> of raw material — grade and composition are unpredictable.
+        </div>
+
+        <!-- Ship animation canvas -->
+        <div style="position:relative;width:100%;height:120px;background:rgba(0,0,0,.4);border:1px solid var(--border);overflow:hidden;" id="spaceCanvas">
+          <!-- Stars -->
+          <div id="starField" style="position:absolute;inset:0;"></div>
+          <!-- Asteroid belt hint -->
+          <div id="beltZone" style="position:absolute;right:0;top:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,rgba(184,115,51,0.08));border-left:1px dashed rgba(184,115,51,0.2);display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(184,115,51,0.5);writing-mode:vertical-rl;letter-spacing:.1em;">AARON BELT</span>
+          </div>
+          <!-- Home base marker -->
+          <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:8px;color:var(--text-dim);text-align:center;line-height:1.4;">
+            <div style="font-size:16px;">🛸</div>
+            <div style="color:rgba(0,212,255,0.4);">BASE</div>
+          </div>
+          <!-- Miner ship -->
+          <div id="minerShip" style="position:absolute;top:50%;left:60px;transform:translateY(-50%);font-size:20px;transition:left 0s;opacity:0;">⛏️</div>
+          <!-- Status overlay -->
+          <div id="mineStatusOverlay" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);letter-spacing:.06em;white-space:nowrap;opacity:0;"></div>
+        </div>
+
+        <!-- Countdown -->
+        <div id="dispatchCountdownWrap" style="display:none;text-align:center;">
+          <div style="font-family:'DM Mono',monospace;font-size:40px;font-weight:500;color:var(--text-bright);line-height:1;" id="dispatchCountdown">01:00</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.08em;">estimated return</div>
+          <div style="width:200px;height:4px;background:rgba(255,255,255,.06);border:1px solid var(--border);margin:10px auto 0;">
+            <div id="dispatchProgress" style="height:100%;background:var(--cyan);width:0%;transition:width .5s linear;"></div>
+          </div>
+        </div>
+
+        <button class="btn-confirm" id="dispatchBtn" onclick="dispatchMiner()" style="padding:14px 48px;font-size:13px;">
+          ⬡ Dispatch Miner to Aaron Belt
+        </button>
+
+      </div>
+    </div>
+
+    <!-- STEP 1: MANIFEST REVIEW -->
+    <div class="card" id="manifestCard" style="opacity:.4;pointer-events:none;">
+      <div class="card-hdr">
+        <div class="card-title">01 // Manifest Review</div>
+        <div class="card-sub" id="manifestSub">Awaiting haul</div>
+      </div>
+      <div class="card-body">
+
+        <div id="manifestEmpty" style="padding:32px 0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">
+          Dispatch miner to populate manifest
+        </div>
+
+        <div id="manifestContents" style="display:none;">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;border-left:2px solid var(--orange);padding-left:8px;">
+            Toggle items to refine. Unselected = quick-sold at 30% value.
+          </div>
+
+          <div id="manifestList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;"></div>
+
+          <!-- Value preview -->
+          <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;">
+            <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;margin-bottom:6px;">
+              <span style="color:var(--text-dim);">→ Refinery queue</span>
+              <span style="color:var(--cyan);" id="mvRefineTotal">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;margin-bottom:10px;">
+              <span style="color:var(--text-dim);">→ Quick-sell (30%)</span>
+              <span style="color:var(--orange);" id="mvSellTotal">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;padding-top:8px;border-top:1px solid var(--border);">
+              <span style="color:var(--text-dim);">SCU to refinery</span>
+              <span style="color:var(--text-bright);" id="mvScuToRefine">—</span>
+            </div>
+          </div>
+
+          <button class="btn-confirm" onclick="commitManifest()" id="commitBtn"
+            style="width:100%;margin-top:12px;padding:12px;font-size:12px;">
+            ⬡ Confirm Manifest &amp; Proceed
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- STEP 2 -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">02 // Processing Profile</div>
+        <div class="card-sub" id="modeName">Rush</div>
+      </div>
+      <div class="card-body">
+
+        <div class="preset-grid" id="presetGrid">
+          <button class="preset-btn active" data-preset="rush" onclick="applyPreset('rush')">
+            <div class="pb-name">Rush</div>
+            <div class="pb-sub">Fast · cheap<br>high failure</div>
+          </button>
+          <button class="preset-btn" data-preset="bulk" onclick="applyPreset('bulk')">
+            <div class="pb-name">Bulk</div>
+            <div class="pb-sub">Fast · volume<br>costly</div>
+          </button>
+          <button class="preset-btn" data-preset="artisan" onclick="applyPreset('artisan')">
+            <div class="pb-name">Artisan</div>
+            <div class="pb-sub">Slow · cheap<br>reliable</div>
+          </button>
+          <button class="preset-btn" data-preset="precision" onclick="applyPreset('precision')">
+            <div class="pb-name">Precise</div>
+            <div class="pb-sub">Best quality<br>slow · costly</div>
+          </button>
+        </div>
+
+        <!-- Points pool -->
+        <div class="pool-row">
+          <span class="pool-label">Points</span>
+          <div class="pool-track"><div class="pool-fill" id="poolBar" style="width:100%"></div></div>
+          <span class="pool-val" id="poolValue">18/18</span>
+        </div>
+
+        <!-- Axis sliders -->
+        <div class="axis-sliders">
+          <div class="axis-row-wrap">
+            <div class="axis-meta">
+              <span class="axis-lbl" style="color:var(--orange)">Speed</span>
+              <span class="axis-pct" id="pct-speed" style="color:var(--orange)"></span>
+            </div>
+            <div class="axis-track"><div class="axis-fill" id="fill-speed" style="background:var(--orange)"></div><input class="axis-range" type="range" min="1" max="16" id="slider-speed" oninput="onSlider('speed',this.value)"></div>
+          </div>
+          <div class="axis-row-wrap">
+            <div class="axis-meta">
+              <span class="axis-lbl" style="color:var(--blue)">Quality</span>
+              <span class="axis-pct" id="pct-quality" style="color:var(--blue)"></span>
+            </div>
+            <div class="axis-track"><div class="axis-fill" id="fill-quality" style="background:var(--blue)"></div><input class="axis-range" type="range" min="1" max="16" id="slider-quality" oninput="onSlider('quality',this.value)"></div>
+          </div>
+          <div class="axis-row-wrap">
+            <div class="axis-meta">
+              <span class="axis-lbl" style="color:var(--purple)">Efficiency</span>
+              <span class="axis-pct" id="pct-cost" style="color:var(--purple)"></span>
+            </div>
+            <div class="axis-track"><div class="axis-fill" id="fill-cost" style="background:var(--purple)"></div><input class="axis-range" type="range" min="1" max="16" id="slider-cost" oninput="onSlider('cost',this.value)"></div>
+          </div>
+        </div>
+
+        <!-- Radar + desc -->
+        <div class="radar-desc-row">
+          <canvas id="radarChart" width="160" height="148" style="flex-shrink:0;"></canvas>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+            <div class="mode-desc-box" id="modeDesc"></div>
+            <div class="speed-callout" id="speedCallout"></div>
+          </div>
+        </div>
+
+        <!-- Fee estimate -->
+        <div class="fee-box">
+          <div class="fee-row"><span class="fee-label">Processing fee / unit</span><span style="font-family:'DM Mono',monospace;" id="feePerUnit">aUEC 0</span></div>
+          <div class="fee-row"><span class="fee-label">Loading fee (optional)</span><span style="font-family:'DM Mono',monospace;" id="loadingFeeEst">aUEC 0</span></div>
+          <div class="fee-row"><span class="fee-total-label">Est. work order total</span><span style="font-family:'DM Mono',monospace;color:var(--orange);" id="estTotal">aUEC 0</span></div>
+        </div>
+        <div id="fundsWarning">⚠ Insufficient Credits</div>
+      </div>
+    </div>
+
+  </div><!-- /two-col -->
+
+  <!-- Hidden inputs kept for updateAll() compatibility -->
+  <input type="hidden" id="materialType" value="gold">
+  <input type="hidden" id="scuInput" value="12">
+  <input type="hidden" id="puritySlider" value="650">
+
+  <div class="nav-action-bar">
+    <button class="btn-confirm" id="refineBtn" onclick="startRefinement()">⬡ Confirm Work Order</button>
+    <button class="btn-sell" id="sellBtn" onclick="openSellModal()">◈ Prepare Transfer</button>
+    <button class="btn-abort" id="abortBtn" onclick="abortRefinement()">✕ Abort Order</button>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">03 // Active Processing</div>
+      <div class="card-sub" id="refineryMeta">Awaiting order</div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div>
+        <div class="rs-timer" id="rsTimer">00:00</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">Time Left</div>
+      </div>
+      <div class="rs-progress-wrap"><div class="rs-progress-fill" id="rsProgressFill"></div></div>
+      <div class="live-stats">
+        <div class="live-fee-label">Work order fee paid: <span style="font-family:'DM Mono',monospace;color:var(--red);" id="liveFee">—</span></div>
+        <div class="live-val" id="liveVal">—</div>
+        <div class="live-roi" id="liveRoi" style="color:var(--text-dim);">—</div>
+      </div>
+    </div>
+
+    <!-- Defrag grid -->
+    <div class="defrag-wrap">
+      <div class="defrag-legend-row">
+        <span class="defrag-title-txt">Unit processing map</span>
+        <div class="defrag-legend">
+          <div class="dl-item"><div class="dl-sw" style="background:var(--c-pending)"></div>Queued</div>
+          <div class="dl-item"><div class="dl-sw" style="background:var(--orange)"></div>Processing</div>
+          <div class="dl-item"><div class="dl-sw" style="background:var(--cyan)"></div>Refined</div>
+          <div class="dl-item"><div class="dl-sw" style="background:#2a2a2a"></div>Gangue</div>
+          <div class="dl-item"><div class="dl-sw" style="background:#000"></div>Inert</div>
+        </div>
+      </div>
+      <div class="defrag-grid" id="defragGrid"></div>
+    </div>
+
+    <!-- Scrollable results table -->
+    <div class="results-scroll-wrap" id="resultsWrap" style="display:none;">
+      <div class="results-scroll-inner">
+        <table class="results-table">
+          <thead>
+            <tr><th>#</th><th>Grade</th><th>Purity</th><th>Outcome</th><th style="text-align:right">Value (aUEC)</th></tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Final summary -->
+    <div class="final-summary" id="finalSummary">
+      <div class="summary-hero">
+        <!-- Refined -->
+        <div class="hero-card refined">
+          <div class="hero-label refined">Refined Material</div>
+          <div class="hero-big" id="sumScuHero">—</div>
+          <div class="hero-sub" id="sumEscuSub">—</div>
+          <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+            <span id="sumGradeChip" class="g-chip">—</span>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);" id="sumPurityTxt">—</span>
+          </div>
+        </div>
+        <!-- Inert -->
+        <div class="hero-card inert">
+          <div class="hero-label inert">Inert Materials</div>
+          <div class="hero-big" style="color:var(--text-dim);" id="sumInertScu">—</div>
+          <div class="hero-sub" id="sumInertEscu">—</div>
+          <div style="margin-top:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Failed + Gangue — unrecoverable</div>
+        </div>
+        <!-- Breakdown -->
+        <div class="hero-card">
+          <div class="hero-label breakdown">Run Breakdown</div>
+          <div class="breakdown-rows">
+            <div class="bdr"><span class="bdr-label">Refined</span><span style="color:var(--cyan);" id="sumRefined">—</span></div>
+            <div class="bdr"><span class="bdr-label">Inert</span><span style="color:var(--red);" id="sumInert">—</span></div>
+            <div><hr style="border-color:var(--border);margin:4px 0;"></div>
+            <div class="bdr"><span class="bdr-label">Success rate</span><span style="color:var(--text-bright);" id="sumRate">—</span></div>
+            <div class="bdr"><span class="bdr-label">Net P&L</span><span id="sumNet">—</span></div>
+            <div class="bdr"><span class="bdr-label">ROI</span><span id="sumRoi" style="color:var(--cyan);">—</span></div>
+            <div class="bdr"><span class="bdr-label">Profile</span><span style="color:var(--orange);" id="sumProfile">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purity distribution -->
+      <div class="purity-dist" id="purityDist" style="display:none;">
+        <div class="purity-dist-title">Purity distribution — refined units only</div>
+        <div class="purity-bar" id="purityBar"></div>
+        <div class="purity-legend" id="purityLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: SESSION LOG -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">04 // Session Log</div>
+      <div class="card-sub" id="logMeta">No runs</div>
+    </div>
+    <div style="padding:0 20px;" id="logBody">
+      <div style="padding:24px 0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Awaiting first work order</div>
+    </div>
+  </div>
+
+  <!-- MARKET PRICES STRIP -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-hdr">
+      <div class="card-title">⬡ Live Market Prices</div>
+      <div class="card-sub" id="marketLastUpdated">Loading...</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;" id="marketPricesGrid">
+      <div style="padding:16px 20px;border-right:1px solid var(--border);text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Gold</div>
+        <div class="market-price-val" id="mp-gold" style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#e88d2d;">—</div>
+        <div class="market-price-delta" id="md-gold" style="font-family:'DM Mono',monospace;font-size:10px;margin-top:3px;">—</div>
+      </div>
+      <div style="padding:16px 20px;border-right:1px solid var(--border);text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Quantainium</div>
+        <div class="market-price-val" id="mp-quant" style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#4aaef2;">—</div>
+        <div class="market-price-delta" id="md-quant" style="font-family:'DM Mono',monospace;font-size:10px;margin-top:3px;">—</div>
+      </div>
+      <div style="padding:16px 20px;border-right:1px solid var(--border);text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Bexalite</div>
+        <div class="market-price-val" id="mp-bex" style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#a855f7;">—</div>
+        <div class="market-price-delta" id="md-bex" style="font-family:'DM Mono',monospace;font-size:10px;margin-top:3px;">—</div>
+      </div>
+      <div style="padding:16px 20px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Iron</div>
+        <div class="market-price-val" id="mp-iron" style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#94a3b8;">—</div>
+        <div class="market-price-delta" id="md-iron" style="font-family:'DM Mono',monospace;font-size:10px;margin-top:3px;">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-hdr">
+      <div class="card-title">05 // Galactic Leaderboard</div>
+      <div class="card-sub" id="lbMeta">Loading...</div>
+    </div>
+    <div style="padding:0 20px 4px;" id="lbBody">
+      <div style="padding:24px 0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Loading leaderboard...</div>
+    </div>
+  </div>
+
+  <!-- GALACTIC NEWS LOG -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">06 // Galactic News Archive</div>
+      <div class="card-sub" id="newsLogMeta">No events yet</div>
+    </div>
+    <div style="padding:0 20px 4px;max-height:320px;overflow-y:auto;" id="newsLogBody">
+      <div style="padding:24px 0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monitoring galactic comms...</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- SELL MODAL -->
+<div class="modal-overlay" id="sellModal">
+  <div class="modal-hud">
+    <div class="modal-hdr">
+      <div class="card-title">TDD Logistics Terminal</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);">Storage Manifest</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row"><span class="modal-label">Material Class</span><span style="color:var(--text-bright);text-transform:uppercase;" id="modalMat">—</span></div>
+      <div class="modal-row"><span class="modal-label">Market Quote</span><span style="color:var(--text-bright);" id="modalTotal">0 aUEC</span></div>
+      <div style="margin:14px 0;padding:14px;background:rgba(0,0,0,.3);border:1px solid var(--border);">
+        <span class="admin-section-title" style="margin-bottom:8px;">Logistics & Handling</span>
+        <div class="modal-row"><span class="modal-label">SCU Packaging Fee</span><span style="color:var(--red);" id="modalPkg">0 aUEC</span></div>
+        <label class="conv-toggle" onclick="calcSaleTotal()">
+          <input type="checkbox" id="loadingCheck" onchange="calcSaleTotal()" checked>
+          <div class="conv-box"></div>
+          <div><span class="modal-label" style="color:var(--text-bright);">Standard Loading Fee</span><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);" id="loadingDesc">Optional handle & rack fee</span></div>
+        </label>
+        <label class="conv-toggle" onclick="calcSaleTotal()">
+          <input type="checkbox" id="expressCheck" onchange="calcSaleTotal()">
+          <div class="conv-box"></div>
+          <div><span class="modal-label" style="color:var(--text-bright);">Express Ship Loading</span><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);" id="expressDesc">+40 aUEC per SCU</span></div>
+        </label>
+        <div class="modal-row" id="loadingRow" style="display:none;margin-top:8px;"><span class="modal-label">Loading Deduction</span><span style="color:var(--red);" id="modalLoading">0 aUEC</span></div>
+        <div class="modal-row" id="expressRow" style="display:none;"><span class="modal-label">Express Deduction</span><span style="color:var(--red);" id="modalExpress">0 aUEC</span></div>
+      </div>
+      <!-- No-loading warning -->
+      <div id="crewWarning" style="display:none;background:rgba(232,141,45,.08);border:1px solid var(--orange);padding:10px 12px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);line-height:1.6;">
+        ⚠ Without the loading fee, your crew will handle logistics manually.<br>
+        <span style="color:var(--text-dim);">Expect a <strong style="color:var(--orange);">2-minute delay</strong> before transfer clears.</span>
+      </div>
+      <div class="modal-row" style="border-top:1px solid var(--cyan);padding-top:12px;">
+        <span class="modal-label" style="color:var(--cyan);font-weight:700;">Final Transfer Credit</span>
+        <span style="color:var(--cyan);font-weight:700;font-size:16px;font-family:'DM Mono',monospace;text-shadow:0 0 10px rgba(0,212,255,0.5);" id="modalFinal">0 aUEC</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeSellModal()">Hold in Storage</button>
+      <button class="btn-modal-ok" id="authTransferBtn" onclick="confirmSale()">Authorize Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREW DELIVERY WAITING OVERLAY -->
+<div class="modal-overlay" id="crewWaitModal" style="z-index:1100;">
+  <div class="modal-hud" style="width:520px;">
+    <div class="modal-hdr">
+      <div class="card-title">Crew Logistics — In Transit</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);">Manual Load Active</div>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:32px 24px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">Your crew is loading the ship</div>
+      <!-- Animated crew icon -->
+      <div id="crewIcon" style="font-size:40px;margin-bottom:20px;animation:crewBob 1.2s ease-in-out infinite;">🚛</div>
+      <!-- Countdown -->
+      <div style="font-family:'DM Mono',monospace;font-size:52px;font-weight:500;color:var(--text-bright);line-height:1;margin-bottom:8px;" id="crewCountdown">00:30</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:24px;">estimated time to destination</div>
+      <!-- Progress bar -->
+      <div style="height:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);margin-bottom:20px;">
+        <div id="crewProgressFill" style="height:100%;background:var(--orange);width:0%;transition:width .5s linear;"></div>
+      </div>
+      <!-- Status messages cycle -->
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);min-height:16px;" id="crewStatusMsg">Securing cargo in hold...</div>
+    </div>
+  </div>
+</div>
+
+<!-- CREW SUCCESS POPUP -->
+<div class="modal-overlay" id="crewSuccessModal" style="z-index:1200;">
+  <div class="modal-hud" style="width:500px;border-color:var(--cyan);">
+    <div class="modal-hdr" style="border-bottom-color:var(--border);">
+      <div class="card-title" style="color:var(--cyan);text-shadow:0 0 10px rgba(0,212,255,0.6);">Transfer Complete</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--cyan);">// FUNDS RECEIVED</div>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:28px 24px;">
+      <div style="font-size:36px;margin-bottom:16px;color:var(--cyan);text-shadow:0 0 16px rgba(0,212,255,0.7);">✓</div>
+      <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--cyan);margin-bottom:6px;text-shadow:0 0 12px rgba(0,212,255,0.5);" id="successAmount">+0 aUEC</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:20px;">credited to your account</div>
+      <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-left:3px solid var(--cyan);padding:14px 16px;text-align:left;margin-bottom:20px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Crew Dispatch Report</div>
+        <div style="font-size:12px;color:var(--text-main);line-height:1.7;" id="crewReport">—</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);" id="successWalletLine">New balance: — aUEC</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-ok" style="background:var(--green);" onclick="closeSuccessModal()">Acknowledged</button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes crewBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+</style>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const TOTAL_POINTS = 18, MAX_PER_AXIS = 16, MIN_PER_AXIS = 1;
+const AXES = ['speed','quality','cost'];
+const MS_TOTAL_SLOW = 120000, MS_TOTAL_FAST = 15000;
+
+let materials = {
+  gold:  { name:'Gold',         baseVal:650,  rawMult:0.15, color:'#e88d2d' },
+  quant: { name:'Quantainium',  baseVal:1800, rawMult:0.10, color:'#4aaef2' },
+  bex:   { name:'Bexalite',     baseVal:950,  rawMult:0.20, color:'#a855f7' },
+  iron:  { name:'Iron',         baseVal:120,  rawMult:0.30, color:'#94a3b8' },
+};
+
+let grades = [
+  { min:100, max:199, key:'gangue',     label:'Gangue',     color:'#5a6068', multiplier:0.0  },
+  { min:200, max:449, key:'subordinate',label:'Subordinate',color:'#b5a642', multiplier:0.6  },
+  { min:450, max:699, key:'massive',    label:'Massive',    color:'#facc15', multiplier:1.0  },
+  { min:700, max:899, key:'highgrade',  label:'High-Grade', color:'#e88d2d', multiplier:2.0  },
+  { min:900, max:1000,key:'pristine',   label:'Pristine',   color:'#a855f7', multiplier:15.0 },
+];
+
+let weights = {
+  speedFail:              { min:0.5,  max:15   },
+  qualityLuck:            { min:80,   max:800  },
+  efficiencyFee:          { min:2.0,  max:0.4  },
+  pristineProb:           { min:0.01, max:0.04 },
+  efficiencyQualityPenalty:{ min:0,   max:120  },
+};
+
+let LOGISTICS = { loadingPerSCU:100, packagingPerSCU:85, conveniencePerSCU:40 };
+let BASE_FEE_PER_UNIT = 25;
+
+const PRESETS = {
+  rush:      { speed:10, quality:3,  cost:5,  name:'Rush',      yieldBase:0.8,  desc:'<span style="color:var(--orange)">Rush:</span> Blunt thermal stripping — fast and cheap but the matrix takes a beating. High failure rate.' },
+  bulk:      { speed:8,  quality:3,  cost:7,  name:'Bulk',      yieldBase:1.6,  desc:'<span style="color:var(--orange)">Bulk:</span> Industrial throughput. Pushes high volumes through quickly. Costly and quality suffers.' },
+  artisan:   { speed:2,  quality:9,  cost:7,  name:'Artisan',   yieldBase:0.6,  desc:'<span style="color:var(--orange)">Artisan:</span> Slow, patient distillation. Low reagent cost, high purity, very low failure rate.' },
+  precision: { speed:2,  quality:13, cost:3,  name:'Precision', yieldBase:0.85, desc:'<span style="color:var(--orange)">Precision:</span> Multi-stage thermal cycling. Highest quality ceiling — extremely slow and costly.' },
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let rawScu = 12, orePurity = 650;
+let allocation = { speed:10, quality:3, cost:5 };
+let activePreset = 'rush';
+let sessionLog = [];
+let userWallet = 50000;
+let pendingRevenue = 0, currentWorkOrderFee = 0, liveAccumulatedValue = 0;
+
+let refineryUnits = [], refineryIdx = 0, refineryRunning = false, refineryAborted = false;
+let currentTimeout = null, timerInterval = null;
+let refineryTotalMs = 0, refineryStartTime = 0;
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function getGrade(v) { return grades.find(g => v >= g.min && v <= g.max) || grades[0]; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function getWeightVal(cat, pts) { const w=weights[cat]; return w.min+(w.max-w.min)*((pts-1)/(MAX_PER_AXIS-1)); }
+function getSpeedNorm(){ return (allocation.speed-1)/(MAX_PER_AXIS-1); }
+function getTotalMs(){ return Math.round(MS_TOTAL_SLOW+getSpeedNorm()*(MS_TOTAL_FAST-MS_TOTAL_SLOW)); }
+function getFailRate(){ return getWeightVal('speedFail',allocation.speed)/100; }
+function fmtTime(ms){ const s=Math.ceil(ms/1000),m=Math.floor(s/60); return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function updateWallet(){ document.getElementById('userWallet').textContent=userWallet.toLocaleString()+' aUEC'; }
+
+// ═══════════════════════════════════════════
+// PURITY UPDATE
+// ═══════════════════════════════════════════
+function updatePurity(v) {
+  orePurity = parseInt(v);
+  const g = getGrade(orePurity);
+  document.getElementById('purityVal').textContent = orePurity;
+  const chip = document.getElementById('purityChip');
+  chip.textContent = g.label;
+  chip.style.background = g.color+'33';
+  chip.style.color = g.color;
+  document.getElementById('puritySlider').style.accentColor = g.color;
+}
+
+// ═══════════════════════════════════════════
+// MINER DISPATCH
+// ═══════════════════════════════════════════
+const DISPATCH_MS = 60000; // 1 minute (could be made configurable)
+const MINE_PHASES = [
+  'Undocking from ARC-L2...',
+  'Plotting course to Aaron Belt...',
+  'Approaching asteroid field...',
+  'Scanning for viable targets...',
+  'Drilling initiated...',
+  'Ore extraction in progress...',
+  'Secondary vein located...',
+  'Loading cargo hold...',
+  'Heading home...',
+  'On final approach...',
+];
+
+const MAX_HAUL_SCU = 48;
+let haul = []; // [{ matKey, scu, purity, refine:true }]
+let dispatchInterval = null;
+
+// Seed starfield once
+function seedStars() {
+  const sf = document.getElementById('starField');
+  if (!sf || sf.children.length) return;
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    const sz = Math.random() < 0.2 ? 2 : 1;
+    s.className = 'star';
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${0.2+Math.random()*0.5};`;
+    sf.appendChild(s);
+  }
+}
+
+function dispatchMiner() {
+  if (dispatchInterval) return;
+  const btn = document.getElementById('dispatchBtn');
+  btn.disabled = true;
+  document.getElementById('dispatchStatus').textContent = 'In transit';
+  document.getElementById('dispatchCountdownWrap').style.display = 'block';
+
+  // Lock manifest while mining
+  document.getElementById('manifestCard').style.opacity = '.4';
+  document.getElementById('manifestCard').style.pointerEvents = 'none';
+
+  const ship = document.getElementById('minerShip');
+  ship.style.transition = 'none';
+  ship.style.left = '60px';
+  ship.style.opacity = '1';
+  ship.style.transform = 'translateY(-50%) scaleX(1)';
+
+  const overlay = document.getElementById('mineStatusOverlay');
+  overlay.style.opacity = '1';
+
+  const start = Date.now();
+  let phaseIdx = 0;
+
+  // Animate ship to belt and back
+  const halfMs = DISPATCH_MS / 2;
+  ship.style.transition = `left ${halfMs}ms linear`;
+  setTimeout(() => { ship.style.left = 'calc(100% - 80px)'; }, 50);
+
+  // Return trip
+  setTimeout(() => {
+    ship.style.transition = `left ${halfMs}ms linear`;
+    ship.style.transform = 'translateY(-50%) scaleX(-1)';
+    ship.style.left = '60px';
+  }, halfMs);
+
+  // Phase messages
+  const phaseInterval = DISPATCH_MS / MINE_PHASES.length;
+  overlay.textContent = MINE_PHASES[0];
+  const msgTimer = setInterval(() => {
+    phaseIdx = Math.min(phaseIdx + 1, MINE_PHASES.length - 1);
+    overlay.textContent = MINE_PHASES[phaseIdx];
+  }, phaseInterval);
+
+  // Countdown
+  dispatchInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const rem = Math.max(0, DISPATCH_MS - elapsed);
+    const pct = Math.min(100, elapsed / DISPATCH_MS * 100);
+    const m = Math.floor(rem / 60000), s = Math.floor((rem % 60000) / 1000);
+    document.getElementById('dispatchCountdown').textContent =
+      String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    document.getElementById('dispatchProgress').style.width = pct + '%';
+
+    if (elapsed >= DISPATCH_MS) {
+      clearInterval(dispatchInterval);
+      clearInterval(msgTimer);
+      dispatchInterval = null;
+      haul = generateHaul();
+      renderManifest();
+      overlay.textContent = '✓ Haul secured — manifest ready';
+      document.getElementById('dispatchStatus').textContent = 'Returned';
+      document.getElementById('dispatchCountdown').textContent = '00:00';
+      btn.disabled = false;
+      btn.textContent = '⬡ Send Again';
+    }
+  }, 200);
+}
+
+// ── GENERATE RANDOM HAUL ──
+function generateHaul() {
+  const matKeys = Object.keys(materials);
+  const numTypes = 1 + Math.floor(Math.random() * 4); // 1–4 material types
+  const chosen = [];
+  const shuffled = [...matKeys].sort(() => Math.random() - 0.5).slice(0, numTypes);
+
+  let remaining = MAX_HAUL_SCU;
+  shuffled.forEach((key, i) => {
+    const isLast = i === shuffled.length - 1;
+    const maxForThis = Math.min(remaining, isLast ? remaining : Math.floor(remaining * (0.3 + Math.random() * 0.5)));
+    const scu = Math.max(1, Math.floor(maxForThis * (0.5 + Math.random() * 0.5)));
+    const purity = Math.round((200 + Math.random() * 800) / 10) * 10; // 200–1000
+    chosen.push({ matKey: key, scu, purity, refine: true });
+    remaining -= scu;
+    if (remaining <= 0) return;
+  });
+
+  return chosen;
+}
+
+// ── RENDER MANIFEST TOGGLES ──
+function renderManifest() {
+  haul.forEach(h => h.refine = true); // default all ON
+  document.getElementById('manifestEmpty').style.display = 'none';
+  document.getElementById('manifestContents').style.display = 'block';
+  document.getElementById('manifestCard').style.opacity = '1';
+  document.getElementById('manifestCard').style.pointerEvents = 'auto';
+  document.getElementById('manifestSub').textContent = haul.length + ' ore type' + (haul.length > 1 ? 's' : '');
+
+  rebuildManifestList();
+}
+
+function rebuildManifestList() {
+  const list = document.getElementById('manifestList');
+  list.innerHTML = haul.map((h, i) => {
+    const mat = materials[h.matKey];
+    const g = getGrade(h.purity);
+    const refinedEst = Math.round(h.scu * mat.baseVal * 0.8);
+    const quickVal   = Math.round(h.scu * mat.baseVal * mat.rawMult * 0.30);
+    return `
+    <div class="tog-wrap ${h.refine ? 'active' : ''}" id="togrow-${i}">
+      <div class="tog-left">
+        <div class="g-chip" style="background:${mat.color}22;color:${mat.color};min-width:10px;">${mat.name[0]}</div>
+        <div>
+          <div class="tog-mat" style="color:${mat.color}">${mat.name}</div>
+          <div class="tog-meta">
+            ${h.scu} SCU &nbsp;·&nbsp;
+            <span style="color:${g.color}">${g.label} ${h.purity}</span>
+          </div>
+        </div>
+      </div>
+      <div class="tog-right">
+        <div class="tog-val" id="togval-${i}">
+          ${h.refine
+            ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} aUEC</span><div style="font-size:8px;color:var(--text-dim)">refinery est.</div>`
+            : `<span style="color:var(--orange)">${quickVal.toLocaleString()} aUEC</span><div style="font-size:8px;color:var(--text-dim)">quick-sell 30%</div>`
+          }
+        </div>
+        <label class="toggle-sw">
+          <input type="checkbox" ${h.refine ? 'checked' : ''} onchange="toggleHaulItem(${i}, this.checked)">
+          <div class="track"></div>
+          <div class="thumb"></div>
+        </label>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateManifestTotals();
+}
+
+function toggleHaulItem(i, on) {
+  haul[i].refine = on;
+  const mat = materials[haul[i].matKey];
+  const g = getGrade(haul[i].purity);
+  const refinedEst = Math.round(haul[i].scu * mat.baseVal * 0.8);
+  const quickVal   = Math.round(haul[i].scu * mat.baseVal * mat.rawMult * 0.30);
+  const row = document.getElementById('togrow-'+i);
+  row.classList.toggle('active', on);
+  document.getElementById('togval-'+i).innerHTML = on
+    ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} aUEC</span><div style="font-size:8px;color:var(--text-dim)">refinery est.</div>`
+    : `<span style="color:var(--orange)">${quickVal.toLocaleString()} aUEC</span><div style="font-size:8px;color:var(--text-dim)">quick-sell 30%</div>`;
+  updateManifestTotals();
+}
+
+function updateManifestTotals() {
+  let refineScu = 0, refineVal = 0, sellVal = 0;
+  haul.forEach(h => {
+    const mat = materials[h.matKey];
+    if (h.refine) {
+      refineScu += h.scu;
+      refineVal += Math.round(h.scu * mat.baseVal * 0.8);
+    } else {
+      sellVal += Math.round(h.scu * mat.baseVal * mat.rawMult * 0.30);
+    }
+  });
+  document.getElementById('mvRefineTotal').textContent = refineVal > 0 ? '~' + refineVal.toLocaleString() + ' aUEC est.' : '—';
+  document.getElementById('mvSellTotal').textContent   = sellVal > 0   ? '+' + sellVal.toLocaleString() + ' aUEC'         : '—';
+  document.getElementById('mvScuToRefine').textContent = refineScu > 0 ? refineScu + ' SCU' : '0 SCU (nothing to refine)';
+  document.getElementById('commitBtn').disabled = refineScu === 0;
+}
+
+// ── COMMIT MANIFEST → feed pipeline ──
+function commitManifest() {
+  const toRefine  = haul.filter(h => h.refine);
+  const toSell    = haul.filter(h => !h.refine);
+
+  // Quick-sell items immediately
+  let quickSellTotal = 0;
+  toSell.forEach(h => {
+    const mat = materials[h.matKey];
+    quickSellTotal += Math.round(h.scu * mat.baseVal * mat.rawMult * 0.30);
+  });
+  if (quickSellTotal > 0) {
+    userWallet += quickSellTotal;
+    updateWallet();
+    // Brief flash notification
+    const notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;top:80px;right:24px;background:rgba(232,141,45,.15);border:1px solid var(--orange);color:var(--orange);font-family:DM Mono,monospace;font-size:11px;padding:10px 16px;z-index:2000;letter-spacing:.06em;transition:opacity .5s;';
+    notif.textContent = '+ ' + quickSellTotal.toLocaleString() + ' aUEC — Quick-sell complete';
+    document.body.appendChild(notif);
+    setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 500); }, 2500);
+  }
+
+  if (toRefine.length === 0) return;
+
+  // Aggregate refinery inputs — blend purity weighted by SCU, pick dominant material
+  const totalScu = toRefine.reduce((s, h) => s + h.scu, 0);
+  const blendedPurity = Math.round(toRefine.reduce((s, h) => s + h.purity * h.scu, 0) / totalScu);
+  const dominant = toRefine.reduce((a, b) => a.scu >= b.scu ? a : b);
+
+  // Feed the hidden inputs
+  document.getElementById('materialType').value = dominant.matKey;
+  document.getElementById('scuInput').value = totalScu;
+  document.getElementById('puritySlider').value = blendedPurity;
+
+  rawScu = totalScu;
+  orePurity = blendedPurity;
+
+  // Highlight Step 2 to show it's now active
+  document.getElementById('manifestCard').style.opacity = '.6';
+  document.getElementById('manifestCard').style.pointerEvents = 'none';
+
+  updateAll();
+
+  // Scroll to step 2
+  document.querySelector('.card-hdr .card-title')?.closest('.card')?.scrollIntoView?.({ behavior:'smooth', block:'start' });
+}
+
+// ═══════════════════════════════════════════
+// UPDATE ALL
+// ═══════════════════════════════════════════
+function updateAll() {
+  rawScu = parseInt(document.getElementById('scuInput').value)||1;
+  const matKey = document.getElementById('materialType').value;
+  const mat = materials[matKey];
+
+  // Fee estimate
+  const effMult = getWeightVal('efficiencyFee', allocation.cost);
+  const feePerUnit = Math.round(BASE_FEE_PER_UNIT * effMult);
+  const unitCount = Math.round(rawScu * 10);
+  const totalFee = unitCount * feePerUnit;
+  const loadingFee = rawScu * LOGISTICS.loadingPerSCU;
+  const feeEl = document.getElementById('feePerUnit');
+  if (feeEl) feeEl.textContent = 'aUEC ' + feePerUnit;
+  const loadEl = document.getElementById('loadingFeeEst');
+  if (loadEl) loadEl.textContent = 'aUEC ' + loadingFee.toLocaleString();
+  const totEl = document.getElementById('estTotal');
+  if (totEl) totEl.textContent = 'aUEC ' + totalFee.toLocaleString();
+
+  // Funds check
+  const btn = document.getElementById('refineBtn');
+  const warn = document.getElementById('fundsWarning');
+  if (btn && warn) {
+    if (totalFee > userWallet) { btn.disabled=true; warn.style.display='block'; }
+    else { btn.disabled=false; warn.style.display='none'; }
+  }
+
+  syncSliders();
+  updateModePanel();
+}
+
+// ═══════════════════════════════════════════
+// PRESET + SLIDERS
+// ═══════════════════════════════════════════
+function applyPreset(key) {
+  activePreset = key;
+  const p = PRESETS[key];
+  allocation = { speed:p.speed, quality:p.quality, cost:p.cost };
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset===key));
+  updateAll();
+}
+
+function onSlider(changed, rawVal) {
+  if (refineryRunning) return;
+  const newVal = clamp(parseInt(rawVal), MIN_PER_AXIS, MAX_PER_AXIS);
+  const others = AXES.filter(a=>a!==changed);
+  const oldOtherTotal = allocation[others[0]]+allocation[others[1]];
+  const remaining = TOTAL_POINTS - newVal;
+  const minForOthers = MIN_PER_AXIS*2;
+  allocation[changed] = remaining < minForOthers ? TOTAL_POINTS-minForOthers : newVal;
+  const rem = TOTAL_POINTS-allocation[changed];
+  if (oldOtherTotal===0) {
+    allocation[others[0]] = Math.floor(rem/2);
+    allocation[others[1]] = rem-allocation[others[0]];
+  } else {
+    let a0 = clamp(Math.round(rem*allocation[others[0]]/oldOtherTotal), MIN_PER_AXIS, MAX_PER_AXIS);
+    let a1 = rem-a0;
+    a1 = clamp(a1, MIN_PER_AXIS, MAX_PER_AXIS);
+    a0 = clamp(rem-a1, MIN_PER_AXIS, MAX_PER_AXIS);
+    allocation[others[0]]=a0; allocation[others[1]]=a1;
+  }
+  let matched=null;
+  for (const [k,p] of Object.entries(PRESETS)) {
+    if (p.speed===allocation.speed&&p.quality===allocation.quality&&p.cost===allocation.cost){matched=k;break;}
+  }
+  activePreset=matched;
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.toggle('active',b.dataset.preset===matched));
+  updateAll();
+}
+
+function syncSliders() {
+  const used=allocation.speed+allocation.quality+allocation.cost;
+  AXES.forEach(a=>{
+    document.getElementById('slider-'+a).value=allocation[a];
+    document.getElementById('fill-'+a).style.width=(allocation[a]/MAX_PER_AXIS*100)+'%';
+    document.getElementById('pct-'+a).textContent=Math.round(allocation[a]/TOTAL_POINTS*100)+'%';
+  });
+  document.getElementById('poolBar').style.width=(used/TOTAL_POINTS*100)+'%';
+  document.getElementById('poolValue').textContent=used+'/18';
+}
+
+function updateModePanel() {
+  const name = activePreset ? PRESETS[activePreset].name : 'Custom';
+  document.getElementById('modeName').textContent = name;
+  let desc = activePreset ? PRESETS[activePreset].desc : (() => {
+    const dom=AXES.reduce((a,b)=>allocation[a]>=allocation[b]?a:b);
+    const low=AXES.reduce((a,b)=>allocation[a]<=allocation[b]?a:b);
+    const dL={speed:'speed',quality:'ore quality',cost:'cost efficiency'};
+    const lL={speed:'speed',quality:'quality',cost:'cost efficiency'};
+    return `<span style="color:var(--orange)">Custom:</span> Emphasizes ${dL[dom]} (${Math.round(allocation[dom]/TOTAL_POINTS*100)}%). Primary sacrifice: ${lL[low]}.`;
+  })();
+  document.getElementById('modeDesc').innerHTML = desc;
+
+  const ms=getTotalMs(), fr=getFailRate();
+  const secDisplay=ms>=60000?Math.round(ms/60000)+'m 00s':(ms/1000).toFixed(0)+'s';
+  document.getElementById('speedCallout').innerHTML=
+    `<span style="color:var(--orange)">Run time:</span> ${secDisplay} total &nbsp;·&nbsp; <span style="color:var(--red)">Failure risk:</span> ${Math.round(fr*100)}%`;
+
+  drawRadar();
+
+  const units=Math.round(rawScu*10);
+  document.getElementById('refineryMeta').textContent = units+' units queued';
+}
+
+// ═══════════════════════════════════════════
+// RADAR CHART
+// ═══════════════════════════════════════════
+function drawRadar() {
+  const cv=document.getElementById('radarChart'), ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2+2,R=50;
+  ctx.clearRect(0,0,W,H);
+  const angles=[-Math.PI/2,-Math.PI/2+2*Math.PI/3,-Math.PI/2+4*Math.PI/3];
+  const colors=['#e88d2d','#4aaef2','#a855f7'];
+  const labels=['Speed','Quality','Effic.'];
+  const dataOrder=['speed','quality','cost'];
+
+  [.25,.5,.75,1].forEach(t=>{
+    ctx.beginPath();
+    angles.forEach((a,i)=>{const x=cx+Math.cos(a)*R*t,y=cy+Math.sin(a)*R*t;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+    ctx.closePath();
+    ctx.strokeStyle=t===1?'rgba(255,255,255,.2)':'rgba(255,255,255,.07)';
+    ctx.lineWidth=t===1?1:.6; ctx.stroke();
+  });
+  angles.forEach(a=>{ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=.6;ctx.stroke();});
+
+  const vals=dataOrder.map(k=>allocation[k]/MAX_PER_AXIS);
+  const pts=vals.map((v,i)=>({x:cx+Math.cos(angles[i])*R*v,y:cy+Math.sin(angles[i])*R*v}));
+  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.closePath();
+  ctx.fillStyle='rgba(232,141,45,.12)';ctx.fill();
+  ctx.strokeStyle='rgba(232,141,45,.6)';ctx.lineWidth=1.5;ctx.stroke();
+  pts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fillStyle=colors[i];ctx.fill();ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=1;ctx.stroke();});
+
+  angles.forEach((a,i)=>{
+    const lr=R+18,lx=cx+Math.cos(a)*lr,ly=cy+Math.sin(a)*lr;
+    ctx.fillStyle=colors[i];ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='500 9px "DM Sans",sans-serif';ctx.fillText(labels[i],lx,ly-4);
+    ctx.font='400 8.5px "DM Mono",monospace';
+    ctx.fillText(Math.round(allocation[dataOrder[i]]/TOTAL_POINTS*100)+'%',lx,ly+6);
+  });
+}
+
+// ═══════════════════════════════════════════
+// DEFRAG GRID
+// ═══════════════════════════════════════════
+function buildDefragGrid(count) {
+  const g=document.getElementById('defragGrid'); g.innerHTML='';
+  const cols=Math.ceil(Math.sqrt(count*2.5));
+  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  for(let i=0;i<count;i++){const b=document.createElement('div');b.className='defrag-block';b.id='db-'+i;g.appendChild(b);}
+}
+function setBlock(i,state,color){
+  const el=document.getElementById('db-'+i);if(!el)return;
+  el.className='defrag-block'+(state?' '+state:'');
+  if(color){el.style.backgroundColor=color;el.style.boxShadow=`inset 0 0 4px rgba(255,255,255,.05)`;}
+  else{el.style.backgroundColor='';el.style.boxShadow='';}
+}
+
+// ═══════════════════════════════════════════
+// START REFINEMENT
+// ═══════════════════════════════════════════
+function startRefinement() {
+  if (refineryRunning) return;
+  const matKey=document.getElementById('materialType').value;
+  const mat=materials[matKey];
+  const scu=parseInt(document.getElementById('scuInput').value)||1;
+  const unitCount=Math.round(scu*10);
+  const effMult=getWeightVal('efficiencyFee',allocation.cost);
+  const feePerUnit=Math.round(BASE_FEE_PER_UNIT*effMult);
+  const totalFee=unitCount*feePerUnit;
+  if(totalFee>userWallet)return;
+
+  userWallet-=totalFee;
+  currentWorkOrderFee=totalFee;
+  liveAccumulatedValue=0;
+  pendingRevenue=0;
+  updateWallet();
+
+  // Build unit queue
+  refineryUnits=[];
+  const pristineChance=getWeightVal('pristineProb',allocation.quality);
+  const effPenalty=getWeightVal('efficiencyQualityPenalty',allocation.cost);
+
+  for(let i=0;i<unitCount;i++){
+    const qualLuck=getWeightVal('qualityLuck',allocation.quality);
+    const spdVol=allocation.speed*20;
+    let purity, grade, isPristine=false, isGangue=false, success;
+
+    if(Math.random()<pristineChance){
+      isPristine=true; success=true;
+      purity=900+Math.random()*100;
+      grade=grades.find(g=>g.key==='pristine');
+    } else {
+      let roll=(Math.random()*500)+qualLuck-effPenalty;
+      roll+=(Math.random()*spdVol)-(spdVol/2);
+      purity=clamp(roll,100,899);
+      isGangue=purity<200;
+      grade=getGrade(purity);
+      success=!isGangue && Math.random()>getFailRate();
+    }
+    const val=success?Math.round((mat.baseVal*0.1)*grade.multiplier):0;
+    refineryUnits.push({purity:Math.round(purity),grade,isPristine,isGangue,success,value:val,fee:feePerUnit});
+  }
+
+  refineryIdx=0; refineryRunning=true; refineryAborted=false;
+  refineryTotalMs=getTotalMs();
+  const msPerUnit=Math.round(refineryTotalMs/unitCount);
+  refineryStartTime=Date.now();
+
+  document.getElementById('refineBtn').disabled=true;
+  document.getElementById('abortBtn').style.display='inline-flex';
+  document.getElementById('finalSummary').style.display='none';
+  document.getElementById('resultsBody').innerHTML='';
+  document.getElementById('resultsWrap').style.display='block';
+  document.getElementById('liveFee').textContent=totalFee.toLocaleString()+' aUEC';
+  document.getElementById('liveVal').textContent='0';
+  document.getElementById('liveRoi').textContent='CALCULATING...';
+  document.getElementById('rsProgressFill').style.width='0%';
+
+  buildDefragGrid(unitCount);
+
+  // Countdown interval
+  timerInterval=setInterval(()=>{
+    if(!refineryRunning){clearInterval(timerInterval);return;}
+    const elapsed=Date.now()-refineryStartTime;
+    const rem=Math.max(0,refineryTotalMs-elapsed);
+    document.getElementById('rsTimer').textContent=fmtTime(rem);
+    document.getElementById('rsProgressFill').style.width=Math.min(100,elapsed/refineryTotalMs*100)+'%';
+  },200);
+
+  processNext(msPerUnit);
+}
+
+function processNext(msPerUnit) {
+  if(refineryAborted||refineryIdx>=refineryUnits.length){finishRefining();return;}
+  const i=refineryIdx;
+  setBlock(i,'processing');
+
+  currentTimeout=setTimeout(()=>{
+    const u=refineryUnits[i];
+    if(u.isGangue){
+      setBlock(i,'gangue');
+    } else if(u.success){
+      const t=(u.purity-200)/800;
+      const brightness=0.7+t*0.7;
+      setBlock(i,'success',u.grade.color);
+      const el=document.getElementById('db-'+i);
+      if(el){el.style.filter=`brightness(${brightness})`;if(u.isPristine)el.classList.add('pristine');}
+      liveAccumulatedValue+=u.value;
+    } else {
+      setBlock(i,'fail');
+    }
+
+    document.getElementById('liveVal').textContent=liveAccumulatedValue.toLocaleString();
+    const net=liveAccumulatedValue-currentWorkOrderFee;
+    const roiEl=document.getElementById('liveRoi');
+    if(liveAccumulatedValue>0){
+      roiEl.textContent=net>=0?('PROFITING: +'+net.toLocaleString()+' aUEC'):('RECOVERING: '+net.toLocaleString()+' aUEC');
+      roiEl.style.color=net>=0?'var(--green)':'var(--red)';
+    }
+
+    // Append row
+    appendRow(i, u);
+    refineryIdx++;
+    processNext(msPerUnit);
+  }, msPerUnit);
+}
+
+function appendRow(i, u) {
+  const tr=document.createElement('tr');
+  const outcome = u.isGangue
+    ? `<span style="color:var(--text-dim)">Gangue</span>`
+    : u.success
+      ? `<span style="color:var(--green)">Refined</span>`
+      : `<span style="color:var(--red)">Inert</span>`;
+  tr.innerHTML=`<td>${String(i+1).padStart(3,'0')}</td>
+    <td><span class="g-chip" style="background:${u.grade.color}22;color:${u.grade.color}">${u.grade.label}</span></td>
+    <td style="color:${u.grade.color}">${u.purity}</td>
+    <td>${outcome}</td>
+    <td style="text-align:right;color:${u.value>0?'var(--text-bright)':'var(--text-dim)'}">${u.value.toLocaleString()}</td>`;
+  document.getElementById('resultsBody').prepend(tr);
+  const scrollEl=document.querySelector('.results-scroll-inner');
+  if(scrollEl)scrollEl.scrollTop=0;
+}
+
+function abortRefinement(){
+  refineryAborted=true;
+  if(currentTimeout)clearTimeout(currentTimeout);
+  finishRefining();
+}
+
+function finishRefining() {
+  clearInterval(timerInterval);
+  refineryRunning=false;
+  document.getElementById('refineBtn').disabled=false;
+  document.getElementById('abortBtn').style.display='none';
+  document.getElementById('rsTimer').textContent='00:00';
+  document.getElementById('rsProgressFill').style.width='100%';
+
+  const meta=refineryAborted?('Aborted at unit '+refineryIdx):('Complete — '+refineryUnits.length+' units');
+  document.getElementById('refineryMeta').textContent=meta;
+  if(refineryAborted)return;
+
+  const succeeded=refineryUnits.filter(u=>u.success);
+  const inert=refineryUnits.filter(u=>!u.success);
+  const rev=succeeded.reduce((s,u)=>s+u.value,0);
+  const fees=currentWorkOrderFee;
+  // SCU output is a volume fraction of the raw input — success rate × rawScu
+  const totalScu=(rawScu*(succeeded.length/refineryUnits.length)).toFixed(2);
+  const inertScu=(rawScu*(inert.length/refineryUnits.length)).toFixed(2);
+  const rate=refineryUnits.length>0?Math.round(succeeded.length/refineryUnits.length*100):0;
+  const avgPurity=succeeded.length>0?Math.round(succeeded.reduce((s,u)=>s+u.purity,0)/succeeded.length):0;
+  const avgGrade=avgPurity>0?getGrade(avgPurity):null;
+  const net=rev-fees;
+  const roi=fees>0?Math.round((net/fees)*100):0;
+  const profileName=activePreset?PRESETS[activePreset].name:'Custom';
+  pendingRevenue=rev;
+
+  // Populate summary
+  document.getElementById('sumScuHero').textContent=totalScu+' SCU';
+  document.getElementById('sumEscuSub').textContent=rev.toLocaleString()+' aUEC';
+  document.getElementById('sumInertScu').textContent=inertScu+' SCU';
+  document.getElementById('sumInertEscu').textContent=inert.length+' units lost';
+  if(avgGrade){
+    const chip=document.getElementById('sumGradeChip');
+    chip.textContent=avgGrade.label;chip.style.background=avgGrade.color+'33';chip.style.color=avgGrade.color;
+    document.getElementById('sumPurityTxt').textContent='avg purity '+avgPurity;
+  }
+  document.getElementById('sumRefined').textContent=succeeded.length+' units';
+  document.getElementById('sumInert').textContent=inert.length+' units';
+  document.getElementById('sumRate').textContent=rate+'%';
+  document.getElementById('sumNet').textContent=(net>=0?'+':'')+net.toLocaleString()+' aUEC';
+  document.getElementById('sumNet').style.color=net>=0?'var(--green)':'var(--red)';
+  document.getElementById('sumRoi').textContent=roi+'% ROI';
+  document.getElementById('sumRoi').style.color=roi>=0?'var(--green)':'var(--red)';
+  document.getElementById('sumProfile').textContent=profileName;
+  document.getElementById('sellBtn').style.display=rev>0?'inline-flex':'none';
+
+  // Purity distribution
+  if(succeeded.length>0){
+    const buckets={};
+    grades.forEach(g=>{buckets[g.key]={count:0,color:g.color,label:g.label};});
+    succeeded.forEach(u=>{if(buckets[u.grade.key])buckets[u.grade.key].count++;});
+    const bar=document.getElementById('purityBar'),leg=document.getElementById('purityLegend');
+    bar.innerHTML='';leg.innerHTML='';
+    grades.forEach(g=>{
+      const b=buckets[g.key];if(!b.count)return;
+      const pct=(b.count/succeeded.length*100).toFixed(1);
+      const seg=document.createElement('div');
+      seg.style.cssText=`flex:${b.count};background:${b.color};min-width:3px;`;
+      seg.title=`${b.label}: ${b.count} (${pct}%)`;bar.appendChild(seg);
+      const li=document.createElement('div');li.className='pl-item';
+      li.innerHTML=`<div class="pl-sw" style="background:${b.color}"></div><span style="color:${b.color}">${b.label}</span><span style="color:var(--text-dim)">${b.count} · ${pct}%</span>`;
+      leg.appendChild(li);
+    });
+    document.getElementById('purityDist').style.display='block';
+  } else {
+    document.getElementById('purityDist').style.display='none';
+  }
+
+  document.getElementById('finalSummary').style.display='block';
+
+  // Log
+  logRun({profileName,rev,totalScu,inertScu,succeeded:succeeded.length,inert:inert.length,rate,avgPurity,avgGrade,net,roi});
+}
+
+// ═══════════════════════════════════════════
+// SESSION LOG
+// ═══════════════════════════════════════════
+function logRun({profileName,rev,totalScu,inertScu,succeeded,inert,rate,avgPurity,avgGrade,net,roi}){
+  const n=sessionLog.length+1;
+  sessionLog.unshift({n,profileName,rev,totalScu,inertScu,succeeded,inert,rate,avgPurity,avgGrade,net,roi,
+    alloc:`${allocation.speed}/${allocation.quality}/${allocation.cost}`});
+  document.getElementById('logMeta').textContent=sessionLog.length+' run'+(sessionLog.length>1?'s':'');
+  document.getElementById('logBody').innerHTML=sessionLog.slice(0,8).map(e=>{
+    const gc=e.avgGrade?e.avgGrade.color:'var(--text-dim)';
+    const gk=e.avgGrade?e.avgGrade.key:'gangue';
+    const gl=e.avgGrade?e.avgGrade.label:'—';
+    return `<div class="log-entry">
+      <span class="log-run">Run ${e.n}</span>
+      <span class="log-badge">${e.profileName}</span>
+      <div>
+        <span class="log-col-label">Purity</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:${gc}">${e.avgPurity||'—'}</span>
+          <span class="g-chip" style="background:${gc}22;color:${gc};font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;">${gl}</span>
+        </div>
+      </div>
+      <div>
+        <span class="log-col-label">Outcome</span>
+        <div style="display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;">
+          <span style="color:var(--green)">${e.succeeded} ok</span>
+          <span style="color:var(--text-dim)">·</span>
+          <span style="color:var(--red)">${e.inert} inert</span>
+          <span style="color:var(--text-dim)">(${e.rate}%)</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <span class="log-col-label">Yield / P&L</span>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green)">${e.totalScu} SCU</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:${e.net>=0?'var(--green)':'var(--red)'}">${e.net>=0?'+':''}${e.net.toLocaleString()} aUEC</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// SELL MODAL
+// ═══════════════════════════════════════════
+function openSellModal(){
+  const matKey=document.getElementById('materialType').value;
+  document.getElementById('modalMat').textContent=materials[matKey].name;
+  document.getElementById('modalTotal').textContent=pendingRevenue.toLocaleString()+' aUEC';
+  document.getElementById('modalPkg').textContent=(rawScu*LOGISTICS.packagingPerSCU).toLocaleString()+' aUEC';
+  document.getElementById('loadingCheck').checked=true;
+  document.getElementById('expressCheck').checked=false;
+  document.getElementById('loadingDesc').textContent='+'+LOGISTICS.loadingPerSCU+' aUEC per SCU';
+  document.getElementById('expressDesc').textContent='+'+LOGISTICS.conveniencePerSCU+' aUEC per SCU';
+  calcSaleTotal();
+  document.getElementById('sellModal').style.display='flex';
+}
+function calcSaleTotal(){
+  const pkg=rawScu*LOGISTICS.packagingPerSCU;
+  const loading=document.getElementById('loadingCheck').checked?rawScu*LOGISTICS.loadingPerSCU:0;
+  const express=document.getElementById('expressCheck').checked?rawScu*LOGISTICS.conveniencePerSCU:0;
+  document.getElementById('loadingRow').style.display=loading>0?'flex':'none';
+  document.getElementById('modalLoading').textContent=loading.toLocaleString()+' aUEC';
+  document.getElementById('expressRow').style.display=express>0?'flex':'none';
+  document.getElementById('modalExpress').textContent=express.toLocaleString()+' aUEC';
+  const final=pendingRevenue-pkg-loading-express;
+  document.getElementById('modalFinal').textContent=final.toLocaleString()+' aUEC';
+  window._transferCredits=final;
+  // Show crew warning and update button when no loading fee
+  const noLoading=!document.getElementById('loadingCheck').checked;
+  document.getElementById('crewWarning').style.display=noLoading?'block':'none';
+  if(noLoading){
+    const secs=CREW_DELAY_MS/1000;
+    const timeStr=secs>=60?Math.round(secs/60)+'-minute':''+secs+'-second';
+    document.getElementById('crewWarning').innerHTML=
+      `⚠ Without the loading fee, your crew will handle logistics manually.<br>`+
+      `<span style="color:var(--text-dim);">Expect a <strong style="color:var(--orange);">${timeStr} delay</strong> before transfer clears.</span>`;
+  }
+  document.getElementById('authTransferBtn').textContent=noLoading?'Authorize (Crew Dispatch)':'Authorize Transfer';
+}
+function closeSellModal(){document.getElementById('sellModal').style.display='none';}
+
+function confirmSale(){
+  const credits = window._transferCredits;
+  const noLoading = !document.getElementById('loadingCheck').checked;
+  const matKey = document.getElementById('materialType').value;
+  closeSellModal();
+
+  if (noLoading) {
+    startCrewDelivery(credits, matKey);
+  } else {
+    // Instant — loading fee was paid, station handles it
+    userWallet += credits;
+    pendingRevenue = 0;
+    updateWallet();
+    document.getElementById('sellBtn').style.display = 'none';
+    showSuccessModal(credits, true);
+    updateAll();
+  }
+}
+
+// ── CREW DELIVERY (no loading fee — configurable wait) ──
+let CREW_DELAY_MS = 30000; // 30 seconds (editable in System Config)
+const CREW_MESSAGES = [
+  'Securing cargo in hold...',
+  'Crew boarding transport vessel...',
+  'Departing ARC-L2 docking bay...',
+  'En route to TDD trading post...',
+  'Navigating transit corridor...',
+  'Approaching destination...',
+  'Cargo unloading in progress...',
+  'Awaiting buyer confirmation...',
+  'Processing payment transfer...',
+  'Finalizing ledger entry...',
+];
+let crewMsgInterval = null, crewCountdownInterval = null;
+
+function startCrewDelivery(credits, matKey) {
+  document.getElementById('crewWaitModal').style.display = 'flex';
+  document.getElementById('crewProgressFill').style.width = '0%';
+
+  // Set initial countdown from configured value
+  const initSecs = Math.ceil(CREW_DELAY_MS / 1000);
+  const initM = Math.floor(initSecs / 60), initS = initSecs % 60;
+  document.getElementById('crewCountdown').textContent =
+    String(initM).padStart(2,'0') + ':' + String(initS).padStart(2,'0');
+
+  const start = Date.now();
+  let msgIdx = 0;
+
+  document.getElementById('crewStatusMsg').textContent = CREW_MESSAGES[0];
+
+  crewMsgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % CREW_MESSAGES.length;
+    document.getElementById('crewStatusMsg').textContent = CREW_MESSAGES[msgIdx];
+  }, CREW_DELAY_MS / CREW_MESSAGES.length);
+
+  crewCountdownInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, CREW_DELAY_MS - elapsed);
+    const pct = Math.min(100, elapsed / CREW_DELAY_MS * 100);
+
+    // Update countdown timer
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    document.getElementById('crewCountdown').textContent =
+      String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    document.getElementById('crewProgressFill').style.width = pct + '%';
+
+    if (elapsed >= CREW_DELAY_MS) {
+      clearInterval(crewCountdownInterval);
+      clearInterval(crewMsgInterval);
+      // Delivery complete
+      document.getElementById('crewWaitModal').style.display = 'none';
+      userWallet += credits;
+      pendingRevenue = 0;
+      updateWallet();
+      document.getElementById('sellBtn').style.display = 'none';
+      showSuccessModal(credits, false);
+      updateAll();
+    }
+  }, 250);
+}
+
+// ── SUCCESS POPUP ──
+const CREW_REPORTS = [
+  'Your crew loaded the {scu} SCU of {mat} without incident. The transport docked at TDD without delays and the buyer accepted delivery on the spot. Clean run.',
+  'Took a while to get the {mat} crates squared away, but your crew pulled it off. They flagged down a buyer at the trade post and closed the deal fast. No drama.',
+  'The crew ran the {scu} SCU of {mat} through the station concourse manually. A little slower than the automated bays, but it got done. Payment confirmed.',
+  'Your crew chartered a short-haul hauler, loaded the {mat} cargo, and made the delivery without any customs holdups. Funds transferred as agreed.',
+  'Rough handling on the dock but nothing was lost. The {mat} shipment arrived intact and the trade post agent cleared the transfer without questions.',
+];
+
+function showSuccessModal(credits, instant) {
+  const matKey = document.getElementById('materialType').value;
+  const mat = materials[matKey];
+  const scu = parseFloat(document.getElementById('sumScuHero')?.textContent) || rawScu;
+
+  document.getElementById('successAmount').textContent = '+' + credits.toLocaleString() + ' aUEC';
+  document.getElementById('successWalletLine').textContent = 'New balance: ' + userWallet.toLocaleString() + ' aUEC';
+
+  let report;
+  if (instant) {
+    report = 'Station loading crew handled the transfer via the automated bay system. Your ' +
+      mat.name + ' shipment was processed and delivered to the TDD terminal in under a minute. Payment confirmed immediately.';
+  } else {
+    const template = CREW_REPORTS[Math.floor(Math.random() * CREW_REPORTS.length)];
+    report = template
+      .replace('{mat}', mat.name)
+      .replace('{scu}', scu.toFixed(2));
+  }
+
+  document.getElementById('crewReport').textContent = report;
+  document.getElementById('crewSuccessModal').style.display = 'flex';
+}
+
+function closeSuccessModal(){
+  document.getElementById('crewSuccessModal').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════
+function toggleAdmin(){
+  const p=document.getElementById('adminPanel');
+  p.style.display=p.style.display==='block'?'none':'block';
+  if(p.style.display==='block')renderAdmin();
+}
+function renderAdmin(){
+  document.getElementById('adminMats').innerHTML=Object.entries(materials).map(([k,m])=>
+    `<div class="admin-row"><span>${m.name}</span><input type="number" value="${m.baseVal}" onchange="materials['${k}'].baseVal=parseFloat(this.value);updateAll()"></div>`
+  ).join('');
+  document.getElementById('adminGrades').innerHTML=grades.map((g,i)=>`
+    <div style="margin-bottom:10px;padding:8px;border-left:2px solid ${g.color};background:rgba(0,0,0,.2);">
+      <div style="color:${g.color};font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;margin-bottom:6px;">${g.label}</div>
+      <div class="admin-row"><span>Min</span><input type="number" value="${g.min}" onchange="grades[${i}].min=parseFloat(this.value);updateAll()"></div>
+      <div class="admin-row"><span>Max</span><input type="number" value="${g.max}" onchange="grades[${i}].max=parseFloat(this.value);updateAll()"></div>
+      <div class="admin-row"><span>Mult</span><input type="number" step=".1" value="${g.multiplier}" onchange="grades[${i}].multiplier=parseFloat(this.value);updateAll()"></div>
+    </div>`).join('');
+  document.getElementById('adminWeights').innerHTML=`
+    <div class="admin-row"><span>Fail min</span><input type="number" step=".1" value="${weights.speedFail.min}" onchange="weights.speedFail.min=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Fail max</span><input type="number" step=".1" value="${weights.speedFail.max}" onchange="weights.speedFail.max=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Luck min</span><input type="number" value="${weights.qualityLuck.min}" onchange="weights.qualityLuck.min=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Luck max</span><input type="number" value="${weights.qualityLuck.max}" onchange="weights.qualityLuck.max=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Pristine min</span><input type="number" step=".01" value="${weights.pristineProb.min}" onchange="weights.pristineProb.min=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Pristine max</span><input type="number" step=".01" value="${weights.pristineProb.max}" onchange="weights.pristineProb.max=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Penalty min</span><input type="number" value="${weights.efficiencyQualityPenalty.min}" onchange="weights.efficiencyQualityPenalty.min=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Penalty max</span><input type="number" value="${weights.efficiencyQualityPenalty.max}" onchange="weights.efficiencyQualityPenalty.max=parseFloat(this.value);updateAll()"></div>`;
+  document.getElementById('adminLogistics').innerHTML=`
+    <div class="admin-row"><span>Base fee</span><input type="number" value="${BASE_FEE_PER_UNIT}" onchange="BASE_FEE_PER_UNIT=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Loading/SCU</span><input type="number" value="${LOGISTICS.loadingPerSCU}" onchange="LOGISTICS.loadingPerSCU=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Packaging/SCU</span><input type="number" value="${LOGISTICS.packagingPerSCU}" onchange="LOGISTICS.packagingPerSCU=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row"><span>Express/SCU</span><input type="number" value="${LOGISTICS.conveniencePerSCU}" onchange="LOGISTICS.conveniencePerSCU=parseFloat(this.value);updateAll()"></div>
+    <div class="admin-row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+      <span style="color:var(--orange);">Crew delay</span>
+      <input type="number" min="5" value="${CREW_DELAY_MS/1000}" onchange="CREW_DELAY_MS=parseFloat(this.value)*1000;updateAll()">
+      <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-left:4px;">sec</span>
+    </div>`;
+  adminLoadPlayers();
+}
+
+
+// ═══════════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════════
+const SUPABASE_URL = 'https://gfwrhqjicixelcaxqpvv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmd3JocWppY2l4ZWxjYXhxcHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzAyOTEsImV4cCI6MjA5MDE0NjI5MX0.r2mNRSWC4inIIc2B8Bs7uWH302R4gZgofAvk8FKVDBM';
+
+let currentUser  = null;  // Supabase auth user object
+let authToken    = null;  // JWT for authenticated requests
+let currentProfile = null; // player_profiles row
+
+// ── GENERIC REST HELPER (uses auth token when available) ──
+async function sbFetch(path, method='GET', body=null, useAuth=false) {
+  const token = useAuth && authToken ? authToken : SUPABASE_KEY;
+  const opts = {
+    method,
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type':  'application/json',
+      'Prefer':        method === 'POST' ? 'return=minimal' : 'return=representation',
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (method === 'POST' && (res.status === 201 || res.status === 204)) return null;
+  if (method === 'PATCH' && res.status === 204) return null;
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error('sbFetch error', res.status, txt);
+    return null;
+  }
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('json') ? res.json() : null;
+}
+
+// Auth-specific fetch (Supabase Auth REST endpoints)
+async function sbAuth(path, body) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}?apikey=${SUPABASE_KEY}`, {
+    method: 'POST',
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+// ═══════════════════════════════════════════
+// AUTH UI
+// ═══════════════════════════════════════════
+function switchAuthTab(tab) {
+  const isSignIn = tab === 'signin';
+  document.getElementById('formSignIn').style.display  = isSignIn ? 'block' : 'none';
+  document.getElementById('formSignUp').style.display  = isSignIn ? 'none'  : 'block';
+  document.getElementById('authLoading').style.display = 'none';
+
+  const siTab = document.getElementById('tabSignIn');
+  const suTab = document.getElementById('tabSignUp');
+  siTab.style.color        = isSignIn ? 'var(--cyan)'     : 'var(--text-dim)';
+  siTab.style.borderBottom = isSignIn ? '2px solid var(--cyan)' : '2px solid transparent';
+  suTab.style.color        = isSignIn ? 'var(--text-dim)' : 'var(--orange)';
+  suTab.style.borderBottom = isSignIn ? '2px solid transparent' : '2px solid var(--orange)';
+}
+
+function setAuthLoading(on) {
+  document.getElementById('authLoading').style.display = on ? 'block' : 'none';
+  document.getElementById('formSignIn').style.display  = on ? 'none' : (document.getElementById('tabSignIn').style.color !== 'var(--text-dim)' ? 'block' : 'none');
+  document.getElementById('formSignUp').style.display  = on ? 'none' : (document.getElementById('tabSignUp').style.color !== 'var(--text-dim)' ? 'block' : 'none');
+}
+
+function showAuthError(form, msg) {
+  const el = document.getElementById(form === 'signin' ? 'siError' : 'suError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function clearAuthErrors() {
+  document.getElementById('siError').style.display = 'none';
+  document.getElementById('suError').style.display = 'none';
+}
+
+function updatePasswordStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const colors = ['#ff4060','#ff4060','#e88d2d','#facc15','#00d4ff'];
+  const labels = ['','Weak','Fair','Good','Strong'];
+  const bar = document.getElementById('pwStrengthBar');
+  const lbl = document.getElementById('pwStrengthLabel');
+  bar.style.width = (score * 20) + '%';
+  bar.style.background = colors[score] || 'transparent';
+  lbl.textContent = labels[score] || '';
+  lbl.style.color = colors[score] || 'var(--text-dim)';
+}
+
+// ── SIGN IN ──
+async function signIn() {
+  clearAuthErrors();
+  const email    = document.getElementById('siEmail').value.trim();
+  const password = document.getElementById('siPassword').value;
+  if (!email || !password) { showAuthError('signin','Enter your email and password.'); return; }
+
+  setAuthLoading(true);
+  const data = await sbAuth('token?grant_type=password', { email, password });
+
+  if (data.error || !data.access_token) {
+    setAuthLoading(false);
+    switchAuthTab('signin');
+    showAuthError('signin', data.error_description || data.error || 'Sign in failed. Check your credentials.');
+    return;
+  }
+
+  await onAuthSuccess(data);
+}
+
+// ── SIGN UP ──
+async function signUp() {
+  clearAuthErrors();
+  const name     = document.getElementById('suName').value.trim();
+  const email    = document.getElementById('suEmail').value.trim();
+  const password = document.getElementById('suPassword').value;
+  const confirm  = document.getElementById('suConfirm').value;
+
+  if (!name)     { showAuthError('signup','Enter a pilot name.');    return; }
+  if (!email)    { showAuthError('signup','Enter your email.');      return; }
+  if (password.length < 8) { showAuthError('signup','Password must be at least 8 characters.'); return; }
+  if (password !== confirm) { showAuthError('signup','Passwords do not match.'); return; }
+
+  setAuthLoading(true);
+  const data = await sbAuth('signup', {
+    email, password,
+    data: { pilot_name: name }
+  });
+
+  if (data.error || !data.access_token) {
+    setAuthLoading(false);
+    switchAuthTab('signup');
+    showAuthError('signup', data.error_description || data.error || 'Registration failed. Email may already be in use.');
+    return;
+  }
+
+  await onAuthSuccess(data);
+}
+
+// ── ON AUTH SUCCESS ──
+async function onAuthSuccess(data) {
+  currentUser = data.user;
+  authToken   = data.access_token;
+
+  // Store token so page refresh stays logged in
+  localStorage.setItem('soms_token',   authToken);
+  localStorage.setItem('soms_user_id', currentUser.id);
+
+  // Load or create profile
+  await loadOrCreateProfile(currentUser);
+
+  // Unlock game
+  unlockGame();
+}
+
+async function loadOrCreateProfile(user) {
+  // Try loading existing profile
+  let profiles = await sbFetch(
+    `player_profiles?id=eq.${user.id}&select=*`, 'GET', null, true
+  );
+
+  if (!profiles || profiles.length === 0) {
+    // Create profile (trigger may have already done it — upsert)
+    const pilotName = user.user_metadata?.pilot_name || 'Pilot';
+    await sbFetch('player_profiles', 'POST', {
+      id: user.id,
+      pilot_name: pilotName,
+      wallet: 50000,
+    }, true);
+    profiles = await sbFetch(`player_profiles?id=eq.${user.id}&select=*`, 'GET', null, true);
+  }
+
+  if (profiles && profiles.length > 0) {
+    currentProfile = profiles[0];
+    userWallet = currentProfile.wallet;
+    document.getElementById('pilotName').value = currentProfile.pilot_name;
+    document.getElementById('pilotNameDisplay').textContent = currentProfile.pilot_name;
+    updateWallet();
+  }
+}
+
+// ── UNLOCK GAME ──
+function unlockGame() {
+  // Hide modal + lock
+  document.getElementById('authModal').style.display = 'none';
+  const lock = document.getElementById('gameLock');
+  lock.style.opacity = '0';
+  setTimeout(() => lock.style.display = 'none', 400);
+
+  // Show auth user box
+  document.getElementById('authUserBox').style.display = 'flex';
+}
+
+// ── SIGN OUT ──
+async function signOut() {
+  // Call Supabase logout
+  await fetch(`${SUPABASE_URL}/auth/v1/logout?apikey=${SUPABASE_KEY}`, {
+    method: 'POST',
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + authToken,
+      'Content-Type':  'application/json',
+    },
+  });
+
+  // Clear state
+  currentUser = null; authToken = null; currentProfile = null;
+  localStorage.removeItem('soms_token');
+  localStorage.removeItem('soms_user_id');
+
+  // Lock game again
+  const lock = document.getElementById('gameLock');
+  lock.style.display = 'block';
+  lock.style.opacity = '1';
+  document.getElementById('authModal').style.display = 'flex';
+  document.getElementById('authUserBox').style.display = 'none';
+  document.getElementById('siEmail').value = '';
+  document.getElementById('siPassword').value = '';
+  clearAuthErrors();
+  switchAuthTab('signin');
+}
+
+// ── RESTORE SESSION FROM LOCALSTORAGE ──
+async function tryRestoreSession() {
+  const token  = localStorage.getItem('soms_token');
+  const userId = localStorage.getItem('soms_user_id');
+  if (!token || !userId) return false;
+
+  // Verify token is still valid by fetching the user
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user?apikey=${SUPABASE_KEY}`, {
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + token,
+    }
+  });
+  if (!res.ok) {
+    localStorage.removeItem('soms_token');
+    localStorage.removeItem('soms_user_id');
+    return false;
+  }
+  const user = await res.json();
+  if (!user.id) return false;
+
+  currentUser = user;
+  authToken   = token;
+  await loadOrCreateProfile(user);
+  return true;
+}
+
+// ── SAVE WALLET TO SUPABASE ──
+async function persistWallet() {
+  if (!currentUser) return;
+  await sbFetch(
+    `player_profiles?id=eq.${currentUser.id}`,
+    'PATCH',
+    { wallet: userWallet, last_seen: new Date().toISOString() },
+    true
+  );
+}
+
+// ═══════════════════════════════════════════
+// MARKET + NEWS (unchanged, uses anon key for reads, auth for writes)
+// ═══════════════════════════════════════════
+function getPilotName() {
+  return currentProfile?.pilot_name || localStorage.getItem('soms_pilot') || 'Pilot';
+}
+
+function savePilotName(name) {
+  const clean = name.trim() || 'Pilot';
+  if (currentProfile) currentProfile.pilot_name = clean;
+  localStorage.setItem('soms_pilot', clean);
+}
+
+async function loadMarketPrices() {
+  const rows = await sbFetch('materials?select=id,name,base_val,current_val,color,raw_mult');
+  if (!rows) return;
+  rows.forEach(r => {
+    if (materials[r.id]) {
+      materials[r.id].currentVal = r.current_val;
+      materials[r.id].baseVal    = r.base_val;
+      materials[r.id].rawMult    = parseFloat(r.raw_mult);
+      updateMarketDisplay(r.id, r.current_val, r.base_val);
+    }
+  });
+  const el = document.getElementById('marketLastUpdated');
+  if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+function updateMarketDisplay(matId, current, base) {
+  const valEl   = document.getElementById('mp-' + matId);
+  const deltaEl = document.getElementById('md-' + matId);
+  if (!valEl) return;
+  valEl.textContent = current.toLocaleString() + ' aUEC';
+  const pct = ((current - base) / base * 100).toFixed(1);
+  const sign = pct >= 0 ? '+' : '';
+  deltaEl.textContent = sign + pct + '% vs base';
+  deltaEl.style.color = pct > 0 ? 'var(--cyan)' : pct < 0 ? 'var(--red)' : 'var(--text-dim)';
+  const mat = materials[matId];
+  valEl.style.transition = 'color .1s';
+  valEl.style.color = pct >= 0 ? '#00ffcc' : '#ff6080';
+  setTimeout(() => { if (valEl) valEl.style.color = mat?.color || 'var(--text-bright)'; }, 600);
+}
+
+async function applySellPressure(matId, scuSold) {
+  if (!currentUser) return;
+  const mat = materials[matId];
+  if (!mat) return;
+  const pctDrop  = Math.min(0.05, 0.02 + (scuSold / 48) * 0.03);
+  const curVal   = mat.currentVal || mat.baseVal;
+  const newVal   = Math.max(Math.round(mat.baseVal * 0.4), Math.round(curVal * (1 - pctDrop)));
+  await sbFetch(`materials?id=eq.${matId}`, 'PATCH', { current_val: newVal, updated_at: new Date().toISOString() }, true);
+  await sbFetch('price_history', 'POST', { material_id: matId, price: newVal, reason: `sell_pressure:${scuSold}SCU` }, true);
+  mat.currentVal = newVal;
+  updateMarketDisplay(matId, newVal, mat.baseVal);
+}
+
+async function applyPriceRecovery() {
+  const rows = await sbFetch('materials?select=id,base_val,current_val');
+  if (!rows) return;
+  for (const r of rows) {
+    if (r.current_val === r.base_val) continue;
+    const diff = r.base_val - r.current_val;
+    const step = Math.round(diff * 0.08);
+    if (Math.abs(step) < 1) continue;
+    const newVal = r.current_val + step;
+    await sbFetch(`materials?id=eq.${r.id}`, 'PATCH', { current_val: newVal }, true);
+    await sbFetch('price_history', 'POST', { material_id: r.id, price: newVal, reason: 'recovery' }, true);
+    if (materials[r.id]) {
+      materials[r.id].currentVal = newVal;
+      updateMarketDisplay(r.id, newVal, r.base_val);
+    }
+  }
+}
+
+let newsArchive = [];
+
+async function fireNextNewsEvent() {
+  const rows = await sbFetch('news_events?fired_at=is.null&order=id.asc&limit=1');
+  if (!rows || rows.length === 0) {
+    await sbFetch('news_events', 'PATCH', { fired_at: null }, true);
+    scheduleNextNews(); return;
+  }
+  const event = rows[0];
+  const impactPct = parseFloat(event.impact_pct) / 100;
+  const affectedMats = event.material_id ? [event.material_id] : Object.keys(materials);
+
+  for (const matId of affectedMats) {
+    const mat = materials[matId];
+    if (!mat) continue;
+    const cur = mat.currentVal || mat.baseVal;
+    const imp = event.material_id ? impactPct : impactPct * 0.4;
+    const newVal = Math.max(Math.round(mat.baseVal * 0.3), Math.round(cur * (1 + imp)));
+    await sbFetch(`materials?id=eq.${matId}`, 'PATCH', { current_val: newVal }, true);
+    await sbFetch('price_history', 'POST', { material_id: matId, price: newVal, reason: 'news:' + event.headline }, true);
+    mat.currentVal = newVal;
+    updateMarketDisplay(matId, newVal, mat.baseVal);
+  }
+
+  await sbFetch(`news_events?id=eq.${event.id}`, 'PATCH', { fired_at: new Date().toISOString() }, true);
+  showNewsBanner(event, affectedMats);
+  newsArchive.unshift(event);
+  renderNewsLog();
+  scheduleNextNews();
+}
+
+function scheduleNextNews() {
+  setTimeout(fireNextNewsEvent, (120 + Math.random() * 180) * 1000);
+}
+
+function showNewsBanner(event, affectedMats) {
+  const severityColors = { minor:'#e88d2d', moderate:'#ff8c00', major:'#ff4060' };
+  const color    = severityColors[event.severity] || '#e88d2d';
+  const pct      = parseFloat(event.impact_pct);
+  const sign     = pct >= 0 ? '+' : '';
+  const matLabel = event.material_id ? (materials[event.material_id]?.name || event.material_id) : 'All Materials';
+  document.getElementById('newsSeverityTag').textContent    = event.severity.toUpperCase();
+  document.getElementById('newsSeverityTag').style.color    = color;
+  document.getElementById('newsSeverityTag').style.borderColor = color;
+  document.getElementById('newsSeverityTag').style.boxShadow   = `0 0 8px ${color}44`;
+  document.getElementById('newsHeadline').textContent = event.headline;
+  document.getElementById('newsBody').textContent     = event.body.slice(0,120) + (event.body.length > 120 ? '...' : '');
+  document.getElementById('newsImpactVal').textContent     = sign + pct + '%';
+  document.getElementById('newsImpactVal').style.color     = pct >= 0 ? 'var(--cyan)' : 'var(--red)';
+  document.getElementById('newsImpactMat').textContent     = matLabel;
+  const banner   = document.getElementById('newsBanner');
+  const timerBar = document.getElementById('newsBannerTimer');
+  timerBar.style.background  = color;
+  timerBar.style.transition  = 'none';
+  timerBar.style.width       = '100%';
+  banner.style.transform     = 'translateY(0)';
+  const SHOW_MS = 9000;
+  setTimeout(() => { timerBar.style.transition = `width ${SHOW_MS}ms linear`; timerBar.style.width = '0%'; }, 50);
+  setTimeout(() => { banner.style.transform = 'translateY(-100%)'; }, SHOW_MS);
+}
+
+function renderNewsLog() {
+  if (!newsArchive.length) return;
+  const severityColors = { minor:'#e88d2d', moderate:'#ff8c00', major:'#ff4060' };
+  const el = document.getElementById('newsLogMeta');
+  if (el) el.textContent = newsArchive.length + ' event' + (newsArchive.length > 1 ? 's' : '');
+  const body = document.getElementById('newsLogBody');
+  if (!body) return;
+  body.innerHTML = newsArchive.slice(0,20).map(e => {
+    const color    = severityColors[e.severity] || '#e88d2d';
+    const pct      = parseFloat(e.impact_pct);
+    const sign     = pct >= 0 ? '+' : '';
+    const matLabel = e.material_id ? (materials[e.material_id]?.name || e.material_id) : 'All';
+    const firedAt  = e.fired_at ? new Date(e.fired_at).toLocaleTimeString() : 'now';
+    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border:1px solid ${color};color:${color};flex-shrink:0;text-transform:uppercase;">${e.severity}</div>
+      <div style="flex:1;">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-bright);margin-bottom:2px;">${e.headline}</div>
+        <div style="font-size:10px;color:var(--text-dim);">${matLabel} &nbsp;·&nbsp; <span style="color:${pct>=0?'var(--cyan)':'var(--red)'}">${sign}${pct}%</span> &nbsp;·&nbsp; ${firedAt}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function logRunToSupabase({ profileName, totalScu, inertScu, rev, fees, net, rate }) {
+  if (!currentUser) return;
+  const matKey = document.getElementById('materialType').value;
+  await sbFetch('player_runs', 'POST', {
+    session_id:  currentUser.id,
+    player_name: getPilotName(),
+    material_id: matKey,
+    profile:     profileName,
+    scu_in:      rawScu,
+    scu_refined: parseFloat(totalScu),
+    scu_inert:   parseFloat(inertScu),
+    revenue:     rev,
+    fees:        fees,
+    net:         net,
+    success_rate: rate,
+    user_id:     currentUser.id,
+  }, true);
+
+  // Update wallet in DB
+  userWallet += rev - fees;
+  await persistWallet();
+  updateWallet();
+  refreshLeaderboard();
+}
+
+async function refreshLeaderboard() {
+  const rows = await sbFetch('leaderboard?select=*');
+  if (!rows || !rows.length) {
+    const lbEl = document.getElementById('lbBody');
+    if (lbEl) lbEl.innerHTML = '<div style="padding:20px 0;text-align:center;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-dim);">No pilots on record yet.</div>';
+    return;
+  }
+  const meta = document.getElementById('lbMeta');
+  if (meta) meta.textContent = rows.length + ' pilot' + (rows.length > 1 ? 's' : '') + ' ranked';
+  const body = document.getElementById('lbBody');
+  if (!body) return;
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:32px 1fr 80px 90px 70px 80px;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">
+      <span>#</span><span>Pilot</span><span style="text-align:right">Runs</span><span style="text-align:right">Revenue</span><span style="text-align:right">Avg %</span><span style="text-align:right">Net Profit</span>
+    </div>` +
+    rows.map((r, i) => {
+      const isMe     = currentUser && r.session_id === currentUser.id;
+      const rank     = i + 1;
+      const rankColor = rank===1?'#ffd700':rank===2?'#c0c0c0':rank===3?'#cd7f32':'var(--text-dim)';
+      const netColor  = r.total_profit >= 0 ? 'var(--cyan)' : 'var(--red)';
+      return `<div style="display:grid;grid-template-columns:32px 1fr 80px 90px 70px 80px;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;${isMe?'background:rgba(0,212,255,.04);':''}">
+        <span style="color:${rankColor};font-weight:500;">${rank}</span>
+        <span style="color:${isMe?'var(--cyan)':'var(--text-bright)'}">${r.player_name}${isMe?' ◀':''}</span>
+        <span style="text-align:right;color:var(--text-dim);">${r.total_runs}</span>
+        <span style="text-align:right;color:var(--text-main);">${parseInt(r.total_revenue).toLocaleString()}</span>
+        <span style="text-align:right;color:var(--text-dim);">${r.avg_success_rate}%</span>
+        <span style="text-align:right;color:${netColor};">${parseInt(r.total_profit)>=0?'+':''}${parseInt(r.total_profit).toLocaleString()}</span>
+      </div>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════
+// ADMIN: WALLET RESET
+// ═══════════════════════════════════════════
+async function adminLoadPlayers() {
+  const rows = await sbFetch('player_profiles?select=id,pilot_name,wallet&order=pilot_name.asc', 'GET', null, true);
+  if (!rows) return;
+  const el = document.getElementById('adminPlayersDiv');
+  if (!el) return;
+  el.innerHTML = rows.map(p => `
+    <div class="admin-row" style="justify-content:space-between;">
+      <span style="color:var(--text-main);width:auto;flex:1;">${p.pilot_name}</span>
+      <span style="color:var(--text-dim);width:80px;text-align:right;">${p.wallet.toLocaleString()} aUEC</span>
+      <button onclick="adminResetWallet('${p.id}','${p.pilot_name}')"
+        style="font-family:'DM Mono',monospace;font-size:9px;background:transparent;border:1px solid var(--red);color:var(--red);padding:2px 8px;cursor:pointer;margin-left:8px;">
+        RESET
+      </button>
+    </div>`).join('');
+}
+
+async function adminResetWallet(userId, pilotName) {
+  if (!confirm(`Reset ${pilotName}'s wallet to 50,000 aUEC?`)) return;
+  await sbFetch(`player_profiles?id=eq.${userId}`, 'PATCH', { wallet: 50000 }, true);
+  // If it's the current user, update locally too
+  if (currentUser && currentUser.id === userId) {
+    userWallet = 50000;
+    updateWallet();
+  }
+  adminLoadPlayers();
+}
+
+// ── INIT SUPABASE ──
+async function initSupabase() {
+  // Try to restore session silently
+  const restored = await tryRestoreSession();
+  if (restored) {
+    unlockGame();
+  }
+  // Always load market + leaderboard (public data)
+  await loadMarketPrices();
+  await refreshLeaderboard();
+  setInterval(applyPriceRecovery, 5 * 60 * 1000);
+  scheduleNextNews();
+}
+
+</script>
+<script>
+// Wire sell pressure into confirmSale — patch after Supabase loaded
+const _origConfirmSale = confirmSale;
+confirmSale = async function() {
+  // Apply sell pressure before crediting wallet
+  const matKey = document.getElementById('materialType').value;
+  const scuSold = parseFloat(rawScu) || 1;
+  await applySellPressure(matKey, scuSold);
+  _origConfirmSale();
+};
+
+// Wire run logging into finishRefining — call after original
+const _origLogRun = logRun;
+logRun = function(data) {
+  _origLogRun(data);
+  logRunToSupabase(data);
+};
+
+// ── INIT ──
+updateWallet();
+seedStars();
+applyPreset('rush');
+initSupabase();
+</script>
+</body>
+</html>
