@@ -301,114 +301,25 @@ input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparen
 </head>
 <body>
 
-<!-- GAME LOCK OVERLAY (blurs content until logged in) -->
-<div id="gameLock" style="position:fixed;inset:0;z-index:800;backdrop-filter:blur(8px);background:rgba(6,8,16,0.7);pointer-events:none;transition:opacity .4s;"></div>
-
-<!-- AUTH MODAL -->
-<div id="authModal" style="position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;">
-  <div style="width:440px;background:var(--bg-card);border:1px solid var(--border-bright);position:relative;box-shadow:0 0 60px rgba(0,212,255,0.1),0 24px 64px rgba(0,0,0,0.8);">
-    <!-- Corner accents -->
-    <div style="position:absolute;top:-1px;left:-1px;width:16px;height:16px;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan);"></div>
-    <div style="position:absolute;bottom:-1px;right:-1px;width:16px;height:16px;border-bottom:1px solid var(--orange);border-right:1px solid var(--orange);"></div>
-
-    <!-- Header -->
-    <div style="background:var(--bg-header);padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
-      <div style="width:28px;height:28px;background:var(--bg-deep);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:14px;">⬡</div>
-      <div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:.1em;text-shadow:0 0 8px rgba(0,212,255,.5);">ARC-L2 Identity Terminal</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:2px;">Space Ore Mining Simulator — Pilot Authentication</div>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
-      <button id="tabSignIn" onclick="switchAuthTab('signin')"
-        style="padding:12px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;background:transparent;border:none;color:var(--cyan);cursor:pointer;border-bottom:2px solid var(--cyan);">
-        Sign In
-      </button>
-      <button id="tabSignUp" onclick="switchAuthTab('signup')"
-        style="padding:12px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;background:transparent;border:none;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;">
-        Create Account
-      </button>
-    </div>
-
-    <!-- SIGN IN FORM -->
-    <div id="formSignIn" style="padding:24px;">
-      <div style="margin-bottom:16px;">
-        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--cyan);padding-left:8px;">Email</label>
-        <input id="siEmail" type="email" placeholder="pilot@example.com"
-          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border-bright)'"
-          onkeydown="if(event.key==='Enter')signIn()">
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--cyan);padding-left:8px;">Password</label>
-        <input id="siPassword" type="password" placeholder="••••••••"
-          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border-bright)'"
-          onkeydown="if(event.key==='Enter')signIn()">
-      </div>
-      <div id="siError" style="display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-bottom:14px;padding:8px 10px;background:rgba(255,64,96,.08);border:1px solid rgba(255,64,96,.3);"></div>
-      <button onclick="signIn()" id="siBtn"
-        style="width:100%;padding:14px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(0,212,255,.15);transition:all .2s;"
-        onmouseover="this.style.background='rgba(0,212,255,.08)'" onmouseout="this.style.background='transparent'">
-        ⬡ Authenticate Pilot
-      </button>
-      <div style="margin-top:12px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">
-        No account? <span onclick="switchAuthTab('signup')" style="color:var(--cyan);cursor:pointer;text-decoration:underline;">Create one</span>
-      </div>
-    </div>
-
-    <!-- SIGN UP FORM -->
-    <div id="formSignUp" style="padding:24px;display:none;">
-      <div style="margin-bottom:14px;">
-        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Pilot Name</label>
-        <input id="suName" type="text" placeholder="Your callsign" maxlength="20"
-          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'">
-      </div>
-      <div style="margin-bottom:14px;">
-        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Email</label>
-        <input id="suEmail" type="email" placeholder="pilot@example.com"
-          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'">
-      </div>
-      <div style="margin-bottom:8px;">
-        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Password</label>
-        <input id="suPassword" type="password" placeholder="Min 8 characters"
-          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'"
-          oninput="updatePasswordStrength(this.value)">
-        <!-- Password strength bar -->
-        <div style="margin-top:6px;height:3px;background:var(--bg-deep);border:1px solid var(--border);">
-          <div id="pwStrengthBar" style="height:100%;width:0%;transition:all .3s;"></div>
-        </div>
-        <div id="pwStrengthLabel" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;"></div>
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;border-left:2px solid var(--orange);padding-left:8px;">Confirm Password</label>
-        <input id="suConfirm" type="password" placeholder="••••••••"
-          style="width:100%;background:var(--bg-input);border:1px solid var(--border-bright);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='var(--border-bright)'"
-          onkeydown="if(event.key==='Enter')signUp()">
-      </div>
-      <div id="suError" style="display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-bottom:14px;padding:8px 10px;background:rgba(255,64,96,.08);border:1px solid rgba(255,64,96,.3);"></div>
-      <button onclick="signUp()" id="suBtn"
-        style="width:100%;padding:14px;background:transparent;border:1px solid var(--orange);color:var(--orange);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(232,141,45,.15);transition:all .2s;"
-        onmouseover="this.style.background='rgba(232,141,45,.08)'" onmouseout="this.style.background='transparent'">
-        ⬡ Register Pilot
-      </button>
-      <div style="margin-top:12px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">
-        Have an account? <span onclick="switchAuthTab('signin')" style="color:var(--cyan);cursor:pointer;text-decoration:underline;">Sign in</span>
-      </div>
-    </div>
-
-    <!-- Loading state -->
-    <div id="authLoading" style="display:none;padding:40px 24px;text-align:center;">
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:.08em;margin-bottom:16px;">AUTHENTICATING...</div>
-      <div style="width:40px;height:40px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;"></div>
-    </div>
-  </div>
+<!-- AUTH TEMPORARILY DISABLED — game runs as guest -->
+<div id="gameLock" style="display:none;"></div>
+<div id="authModal" style="display:none;">
+  <!-- stub elements so JS references don't crash -->
+  <div id="formSignIn"></div>
+  <div id="formSignUp"></div>
+  <div id="authLoading"></div>
+  <button id="tabSignIn"></button>
+  <button id="tabSignUp"></button>
+  <input id="siEmail" type="hidden">
+  <input id="siPassword" type="hidden">
+  <input id="suName" type="hidden">
+  <input id="suEmail" type="hidden">
+  <input id="suPassword" type="hidden">
+  <input id="suConfirm" type="hidden">
+  <div id="siError"></div>
+  <div id="suError"></div>
+  <div id="pwStrengthBar"></div>
+  <div id="pwStrengthLabel"></div>
 </div>
 
 <!-- NEWS TICKER BANNER -->
@@ -481,54 +392,100 @@ input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparen
     </div>
   </div>
 
-  <div class="two-col">
+  <!-- STEP 0: DISPATCH MINER — full width -->
+  <div class="card" id="dispatchCard" style="margin-bottom:20px;">
+    <div class="card-hdr">
+      <div class="card-title">00 // Miner Dispatch</div>
+      <div class="card-sub" id="dispatchStatus">Ready</div>
+    </div>
+    <div class="card-body" style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;">
 
-    <!-- STEP 0: DISPATCH MINER -->
-    <div class="card" id="dispatchCard">
-      <div class="card-hdr">
-        <div class="card-title">00 // Miner Dispatch</div>
-        <div class="card-sub" id="dispatchStatus">Ready</div>
-      </div>
-      <div class="card-body" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding:28px 20px;">
+      <!-- Left: animation + fuel + mining bar -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
 
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;line-height:1.7;max-width:320px;">
-          Send your miner to the <span style="color:var(--cyan);">Aaron Belt</span> to extract ore from an asteroid. He will return with up to <span style="color:var(--orange);">48 SCU</span> of raw material — grade and composition are unpredictable.
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;line-height:1.7;">
+          Send your miner to the <span style="color:var(--cyan);">Aaron Belt</span> to extract ore. He will return with up to <span style="color:var(--orange);">48 SCU</span> — grade and composition are unpredictable.
         </div>
 
         <!-- Ship animation canvas -->
-        <div style="position:relative;width:100%;height:120px;background:rgba(0,0,0,.4);border:1px solid var(--border);overflow:hidden;" id="spaceCanvas">
-          <!-- Stars -->
+        <div style="position:relative;width:100%;height:130px;background:rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden;" id="spaceCanvas">
           <div id="starField" style="position:absolute;inset:0;"></div>
-          <!-- Asteroid belt hint -->
-          <div id="beltZone" style="position:absolute;right:0;top:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,rgba(184,115,51,0.08));border-left:1px dashed rgba(184,115,51,0.2);display:flex;align-items:center;justify-content:center;">
-            <span style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(184,115,51,0.5);writing-mode:vertical-rl;letter-spacing:.1em;">AARON BELT</span>
+          <div id="beltZone" style="position:absolute;right:0;top:0;bottom:0;width:80px;background:linear-gradient(90deg,transparent,rgba(184,115,51,0.06));border-left:1px dashed rgba(184,115,51,0.18);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;">
+            <img id="asteroidImg" src="https://morb1ddonk.github.io/spaceorepra/img/asteroid_mini.png"
+              style="width:48px;height:auto;opacity:0.5;transition:opacity .4s,filter .4s;" alt="asteroid">
+            <span style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(184,115,51,0.45);letter-spacing:.1em;">AARON BELT</span>
           </div>
-          <!-- Home base marker -->
-          <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:8px;color:var(--text-dim);text-align:center;line-height:1.4;">
-            <div style="font-size:16px;">🛸</div>
-            <div style="color:rgba(0,212,255,0.4);">BASE</div>
+          <div style="position:absolute;left:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <img src="https://morb1ddonk.github.io/spaceorepra/img/station_mini.png"
+              style="width:44px;height:auto;opacity:0.85;" alt="station">
+            <span style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(0,212,255,0.4);letter-spacing:.06em;">ARC-L2</span>
           </div>
-          <!-- Miner ship -->
-          <div id="minerShip" style="position:absolute;top:50%;left:60px;transform:translateY(-50%);font-size:20px;transition:left 0s;opacity:0;">⛏️</div>
-          <!-- Status overlay -->
-          <div id="mineStatusOverlay" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);letter-spacing:.06em;white-space:nowrap;opacity:0;"></div>
+          <img id="minerShip"
+            src="https://morb1ddonk.github.io/spaceorepra/img/prospector_mini.png"
+            style="position:absolute;top:50%;left:80px;transform:translateY(-50%);width:38px;height:auto;opacity:0;transition:left 0s;"
+            alt="prospector">
+          <div id="mineStatusOverlay" style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);letter-spacing:.06em;white-space:nowrap;opacity:0;"></div>
         </div>
 
-        <!-- Countdown -->
+        <!-- Mining extraction bar -->
+        <div id="miningBarWrap" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Ore Extraction</span>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);" id="miningBarPct">0%</span>
+          </div>
+          <div style="height:14px;background:rgba(0,0,0,.4);border:1px solid var(--border);position:relative;overflow:hidden;">
+            <!-- Segmented blocks like defrag grid -->
+            <div id="miningBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,#1a6020,#22c55e);transition:width .3s linear;position:relative;">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(0,0,0,0.25) 18px,rgba(0,0,0,0.25) 20px);"></div>
+            </div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:4px;text-align:center;" id="miningBarLabel">Drilling...</div>
+        </div>
+
+        <!-- Fuel gauge -->
+        <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);padding:10px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">⛽ Fuel Tank</span>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;" id="fuelReadout"><span id="fuelCurrent" style="color:var(--orange);">100</span><span style="color:var(--text-dim);"> / 100 units</span></span>
+          </div>
+          <div style="height:8px;background:rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;">
+            <div id="fuelBar" style="height:100%;width:100%;background:linear-gradient(90deg,#b45309,#f97316);transition:width .4s ease;"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);">
+              Trip cost: <span style="color:var(--text-main);" id="fuelTripCost">—</span> &nbsp;·&nbsp;
+              Refuel: <span style="color:var(--orange);" id="fuelRefuelCost">—</span>
+            </div>
+            <button id="refuelBtn" onclick="refuelMiner()"
+              style="font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;background:transparent;border:1px solid var(--orange);color:var(--orange);padding:4px 12px;cursor:pointer;white-space:nowrap;transition:all .2s;"
+              onmouseover="this.style.background='rgba(232,141,45,.1)'" onmouseout="this.style.background='transparent'">
+              Refuel to Max — 500 aUEC
+            </button>
+          </div>
+          <div id="fuelWarning" style="display:none;font-family:'DM Mono',monospace;font-size:9px;color:var(--red);margin-top:6px;">⚠ Insufficient fuel for round trip</div>
+        </div>
+
+      </div>
+
+      <!-- Right: countdown + dispatch -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:8px;">
         <div id="dispatchCountdownWrap" style="display:none;text-align:center;">
-          <div style="font-family:'DM Mono',monospace;font-size:40px;font-weight:500;color:var(--text-bright);line-height:1;" id="dispatchCountdown">01:00</div>
+          <div style="font-family:'DM Mono',monospace;font-size:48px;font-weight:500;color:var(--text-bright);line-height:1;" id="dispatchCountdown">01:00</div>
           <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.08em;">estimated return</div>
-          <div style="width:200px;height:4px;background:rgba(255,255,255,.06);border:1px solid var(--border);margin:10px auto 0;">
+          <div style="width:180px;height:4px;background:rgba(255,255,255,.06);border:1px solid var(--border);margin:10px auto 0;">
             <div id="dispatchProgress" style="height:100%;background:var(--cyan);width:0%;transition:width .5s linear;"></div>
           </div>
         </div>
-
-        <button class="btn-confirm" id="dispatchBtn" onclick="dispatchMiner()" style="padding:14px 48px;font-size:13px;">
+        <button class="btn-confirm" id="dispatchBtn" onclick="dispatchMiner()" style="padding:14px 36px;font-size:13px;white-space:nowrap;">
           ⬡ Dispatch Miner to Aaron Belt
         </button>
-
+        <div id="dispatchFuelBlock" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;line-height:1.7;"></div>
       </div>
+
     </div>
+  </div>
+
+  <div class="two-col">
 
     <!-- STEP 1: MANIFEST REVIEW -->
     <div class="card" id="manifestCard" style="opacity:.4;pointer-events:none;">
@@ -537,19 +494,14 @@ input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparen
         <div class="card-sub" id="manifestSub">Awaiting haul</div>
       </div>
       <div class="card-body">
-
         <div id="manifestEmpty" style="padding:32px 0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">
           Dispatch miner to populate manifest
         </div>
-
         <div id="manifestContents" style="display:none;">
           <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;border-left:2px solid var(--orange);padding-left:8px;">
             Toggle items to refine. Unselected = quick-sold at 30% value.
           </div>
-
           <div id="manifestList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;"></div>
-
-          <!-- Value preview -->
           <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;">
             <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;margin-bottom:6px;">
               <span style="color:var(--text-dim);">→ Refinery queue</span>
@@ -564,18 +516,14 @@ input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparen
               <span style="color:var(--text-bright);" id="mvScuToRefine">—</span>
             </div>
           </div>
-
           <button class="btn-confirm" onclick="commitManifest()" id="commitBtn"
             style="width:100%;margin-top:12px;padding:12px;font-size:12px;">
             ⬡ Confirm Manifest &amp; Proceed
           </button>
         </div>
-
       </div>
     </div>
-
-
-    <!-- STEP 2 -->
+    <!-- STEP 2: PROCESSING PROFILE -->
     <div class="card">
       <div class="card-hdr">
         <div class="card-title">02 // Processing Profile</div>
@@ -823,6 +771,52 @@ input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparen
 
 </main>
 
+<!-- ENCOUNTER MODAL -->
+<div class="modal-overlay" id="encounterModal" style="display:none;z-index:1300;">
+  <div class="modal-hud" style="width:540px;border-color:var(--encounter-color, var(--orange));">
+    <!-- Corner accents inherit encounter color -->
+    <div class="modal-hdr" style="border-bottom-color:var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="encounterIcon" style="font-size:22px;"></div>
+        <div>
+          <div id="encounterTag" style="font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;"></div>
+          <div id="encounterTitle" class="card-title" style="color:var(--text-bright);text-shadow:none;"></div>
+        </div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);">// TRIP PAUSED</div>
+    </div>
+
+    <div class="modal-body" style="padding:20px 24px;">
+      <!-- Description -->
+      <div id="encounterDesc" style="font-size:13px;color:var(--text-main);line-height:1.7;margin-bottom:20px;padding:14px;background:rgba(0,0,0,.3);border-left:3px solid var(--orange);"></div>
+
+      <!-- Choices — hidden after selection -->
+      <div id="encounterChoices" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0;">
+        <button id="encounterBtnA" onclick="resolveEncounter('A')"
+          style="padding:16px 12px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;line-height:1.4;transition:all .2s;"
+          onmouseover="this.style.background='rgba(0,212,255,.08)'" onmouseout="this.style.background='transparent'">
+        </button>
+        <button id="encounterBtnB" onclick="resolveEncounter('B')"
+          style="padding:16px 12px;background:transparent;border:1px solid var(--text-dim);color:var(--text-main);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;line-height:1.4;transition:all .2s;"
+          onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background='transparent'">
+        </button>
+      </div>
+
+      <!-- Resolution — shown after choice -->
+      <div id="encounterResolution" style="display:none;">
+        <div id="encounterOutcomeTag" style="font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;"></div>
+        <div id="encounterFlavor" style="font-size:13px;color:var(--text-main);line-height:1.7;margin-bottom:14px;padding:14px;background:rgba(0,0,0,.3);border-left:3px solid var(--cyan);"></div>
+        <div id="encounterEffect" style="font-family:'DM Mono',monospace;font-size:11px;padding:10px 14px;border:1px solid var(--border);margin-bottom:16px;"></div>
+        <button onclick="closeEncounterModal()"
+          style="width:100%;padding:13px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;transition:all .2s;"
+          onmouseover="this.style.background='rgba(0,212,255,.08)'" onmouseout="this.style.background='transparent'">
+          Continue Mission →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SELL MODAL -->
 <div class="modal-overlay" id="sellModal">
   <div class="modal-hud">
@@ -1034,87 +1028,469 @@ function seedStars() {
   }
 }
 
+
+// ── FUEL SYSTEM ──
+const FUEL_MAX          = 100;
+const FUEL_TRIP_ONE_WAY = 40;    // units per leg; 80 for a full round trip
+const FUEL_REFUEL_PRICE = 500;   // flat aUEC to fill tank to max
+let   minerFuel         = 100;
+
+function updateFuelUI() {
+  const pct        = (minerFuel / FUEL_MAX) * 100;
+  const isFull     = minerFuel >= FUEL_MAX;
+  const canAfford  = userWallet >= FUEL_REFUEL_PRICE;
+  const fuelRatio  = Math.min(1, minerFuel / (FUEL_TRIP_ONE_WAY * 2));
+  const isPartial  = minerFuel > 0 && minerFuel < FUEL_TRIP_ONE_WAY * 2;
+
+  document.getElementById('fuelBar').style.width = pct + '%';
+  document.getElementById('fuelBar').style.background =
+    pct > 50 ? 'linear-gradient(90deg,#b45309,#f97316)'
+    : pct > 20 ? 'linear-gradient(90deg,#92400e,#d97706)'
+    : 'linear-gradient(90deg,#7f1d1d,#dc2626)';
+
+  document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
+
+  document.getElementById('fuelRefuelCost').textContent =
+    isFull ? 'Tank full' : FUEL_REFUEL_PRICE.toLocaleString() + ' aUEC';
+  document.getElementById('fuelTripCost').textContent =
+    (FUEL_TRIP_ONE_WAY * 2) + ' units';
+
+  // Refuel button: only active when ship is docked (not during dispatch)
+  const isFlight = !!dispatchInterval || !!fuelDrainInterval;
+  refuelBtn.disabled = isFull || !canAfford || isFlight;
+  refuelBtn.style.opacity = (isFull || !canAfford || isFlight) ? '0.35' : '1';
+
+  // Warning / partial notice
+  const warn = document.getElementById('fuelWarning');
+  if (minerFuel <= 0) {
+    warn.style.display = 'block';
+    warn.style.color   = 'var(--red)';
+    warn.textContent   = '⚠ No fuel — miner cannot depart';
+  } else if (isPartial) {
+    warn.style.display = 'block';
+    warn.style.color   = 'var(--orange)';
+    warn.textContent   = `⚠ Low fuel — partial haul (~${Math.round(fuelRatio * 100)}% capacity)`;
+  } else {
+    warn.style.display = 'none';
+  }
+
+  // Dispatch button — only blocked at 0 fuel
+  document.getElementById('dispatchBtn').disabled = minerFuel <= 0;
+
+  // Right-side info block
+  const statusColor = minerFuel <= 0 ? 'var(--red)' : isPartial ? 'var(--orange)' : 'var(--cyan)';
+  const statusLabel = minerFuel <= 0 ? 'Empty' : isPartial ? 'Low — partial trip' : 'Ready';
+  document.getElementById('dispatchFuelBlock').innerHTML =
+    `<span style="color:var(--text-dim)">Round trip:</span> <span style="color:var(--orange)">${FUEL_TRIP_ONE_WAY * 2} units</span><br>` +
+    `<span style="color:var(--text-dim)">Status:</span> <span style="color:${statusColor}">${statusLabel}</span>`;
+}
+
+function refuelMiner() {
+  if (minerFuel >= FUEL_MAX) return;
+  if (userWallet < FUEL_REFUEL_PRICE) {
+    document.getElementById('fuelWarning').style.display = 'block';
+    document.getElementById('fuelWarning').style.color   = 'var(--red)';
+    document.getElementById('fuelWarning').textContent   = '⚠ Insufficient aUEC to refuel (need ' + FUEL_REFUEL_PRICE.toLocaleString() + ')';
+    return;
+  }
+  userWallet -= FUEL_REFUEL_PRICE;
+  minerFuel   = FUEL_MAX;
+  updateWallet();
+  updateFuelUI();
+}
+
+
+
+const MINING_LABELS = [
+  'Drilling into asteroid surface...',
+  'Core sample extraction...',
+  'Ore vein located — expanding drill...',
+  'Loading ore into cargo hold...',
+  'Secondary deposit detected...',
+  'Hold capacity approaching...',
+  'Securing cargo containers...',
+  'Extraction complete — sealing hold...',
+];
+
+// ═══════════════════════════════════════════
+// ENCOUNTER SYSTEM
+// ═══════════════════════════════════════════
+let encounterPool      = [];   // loaded from Supabase
+let activeEncounter    = null; // current encounter object
+let encounterResumeFn  = null; // callback to resume trip after modal closes
+let encounterHaulMods  = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false };
+
+async function loadEncounters() {
+  const rows = await sbFetch('encounters?active=eq.true&select=*');
+  if (rows) encounterPool = rows;
+}
+
+// Roll for encounter on a given phase leg
+async function maybeFireEncounter(phase, resumeFn) {
+  if (Math.random() > 0.20) { resumeFn(); return; } // 20% chance
+  if (!encounterPool.length) { resumeFn(); return; }
+
+  // Filter by phase
+  const eligible = encounterPool.filter(e =>
+    e.trigger_phase === 'either' || e.trigger_phase === phase
+  );
+  if (!eligible.length) { resumeFn(); return; }
+
+  activeEncounter   = eligible[Math.floor(Math.random() * eligible.length)];
+  encounterResumeFn = resumeFn;
+  encounterHaulMods = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false };
+
+  showEncounterModal(activeEncounter);
+}
+
+function showEncounterModal(enc) {
+  // Severity color by type
+  const colors = {
+    pirates: '#ff4060', volatile: '#f97316', salvage: '#00d4ff',
+    distress: '#4aaef2', damage: '#ff4060', default: '#e88d2d'
+  };
+  const icons = {
+    pirates:'☠', volatile:'⚠', salvage:'💰', distress:'🆘', damage:'💥', default:'⚡'
+  };
+  const titleLower = enc.title.toLowerCase();
+  const colorKey = titleLower.includes('tails') || titleLower.includes('pirate') ? 'pirates'
+    : titleLower.includes('volatile') || titleLower.includes('unstable') ? 'volatile'
+    : titleLower.includes('salvage') || titleLower.includes('derelict') ? 'salvage'
+    : titleLower.includes('distress') ? 'distress'
+    : titleLower.includes('impact') || titleLower.includes('breach') || titleLower.includes('malfunction') ? 'damage'
+    : 'default';
+
+  const color = colors[colorKey];
+  const icon  = icons[colorKey];
+
+  document.getElementById('encounterModal').style.setProperty('--encounter-color', color);
+  document.getElementById('encounterModal').querySelector('.modal-hud').style.borderColor = color;
+  document.getElementById('encounterIcon').textContent  = icon;
+  document.getElementById('encounterTag').textContent   = '// ENCOUNTER';
+  document.getElementById('encounterTag').style.color   = color;
+  document.getElementById('encounterTitle').textContent = enc.title;
+  document.getElementById('encounterDesc').textContent  = enc.description;
+  document.getElementById('encounterDesc').style.borderLeftColor = color;
+
+  document.getElementById('encounterBtnA').textContent = enc.choice_a_text;
+  document.getElementById('encounterBtnB').textContent = enc.choice_b_text;
+
+  document.getElementById('encounterChoices').style.display   = 'grid';
+  document.getElementById('encounterResolution').style.display = 'none';
+
+  document.getElementById('encounterModal').style.display = 'flex';
+}
+
+function resolveEncounter(choice) {
+  const enc     = activeEncounter;
+  const outcome = choice === 'A' ? enc.choice_a_outcome : enc.choice_b_outcome;
+  const flavor  = choice === 'A' ? enc.choice_a_flavor  : enc.choice_b_flavor;
+  const winRoll = Math.random() < parseFloat(enc.win_chance);
+
+  // Parse outcome string e.g. "fight:win=ore_bonus:20|lose=ship_damage:800"
+  let effectText = '';
+  let effectColor = 'var(--cyan)';
+
+  if (outcome === 'no_effect') {
+    effectText  = '✓ No effect on your mission.';
+    effectColor = 'var(--cyan)';
+
+  } else if (outcome.startsWith('fight:')) {
+    // Format: fight:win=OUTCOME_WIN|lose=OUTCOME_LOSE
+    const parts    = outcome.replace('fight:','').split('|');
+    const winPart  = parts[0].replace('win=','');
+    const losePart = parts[1]?.replace('lose=','') || 'no_effect';
+    const resolved = winRoll ? winPart : losePart;
+    const result   = applyOutcome(resolved);
+    effectText  = (winRoll ? '✓ SUCCESS — ' : '✗ FAILURE — ') + result.text;
+    effectColor = winRoll ? 'var(--cyan)' : 'var(--red)';
+
+  } else if (outcome.startsWith('lose_ore_pct:')) {
+    const result = applyOutcome(outcome);
+    effectText  = '✗ ' + result.text;
+    effectColor = 'var(--orange)';
+
+  } else if (outcome === 'lose_all_ore') {
+    const result = applyOutcome(outcome);
+    effectText  = '✗ ' + result.text;
+    effectColor = 'var(--red)';
+
+  } else {
+    const result = applyOutcome(outcome);
+    effectText  = result.text;
+    effectColor = 'var(--text-dim)';
+  }
+
+  // Show resolution
+  const outcomeTag = document.getElementById('encounterOutcomeTag');
+  outcomeTag.textContent  = choice === 'A' ? `Choice: ${enc.choice_a_text}` : `Choice: ${enc.choice_b_text}`;
+  outcomeTag.style.color  = 'var(--text-dim)';
+  document.getElementById('encounterFlavor').textContent  = flavor;
+  document.getElementById('encounterEffect').textContent  = effectText;
+  document.getElementById('encounterEffect').style.color  = effectColor;
+  document.getElementById('encounterEffect').style.borderColor = effectColor;
+
+  document.getElementById('encounterChoices').style.display   = 'none';
+  document.getElementById('encounterResolution').style.display = 'block';
+}
+
+function applyOutcome(outcome) {
+  if (outcome === 'no_effect' || !outcome) {
+    return { text: 'No effect on cargo or ship.' };
+  }
+  if (outcome.startsWith('ore_bonus:')) {
+    const pct = parseInt(outcome.split(':')[1]);
+    encounterHaulMods.oreBonus = pct / 100;
+    return { text: `Cargo bonus: +${pct}% additional ore added to haul.` };
+  }
+  if (outcome === 'ore_quality_boost') {
+    encounterHaulMods.qualityBoost = true;
+    return { text: 'Ore quality boosted — expect higher grade material.' };
+  }
+  if (outcome.startsWith('lose_ore_pct:')) {
+    const pct = parseInt(outcome.split(':')[1]);
+    encounterHaulMods.orePctLoss = pct / 100;
+    return { text: `Cargo loss: −${pct}% of ore jettisoned or seized.` };
+  }
+  if (outcome === 'lose_all_ore') {
+    encounterHaulMods.lostAll = true;
+    return { text: 'All cargo lost. The hold is empty.' };
+  }
+  if (outcome.startsWith('ship_damage:')) {
+    const cost = parseInt(outcome.split(':')[1]);
+    encounterHaulMods.shipDamage = cost;
+    userWallet = Math.max(0, userWallet - cost);
+    updateWallet();
+    return { text: `Ship damage: −${cost.toLocaleString()} aUEC repair cost deducted.` };
+  }
+  if (outcome.startsWith('lose_fuel:')) {
+    const units = parseInt(outcome.split(':')[1]);
+    encounterHaulMods.fuelLoss = units;
+    minerFuel = Math.max(0, minerFuel - units);
+    updateFuelUI();
+    return { text: `Fuel loss: −${units} units burned in emergency maneuver.` };
+  }
+  if (outcome === 'lose_time') {
+    return { text: 'Mission delayed — no cargo impact.' };
+  }
+  return { text: outcome };
+}
+
+function closeEncounterModal() {
+  document.getElementById('encounterModal').style.display = 'none';
+  activeEncounter = null;
+  if (encounterResumeFn) { encounterResumeFn(); encounterResumeFn = null; }
+}
+
+// Apply haul mods from encounter outcomes
+function applyHaulMods(haulArr) {
+  if (!haulArr || !haulArr.length) return haulArr;
+  if (encounterHaulMods.lostAll) return [];
+
+  let result = haulArr.map(h => ({ ...h }));
+
+  if (encounterHaulMods.orePctLoss > 0) {
+    result = result.map(h => ({
+      ...h,
+      scu: Math.max(0, Math.round(h.scu * (1 - encounterHaulMods.orePctLoss)))
+    })).filter(h => h.scu > 0);
+  }
+
+  if (encounterHaulMods.oreBonus > 0) {
+    result = result.map(h => ({
+      ...h,
+      scu: Math.round(h.scu * (1 + encounterHaulMods.oreBonus))
+    }));
+  }
+
+  if (encounterHaulMods.qualityBoost) {
+    result = result.map(h => ({
+      ...h,
+      purity: Math.min(1000, h.purity + 150 + Math.floor(Math.random() * 100))
+    }));
+  }
+
+  // Reset mods
+  encounterHaulMods = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false };
+  return result;
+}
+
+// ═══════════════════════════════════════════
+// DISPATCH MINER — full system
+// ═══════════════════════════════════════════
+let fuelDrainInterval = null;
+
 function dispatchMiner() {
   if (dispatchInterval) return;
-  const btn = document.getElementById('dispatchBtn');
-  btn.disabled = true;
-  document.getElementById('dispatchStatus').textContent = 'In transit';
-  document.getElementById('dispatchCountdownWrap').style.display = 'block';
+  if (minerFuel <= 0) return;
 
-  // Lock manifest while mining
+  const fuelRatio  = Math.min(1, minerFuel / (FUEL_TRIP_ONE_WAY * 2));
+  const isPartial  = fuelRatio < 1;
+  const fuelToUse  = Math.min(minerFuel, FUEL_TRIP_ONE_WAY * 2);
+  const fuelStart  = minerFuel;
+
+  // Fixed 60-second trip: 25s out, 5-10s mining, 25-30s back
+  const miningMs   = 5000 + Math.random() * 5000;   // 5–10s
+  const transitMs  = (60000 - miningMs) / 2;         // split remainder evenly
+  const totalMs    = transitMs + miningMs + transitMs; // always ~60s
+
+  const btn       = document.getElementById('dispatchBtn');
+  const refuelBtn = document.getElementById('refuelBtn');
+  btn.disabled = true;
+  refuelBtn.disabled = true;
+  refuelBtn.style.opacity = '0.35';
+
+  document.getElementById('dispatchStatus').textContent = isPartial ? 'Partial Trip' : 'In transit';
+  document.getElementById('dispatchCountdownWrap').style.display = 'block';
+  document.getElementById('miningBarWrap').style.display = 'none';
+  document.getElementById('miningBarFill').style.width = '0%';
+  document.getElementById('miningBarPct').textContent = '0%';
+  document.getElementById('dispatchProgress').style.width = '0%';
+
   document.getElementById('manifestCard').style.opacity = '.4';
   document.getElementById('manifestCard').style.pointerEvents = 'none';
 
-  const ship = document.getElementById('minerShip');
+  const ship     = document.getElementById('minerShip');
+  const asteroid = document.getElementById('asteroidImg');
   ship.style.transition = 'none';
-  ship.style.left = '60px';
-  ship.style.opacity = '1';
-  ship.style.transform = 'translateY(-50%) scaleX(1)';
+  ship.style.left       = '80px';
+  ship.style.opacity    = '1';
+  ship.style.transform  = 'translateY(-50%) scaleX(1)';
+  if (asteroid) { asteroid.style.opacity = '0.5'; asteroid.style.filter = ''; }
 
   const overlay = document.getElementById('mineStatusOverlay');
   overlay.style.opacity = '1';
+  overlay.textContent   = MINE_PHASES[0];
 
-  const start = Date.now();
+  // ── Single master countdown from dispatch start ──
+  const tripStart = Date.now();
+  dispatchInterval = setInterval(() => {
+    const elapsed = Date.now() - tripStart;
+    const rem     = Math.max(0, totalMs - elapsed);
+    const m       = Math.floor(rem / 60000);
+    const s       = Math.floor((rem % 60000) / 1000);
+    document.getElementById('dispatchCountdown').textContent =
+      String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    document.getElementById('dispatchProgress').style.width =
+      Math.min(100, (elapsed / totalMs) * 100) + '%';
+  }, 200);
+
+  // ── Real-time fuel drain across both transit legs only ──
+  const totalTransit = transitMs * 2;
+  let fuelDrainElapsed = 0;
+  fuelDrainInterval = setInterval(() => {
+    fuelDrainElapsed += 200;
+    const drainPct = Math.min(1, fuelDrainElapsed / totalTransit);
+    minerFuel = Math.max(0, fuelStart - fuelToUse * drainPct);
+    document.getElementById('fuelBar').style.width = (minerFuel / FUEL_MAX * 100) + '%';
+    document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
+  }, 200);
+
+  // ── PHASE 1: Outbound transit ──
+  ship.style.transition = `left ${transitMs}ms linear`;
+  setTimeout(() => { ship.style.left = 'calc(100% - 90px)'; }, 50);
+
   let phaseIdx = 0;
-
-  // Animate ship to belt and back
-  const halfMs = DISPATCH_MS / 2;
-  ship.style.transition = `left ${halfMs}ms linear`;
-  setTimeout(() => { ship.style.left = 'calc(100% - 80px)'; }, 50);
-
-  // Return trip
-  setTimeout(() => {
-    ship.style.transition = `left ${halfMs}ms linear`;
-    ship.style.transform = 'translateY(-50%) scaleX(-1)';
-    ship.style.left = '60px';
-  }, halfMs);
-
-  // Phase messages
-  const phaseInterval = DISPATCH_MS / MINE_PHASES.length;
-  overlay.textContent = MINE_PHASES[0];
   const msgTimer = setInterval(() => {
     phaseIdx = Math.min(phaseIdx + 1, MINE_PHASES.length - 1);
     overlay.textContent = MINE_PHASES[phaseIdx];
-  }, phaseInterval);
+  }, transitMs / MINE_PHASES.length);
 
-  // Countdown
-  dispatchInterval = setInterval(() => {
-    const elapsed = Date.now() - start;
-    const rem = Math.max(0, DISPATCH_MS - elapsed);
-    const pct = Math.min(100, elapsed / DISPATCH_MS * 100);
-    const m = Math.floor(rem / 60000), s = Math.floor((rem % 60000) / 1000);
-    document.getElementById('dispatchCountdown').textContent =
-      String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    document.getElementById('dispatchProgress').style.width = pct + '%';
+  // ── PHASE 2: Arrive at asteroid → maybe encounter → mine ──
+  setTimeout(() => {
+    clearInterval(msgTimer);
 
-    if (elapsed >= DISPATCH_MS) {
-      clearInterval(dispatchInterval);
-      clearInterval(msgTimer);
-      dispatchInterval = null;
-      haul = generateHaul();
-      renderManifest();
-      overlay.textContent = '✓ Haul secured — manifest ready';
-      document.getElementById('dispatchStatus').textContent = 'Returned';
-      document.getElementById('dispatchCountdown').textContent = '00:00';
-      btn.disabled = false;
-      btn.textContent = '⬡ Send Again';
-    }
-  }, 200);
+    maybeFireEncounter('outbound', () => {
+      // Start mining
+      if (asteroid) {
+        asteroid.style.opacity = '1';
+        asteroid.style.filter  = 'brightness(1.4) drop-shadow(0 0 6px rgba(232,141,45,.8))';
+      }
+      document.getElementById('dispatchStatus').textContent = 'Mining';
+      document.getElementById('miningBarWrap').style.display = 'block';
+      overlay.textContent = MINING_LABELS[0];
+      if (isPartial) {
+        document.getElementById('miningBarLabel').textContent =
+          `Partial haul (~${Math.round(fuelRatio * 100)}% capacity)`;
+      }
+
+      const miningStart = Date.now();
+      let labelIdx = 0;
+      const labelStep = miningMs / MINING_LABELS.length;
+
+      const miningInterval = setInterval(() => {
+        const el  = Date.now() - miningStart;
+        const pct = Math.min(100, (el / miningMs) * 100);
+        document.getElementById('miningBarFill').style.width = pct + '%';
+        document.getElementById('miningBarPct').textContent  = Math.round(pct) + '%';
+        const li = Math.floor(el / labelStep);
+        if (li !== labelIdx && li < MINING_LABELS.length) {
+          labelIdx = li;
+          overlay.textContent = MINING_LABELS[li];
+          document.getElementById('miningBarLabel').textContent = MINING_LABELS[li];
+        }
+
+        if (el >= miningMs) {
+          clearInterval(miningInterval);
+          document.getElementById('miningBarPct').textContent  = '100%';
+          document.getElementById('miningBarFill').style.width = '100%';
+          document.getElementById('miningBarLabel').textContent = '✓ Hold secured';
+          if (asteroid) { asteroid.style.opacity = '0.5'; asteroid.style.filter = ''; }
+
+          // ── PHASE 3: Return transit — flip & fly home ──
+          document.getElementById('dispatchStatus').textContent = 'Returning';
+          overlay.textContent = 'Hold secured — returning to station...';
+          ship.style.transition = `left ${transitMs}ms linear`;
+          ship.style.transform  = 'translateY(-50%) scaleX(-1)';
+          ship.style.left       = '80px';
+
+          // Wait for ship to actually arrive, THEN fire return encounter + complete
+          setTimeout(() => {
+            maybeFireEncounter('return', () => {
+              // ── ARRIVAL ──
+              clearInterval(dispatchInterval);
+              clearInterval(fuelDrainInterval);
+              dispatchInterval = null;
+
+              minerFuel = Math.max(0, fuelStart - fuelToUse);
+              updateFuelUI();
+
+              let rawHaul = generateHaul(fuelRatio);
+              rawHaul     = applyHaulMods(rawHaul);
+              haul        = rawHaul;
+              renderManifest();
+
+              overlay.textContent = '✓ Manifest ready';
+              document.getElementById('dispatchStatus').textContent = 'Returned';
+              document.getElementById('dispatchCountdown').textContent = '00:00';
+              document.getElementById('dispatchProgress').style.width = '100%';
+              ship.style.opacity = '0';
+
+              btn.disabled     = false;
+              btn.textContent  = '⬡ Send Again';
+              updateFuelUI();
+            });
+          }, transitMs); // wait the full return leg before triggering arrival
+        }
+      }, 80);
+    });
+  }, transitMs); // fire after outbound leg completes
 }
 
 // ── GENERATE RANDOM HAUL ──
-function generateHaul() {
-  const matKeys = Object.keys(materials);
-  const numTypes = 1 + Math.floor(Math.random() * 4); // 1–4 material types
-  const chosen = [];
+function generateHaul(fuelRatio = 1) {
+  const matKeys  = Object.keys(materials);
+  const numTypes = 1 + Math.floor(Math.random() * 4);
+  const chosen   = [];
   const shuffled = [...matKeys].sort(() => Math.random() - 0.5).slice(0, numTypes);
+  const maxScu   = Math.max(1, Math.round(MAX_HAUL_SCU * fuelRatio));
 
-  let remaining = MAX_HAUL_SCU;
+  let remaining = maxScu;
   shuffled.forEach((key, i) => {
-    const isLast = i === shuffled.length - 1;
-    const maxForThis = Math.min(remaining, isLast ? remaining : Math.floor(remaining * (0.3 + Math.random() * 0.5)));
-    const scu = Math.max(1, Math.floor(maxForThis * (0.5 + Math.random() * 0.5)));
-    const purity = Math.round((200 + Math.random() * 800) / 10) * 10; // 200–1000
+    const isLast      = i === shuffled.length - 1;
+    const maxForThis  = Math.min(remaining, isLast ? remaining : Math.floor(remaining * (0.3 + Math.random() * 0.5)));
+    const scu         = Math.max(1, Math.floor(maxForThis * (0.5 + Math.random() * 0.5)));
+    const purity      = Math.round((200 + Math.random() * 800) / 10) * 10;
     chosen.push({ matKey: key, scu, purity, refine: true });
     remaining -= scu;
     if (remaining <= 0) return;
@@ -2317,14 +2693,16 @@ async function adminResetWallet(userId, pilotName) {
 
 // ── INIT SUPABASE ──
 async function initSupabase() {
-  // Try to restore session silently
-  const restored = await tryRestoreSession();
-  if (restored) {
-    unlockGame();
-  }
-  // Always load market + leaderboard (public data)
+  // AUTH TEMPORARILY DISABLED — unlock as guest immediately
+  userWallet = 50000;
+  updateWallet();
+  document.getElementById('pilotNameDisplay').textContent = 'Guest';
+  document.getElementById('authUserBox').style.display = 'flex';
+
+  // Load market + leaderboard + encounters (all public data)
   await loadMarketPrices();
   await refreshLeaderboard();
+  await loadEncounters();
   setInterval(applyPriceRecovery, 5 * 60 * 1000);
   scheduleNextNews();
 }
@@ -2352,6 +2730,7 @@ logRun = function(data) {
 updateWallet();
 seedStars();
 applyPreset('rush');
+updateFuelUI();
 initSupabase();
 </script>
 </body>
