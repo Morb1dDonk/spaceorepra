@@ -917,6 +917,7 @@ input.axis-range::-webkit-slider-runnable-track{height:6px;background:transparen
 @keyframes crewBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // CONFIG
@@ -1863,13 +1864,18 @@ function renderAdmin(){
 const SUPABASE_URL = 'https://gfwrhqjicixelcaxqpvv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmd3JocWppY2l4ZWxjYXhxcHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzAyOTEsImV4cCI6MjA5MDE0NjI5MX0.r2mNRSWC4inIIc2B8Bs7uWH302R4gZgofAvk8FKVDBM';
 
-let currentUser  = null;  // Supabase auth user object
-let authToken    = null;  // JWT for authenticated requests
-let currentProfile = null; // player_profiles row
+// Official Supabase client — handles auth headers, token refresh, sessions
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── GENERIC REST HELPER (uses auth token when available) ──
+let currentUser    = null;
+let currentProfile = null;
+
+// ── DB helper (wraps supabase-js for REST table ops) ──
 async function sbFetch(path, method='GET', body=null, useAuth=false) {
-  const token = useAuth && authToken ? authToken : SUPABASE_KEY;
+  // For simple cases still use fetch (price updates etc)
+  const token = (useAuth && currentUser)
+    ? (await _sb.auth.getSession()).data?.session?.access_token || SUPABASE_KEY
+    : SUPABASE_KEY;
   const opts = {
     method,
     headers: {
@@ -1881,29 +1887,10 @@ async function sbFetch(path, method='GET', body=null, useAuth=false) {
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
-  if (method === 'POST' && (res.status === 201 || res.status === 204)) return null;
-  if (method === 'PATCH' && res.status === 204) return null;
-  if (!res.ok) {
-    const txt = await res.text();
-    console.error('sbFetch error', res.status, txt);
-    return null;
-  }
+  if ((method === 'POST' || method === 'PATCH') && (res.status === 201 || res.status === 204)) return null;
+  if (!res.ok) { console.error('sbFetch', res.status, await res.text()); return null; }
   const ct = res.headers.get('content-type') || '';
   return ct.includes('json') ? res.json() : null;
-}
-
-// Auth-specific fetch (Supabase Auth REST endpoints)
-async function sbAuth(path, body) {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}?apikey=${SUPABASE_KEY}`, {
-    method: 'POST',
-    headers: {
-      'apikey':        SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type':  'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  return res.json();
 }
 
 // ═══════════════════════════════════════════
@@ -1962,19 +1949,21 @@ async function signIn() {
   clearAuthErrors();
   const email    = document.getElementById('siEmail').value.trim();
   const password = document.getElementById('siPassword').value;
-  if (!email || !password) { showAuthError('signin','Enter your email and password.'); return; }
+  if (!email || !password) { showAuthError('signin', 'Enter your email and password.'); return; }
 
   setAuthLoading(true);
-  const data = await sbAuth('token?grant_type=password', { email, password });
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password });
 
-  if (data.error || !data.access_token) {
+  if (error) {
     setAuthLoading(false);
     switchAuthTab('signin');
-    showAuthError('signin', data.error_description || data.error || 'Sign in failed. Check your credentials.');
+    showAuthError('signin', error.message || 'Sign in failed. Check your credentials.');
     return;
   }
 
-  await onAuthSuccess(data);
+  currentUser = data.user;
+  await loadOrCreateProfile(data.user);
+  unlockGame();
 }
 
 // ── SIGN UP ──
@@ -1985,41 +1974,53 @@ async function signUp() {
   const password = document.getElementById('suPassword').value;
   const confirm  = document.getElementById('suConfirm').value;
 
-  if (!name)     { showAuthError('signup','Enter a pilot name.');    return; }
-  if (!email)    { showAuthError('signup','Enter your email.');      return; }
-  if (password.length < 8) { showAuthError('signup','Password must be at least 8 characters.'); return; }
-  if (password !== confirm) { showAuthError('signup','Passwords do not match.'); return; }
+  if (!name)             { showAuthError('signup', 'Enter a pilot name.');                      return; }
+  if (!email)            { showAuthError('signup', 'Enter your email.');                         return; }
+  if (password.length < 8) { showAuthError('signup', 'Password must be at least 8 characters.'); return; }
+  if (password !== confirm) { showAuthError('signup', 'Passwords do not match.');               return; }
 
   setAuthLoading(true);
-  const data = await sbAuth('signup', {
-    email, password,
-    data: { pilot_name: name }
+  const { data, error } = await _sb.auth.signUp({
+    email,
+    password,
+    options: { data: { pilot_name: name } }
   });
 
-  if (data.error || !data.access_token) {
+  if (error) {
     setAuthLoading(false);
     switchAuthTab('signup');
-    showAuthError('signup', data.error_description || data.error || 'Registration failed. Email may already be in use.');
+    showAuthError('signup', error.message || 'Registration failed. Email may already be in use.');
     return;
   }
 
-  await onAuthSuccess(data);
+  currentUser = data.user;
+  await loadOrCreateProfile(data.user);
+  unlockGame();
 }
 
-// ── ON AUTH SUCCESS ──
-async function onAuthSuccess(data) {
-  currentUser = data.user;
-  authToken   = data.access_token;
+// ── SIGN OUT ──
+async function signOut() {
+  await _sb.auth.signOut();
+  currentUser = null; currentProfile = null;
 
-  // Store token so page refresh stays logged in
-  localStorage.setItem('soms_token',   authToken);
-  localStorage.setItem('soms_user_id', currentUser.id);
+  const lock = document.getElementById('gameLock');
+  lock.style.display = 'block';
+  lock.style.opacity = '1';
+  document.getElementById('authModal').style.display = 'flex';
+  document.getElementById('authUserBox').style.display = 'none';
+  document.getElementById('siEmail').value = '';
+  document.getElementById('siPassword').value = '';
+  clearAuthErrors();
+  switchAuthTab('signin');
+}
 
-  // Load or create profile
-  await loadOrCreateProfile(currentUser);
-
-  // Unlock game
-  unlockGame();
+// ── RESTORE SESSION ──
+async function tryRestoreSession() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) return false;
+  currentUser = session.user;
+  await loadOrCreateProfile(session.user);
+  return true;
 }
 
 async function loadOrCreateProfile(user) {
@@ -2060,62 +2061,6 @@ function unlockGame() {
   document.getElementById('authUserBox').style.display = 'flex';
 }
 
-// ── SIGN OUT ──
-async function signOut() {
-  // Call Supabase logout
-  await fetch(`${SUPABASE_URL}/auth/v1/logout?apikey=${SUPABASE_KEY}`, {
-    method: 'POST',
-    headers: {
-      'apikey':        SUPABASE_KEY,
-      'Authorization': 'Bearer ' + authToken,
-      'Content-Type':  'application/json',
-    },
-  });
-
-  // Clear state
-  currentUser = null; authToken = null; currentProfile = null;
-  localStorage.removeItem('soms_token');
-  localStorage.removeItem('soms_user_id');
-
-  // Lock game again
-  const lock = document.getElementById('gameLock');
-  lock.style.display = 'block';
-  lock.style.opacity = '1';
-  document.getElementById('authModal').style.display = 'flex';
-  document.getElementById('authUserBox').style.display = 'none';
-  document.getElementById('siEmail').value = '';
-  document.getElementById('siPassword').value = '';
-  clearAuthErrors();
-  switchAuthTab('signin');
-}
-
-// ── RESTORE SESSION FROM LOCALSTORAGE ──
-async function tryRestoreSession() {
-  const token  = localStorage.getItem('soms_token');
-  const userId = localStorage.getItem('soms_user_id');
-  if (!token || !userId) return false;
-
-  // Verify token is still valid by fetching the user
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/user?apikey=${SUPABASE_KEY}`, {
-    headers: {
-      'apikey':        SUPABASE_KEY,
-      'Authorization': 'Bearer ' + token,
-    }
-  });
-  if (!res.ok) {
-    localStorage.removeItem('soms_token');
-    localStorage.removeItem('soms_user_id');
-    return false;
-  }
-  const user = await res.json();
-  if (!user.id) return false;
-
-  currentUser = user;
-  authToken   = token;
-  await loadOrCreateProfile(user);
-  return true;
-}
-
 // ── SAVE WALLET TO SUPABASE ──
 async function persistWallet() {
   if (!currentUser) return;
@@ -2126,7 +2071,6 @@ async function persistWallet() {
     true
   );
 }
-
 // ═══════════════════════════════════════════
 // MARKET + NEWS (unchanged, uses anon key for reads, auth for writes)
 // ═══════════════════════════════════════════
