@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Ore Mining Simulator // AI Enhanced</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:#060810; --bg-card:#0c0f18; --bg-header:#10141f; --bg-input:#080b14;
+  --border:rgba(80,140,255,0.12); --border-bright:rgba(80,140,255,0.28);
+  --orange:#e88d2d; --cyan:#00d4ff; --red:#ff4060; --purple:#a855f7; --blue:#4a9ef2;
+  --green:#22c55e;
+  --text-main:#9ab0cc; --text-dim:#4d6480; --text-bright:#e8f0ff;
+  --accent:#00d4ff;
+}
+
+button { border-radius: 10px; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg-deep);color:var(--text-main);
+  font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,100,200,0.1) 0%,transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(80,140,255,0.012) 40px,rgba(80,140,255,0.012) 41px);
+}
+
+/* HEADER */
+.site-header{
+  background:rgba(6,8,16,0.96);border-bottom:1px solid var(--border-bright);
+  padding:0; position:sticky;top:0;z-index:200;
+}
+.hdr-inner{
+  max-width:1320px;margin:0 auto;padding:0 24px;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;
+}
+.hdr-ticker{display:flex;align-items:center;background:rgba(0,0,0,.35);border:1px solid var(--border-bright);border-radius:6px;overflow:hidden;}
+.hdr-ticker-label{padding:0 12px;border-right:1px solid var(--border-bright);height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,212,255,.04);}
+.ticker-item{display:flex;flex-direction:column;padding:0 14px;border-right:1px solid rgba(255,255,255,.05);min-width:80px;}
+.ticker-sym{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;opacity:.65;}
+.ticker-price{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+
+/* CARDS */
+.card{
+  background:var(--bg-card);border:1px solid var(--border);position:relative;margin-bottom:20px;
+}
+.card-hdr{background:var(--bg-header);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.card-title{font-family:'DM Mono',monospace;font-size:13px;text-transform:uppercase;color:var(--cyan);letter-spacing:.1em;}
+.card-sub{font-family:'DM Mono',monospace;font-size:13px;color:var(--orange);}
+
+/* --- SPACE ACTORS --- */
+.star{position:absolute;background:white;border-radius:50%;transition:width .3s, height .3s, border-radius .3s, opacity .3s;}
+.bg-asteroid{position:absolute;pointer-events:none;filter:blur(2px) grayscale(0.3);opacity:0.35;}
+
+#shipContainer {
+    position: absolute;
+    top: 50%; left: 140px;
+    transform: translateY(-50%);
+    width: 80px; height: 46px;
+    opacity: 0; z-index: 20;
+}
+
+#minerShip { 
+    width: 80px; height: auto; display: block; 
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3)); 
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes shipBob { 0%, 100% { margin-top: -5px; } 50% { margin-top: 5px; } }
+.is-flying #minerShip { animation: shipBob 4s ease-in-out infinite; }
+
+@keyframes shipJitter {
+    0% { transform: translate(0, 0) scaleX(var(--sx, 1)); }
+    25% { transform: translate(1px, -1px) scaleX(var(--sx, 1)); }
+    50% { transform: translate(-1px, 1px) scaleX(var(--sx, 1)); }
+    100% { transform: translate(0, 0) scaleX(var(--sx, 1)); }
+}
+.is-boosting #minerShip { animation: shipJitter 0.1s linear infinite !important; filter: brightness(1.3) drop-shadow(0 0 15px var(--cyan)) !important; }
+
+@keyframes shipTumble { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.is-drifting #minerShip { animation: shipTumble 25s linear infinite !important; }
+
+.is-boosting .star { width: 32px !important; height: 1px !important; border-radius: 0 !important; opacity: 0.6 !important; }
+
+/* MODALS */
+#storyModal, #aiModal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:2000; background:rgba(0,0,0,0.92); }
+.ai-loader { display:inline-block; width:12px; height:12px; border:2px solid rgba(0,212,255,0.3); border-radius:50%; border-top-color:var(--cyan); animation:spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* BUTTONS */
+.btn-sys{background:transparent;border:1px solid var(--border-bright);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:0.2s;}
+.btn-sys:hover{border-color:var(--cyan);color:var(--cyan);}
+.btn-confirm{background:transparent;color:var(--cyan);border:1px solid var(--cyan);font-weight:700;font-size:14px;text-transform:uppercase;padding:16px 44px;cursor:pointer;font-family:'DM Mono',monospace;transition:0.2s;}
+.btn-confirm:hover:not(:disabled){background:rgba(0,212,255,0.1);box-shadow:0 0 20px rgba(0,212,255,0.3);}
+.emergency{border-color:var(--red); color:var(--red);}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <img src="https://morb1ddonk.github.io/spaceorepra/img/logo.svg" style="height:100px;width:auto;">
+    </div>
+    <div class="hdr-center">
+      <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+        <div class="hdr-ticker">
+          <div class="hdr-ticker-label"><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--cyan);">⬡ LIVE</span></div>
+          <div class="ticker-item"><span class="ticker-sym" style="color:#e88d2d;">GOLD</span><span class="ticker-price" id="mp-gold">650</span></div>
+          <div class="ticker-item"><span class="ticker-sym" style="color:#4aaef2;">QUANT</span><span class="ticker-price" id="mp-quant">1800</span></div>
+          <div class="ticker-item"><span class="ticker-sym" style="color:#a855f7;">BEX</span><span class="ticker-price" id="mp-bex">950</span></div>
+        </div>
+        <button class="btn-sys" onclick="getMarketAnalysis()" style="font-size:9px; color:var(--orange); border-color:var(--orange);">✨ AI Intelligence</button>
+      </div>
+    </div>
+    <div class="hdr-right"><div style="text-align:right;"><div style="font-size:11px;color:var(--text-dim);">WALLET</div><div id="userWallet" style="font-family:'DM Mono',monospace;color:var(--cyan);font-size:24px;">50,000</div></div></div>
+  </div>
+</header>
+
+<main style="max-width:1320px;margin:32px auto;padding:0 24px;">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">00 // Miner Dispatch</div><div id="dispatchStatus" class="card-sub">Ready</div></div>
+    <div class="card-body" style="padding:0;">
+      <div id="spaceCanvas" style="position:relative;width:100%;height:320px;background:radial-gradient(ellipse 120% 80% at 50% 100%,rgba(0,20,60,0.6) 0%,rgba(0,0,0,0) 70%),#000;overflow:hidden;">
+        <div id="sceneInner">
+          <div id="starField" style="position:absolute;inset:0;z-index:1;"></div>
+          <div id="asteroidField" style="position:absolute;inset:0;z-index:2;"></div>
+          <div id="stationObj" style="position:absolute;left:0;top:0;bottom:0;width:160px;display:flex;align-items:center;justify-content:center;z-index:10;"><img src="https://morb1ddonk.github.io/spaceorepra/img/station_mini.png" style="height:110%;width:auto;"></div>
+          
+          <!-- ASTEROID OBJ -->
+          <div id="asteroidObj" style="position:absolute;right:-300px;top:0;bottom:0;width:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;">
+            <img id="asteroidImg" src="https://morb1ddonk.github.io/spaceorepra/img/asteroid_mini.png" style="width:200px;">
+            <div id="asteroidName" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);text-align:center;"></div>
+            <button class="btn-sys" id="aiScanBtn" onclick="getAIScanReport()" style="display:none;margin-top:8px;">✨ Deep AI Scan</button>
+          </div>
+
+          <!-- SHIP WRAPPER -->
+          <div id="shipContainer" onmousemove="applyShipImpulse(event)">
+            <img id="minerShip" src="https://morb1ddonk.github.io/spaceorepra/img/prospector_mini.png">
+          </div>
+        </div>
+        <div id="mineStatusOverlay" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:14px;color:var(--orange);z-index:50;background:rgba(0,0,0,0.5);padding:4px 12px;border-radius:20px;opacity:0;"></div>
+      </div>
+
+      <div style="padding:20px; background:var(--bg-header); display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+        <div class="control-group"><label style="font-family:'DM Mono',monospace;font-size:9px;">OUTBOUND (s)</label><input type="number" id="tOutbound" value="5" style="background:#000;border:1px solid var(--border);color:var(--cyan);padding:5px;width:100%;"></div>
+        <div class="control-group"><label style="font-family:'DM Mono',monospace;font-size:9px;">EXTRACTION (s)</label><input type="number" id="tExtraction" value="5" style="background:#000;border:1px solid var(--border);color:var(--cyan);padding:5px;width:100%;"></div>
+        <div class="control-group"><label style="font-family:'DM Mono',monospace;font-size:9px;">RETURN (s)</label><input type="number" id="tReturn" value="5" style="background:#000;border:1px solid var(--border);color:var(--cyan);padding:5px;width:100%;"></div>
+        
+        <div style="grid-column: span 3; display:flex; justify-content:center; gap:10px; margin-top:10px;">
+            <button class="btn-confirm" id="dispatchBtn" onclick="runFullSequence()">Initialize Dispatch</button>
+            <button class="btn-sys" id="boostBtn" onclick="toggleBoost()">Toggle Boost</button>
+            <button class="btn-sys emergency" id="outOfGasBtn" onclick="triggerOutOfGas()">Simulate Out of Gas</button>
+            <button class="btn-sys" id="rescueBtn" onclick="location.reload()" style="display:none;">Request Tow</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- STORY MODAL -->
+<div id="storyModal">
+  <div style="width:900px;background:var(--bg-card);border:1px solid var(--border);display:grid;grid-template-columns:400px 1fr;">
+    <div style="background:#000;"><img id="storyImage" src="https://morb1ddonk.github.io/spaceorepra/img/intro_bg.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div style="padding:40px;display:flex;flex-direction:column;justify-content:space-between;">
+      <div><h2 id="storyTitle" style="font-size:24px;margin-bottom:20px;"></h2><p id="storyBody" style="font-size:14px;line-height:1.8;border-left:2px solid var(--cyan);padding-left:15px;"></p></div>
+      <div style="margin-top:20px;">
+        <button id="ttsBtn" onclick="playStoryAudio()" class="btn-sys" style="width:100%;margin-bottom:10px;border-color:var(--cyan);color:var(--cyan);">✨ AI Narration</button>
+        <button onclick="closeStoryModal()" class="btn-confirm" style="width:100%;">Continue →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI MODAL -->
+<div id="aiModal">
+    <div style="width:500px;background:var(--bg-card);border:1px solid var(--cyan);padding:30px;">
+        <div id="aiModalTitle" style="font-family:'DM Mono',monospace;color:var(--cyan);margin-bottom:15px;">✨ INTELLIGENCE REPORT</div>
+        <div id="aiModalBody" style="font-size:14px;margin-bottom:20px;white-space:pre-wrap;"></div>
+        <button class="btn-sys" onclick="document.getElementById('aiModal').style.display='none'" style="width:100%;">Acknowledge</button>
+    </div>
+</div>
+
+<script>
+const apiKey = "";
+const GLITCH_CHARS = '░▒▓█▄▀■□▪▫◆◇●○ΞΨΩΛΔΣΦ?#@!~%&*<>';
+
+let shipX = 140, shipY = 135, shipVX = 0, shipVY = 0;
+let isPhysicsEnabled = false, _isOutOfGas = false, _isBoosting = false;
+let _starSpeed = 0, _starDirection = -1, _parallaxElements = [];
+let _sceneTargetScale = 1, _sceneCurrentScale = 1, _sceneCurrentOriginX = 50, _sceneZoomActive = false;
+let _timeouts = [], _phaseInterval = null;
+
+async function callGemini(prompt, sys) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } };
+    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Link failure.";
+}
+
+function updateStatus(text, duration = null) {
+    const overlay = document.getElementById('mineStatusOverlay');
+    overlay.style.opacity = '1';
+    if (!duration) { overlay.textContent = text; return; }
+    let rem = Math.ceil(duration);
+    clearInterval(_phaseInterval);
+    const tick = () => {
+        overlay.innerHTML = `${text} <span style="color:#fff;">[ ${String(rem).padStart(2,'0')}s ]</span>`;
+        if (rem-- <= 0) clearInterval(_phaseInterval);
+    };
+    tick(); _phaseInterval = setInterval(tick, 1000);
+}
+
+function runFullSequence() {
+    const tOut = parseFloat(document.getElementById('tOutbound').value);
+    const tExt = parseFloat(document.getElementById('tExtraction').value);
+    const tRet = parseFloat(document.getElementById('tReturn').value);
+    
+    const ship = document.getElementById('shipContainer'), shipImg = document.getElementById('minerShip');
+    const station = document.getElementById('stationObj'), ast = document.getElementById('asteroidObj'), canvas = document.getElementById('spaceCanvas');
+
+    document.getElementById('dispatchBtn').disabled = true;
+    _sceneTargetScale = 1.5; _sceneZoomActive = true; _starDirection = -1;
+    document.body.classList.add('scene-flying');
+    
+    // 1. Launch
+    ship.style.opacity = '1';
+    ship.style.transition = 'left 2.5s ease-out, top 2.5s ease-out';
+    ship.style.left = 'calc(50% - 40px)';
+    station.style.transition = 'left 2.5s ease-in';
+    station.style.left = '-200px';
+    let speedInt = setInterval(() => { if(_starSpeed < 0.8) _starSpeed += 0.05; else clearInterval(speedInt); }, 50);
+
+    // 2. Outbound
+    _timeouts.push(setTimeout(() => {
+        updateStatus("APPROACHING ASTEROID", tOut);
+        ast.style.transition = `right ${tOut}s cubic-bezier(0.1, 0.5, 0.2, 1)`;
+        ast.style.right = '40px';
+        let slowInt = setInterval(() => { if(_starSpeed > 0.01) _starSpeed *= 0.96; else { _starSpeed = 0; clearInterval(slowInt); } }, 50);
+
+        // 3. Extraction
+        _timeouts.push(setTimeout(() => {
+            updateStatus("EXTRACTION IN PROGRESS", tExt);
+            document.getElementById('aiScanBtn').style.display = 'block';
+            document.getElementById('asteroidName').textContent = "AX-882 PELAGIC";
+            
+            // 4. Return
+            _timeouts.push(setTimeout(() => {
+                updateStatus("RETURNING TO STATION", tRet);
+                _starDirection = 1; shipImg.style.transform = 'scaleX(-1)';
+                ast.style.transition = `right ${tRet}s ease-in`;
+                ast.style.right = '-300px';
+                _sceneTargetScale = 1;
+                let speedUpInt = setInterval(() => { if(_starSpeed < 0.8) _starSpeed += 0.05; else clearInterval(speedUpInt); }, 50);
+
+                _timeouts.push(setTimeout(() => {
+                    station.style.transition = 'left 2s ease-out';
+                    station.style.left = '0px';
+                    ship.style.transition = 'left 2s ease-out';
+                    ship.style.left = '140px';
+                    let dockSlow = setInterval(() => { if(_starSpeed > 0.01) _starSpeed *= 0.9; else { _starSpeed = 0; clearInterval(dockSlow); } }, 50);
+                    _timeouts.push(setTimeout(() => {
+                        ship.style.opacity = '0';
+                        document.getElementById('dispatchBtn').disabled = false;
+                        updateStatus("DOCKING COMPLETE");
+                        setTimeout(() => document.getElementById('mineStatusOverlay').style.opacity = '0', 2000);
+                    }, 2000));
+                }, (tRet - 2) * 1000));
+            }, tExt * 1000));
+        }, tOut * 1000));
+    }, 2500));
+}
+
+function triggerOutOfGas() {
+    _isOutOfGas = true; isPhysicsEnabled = true;
+    _timeouts.forEach(clearTimeout); clearInterval(_phaseInterval);
+    _sceneZoomActive = false; _sceneCurrentScale = 1; _sceneTargetScale = 1;
+    document.getElementById('mineStatusOverlay').style.opacity = '1';
+    document.getElementById('mineStatusOverlay').style.color = 'var(--red)';
+    document.getElementById('mineStatusOverlay').textContent = "⚠ OUT OF GAS // DRIFTING";
+    const container = document.getElementById('shipContainer');
+    container.style.transition = 'none';
+    container.classList.add('can-nudge');
+    document.body.classList.remove('scene-flying');
+    document.body.classList.add('scene-drifting');
+    document.getElementById('outOfGasBtn').style.display = 'none';
+    document.getElementById('rescueBtn').style.display = 'inline-block';
+}
+
+function applyShipImpulse(e) {
+    if (!_isOutOfGas || !isPhysicsEnabled) return;
+    const rect = document.getElementById('shipContainer').getBoundingClientRect();
+    const dx = (rect.left + rect.width/2) - e.clientX;
+    const dy = (rect.top + rect.height/2) - e.clientY;
+    shipVX += dx * 0.04; shipVY += dy * 0.04;
+}
+
+function toggleBoost() {
+    _isBoosting = !_isBoosting;
+    document.getElementById('spaceCanvas').classList.toggle('scene-boosting', _isBoosting);
+}
+
+function mainLoop() {
+    const spd = _isBoosting ? _starSpeed * 5 : _starSpeed;
+    _parallaxElements.forEach(s => {
+        s.x += spd * s.speedMult * _starDirection;
+        if (_starDirection === -1 && s.x < -10) s.x = 110;
+        if (_starDirection === 1 && s.x > 110) s.x = -10;
+        s.el.style.left = s.x + '%';
+    });
+    if (isPhysicsEnabled) {
+        shipX += shipVX; shipY += shipVY; shipVX *= 0.96; shipVY *= 0.96;
+        if (shipX < 0 || shipX > 1120) shipVX *= -0.5;
+        if (shipY < 0 || shipY > 270) shipVY *= -0.5;
+        const c = document.getElementById('shipContainer');
+        c.style.left = shipX + 'px'; c.style.top = shipY + 'px';
+    }
+    if (_sceneZoomActive) {
+        _sceneCurrentScale += (_sceneTargetScale - _sceneCurrentScale) * 0.05;
+        document.getElementById('sceneInner').style.transform = `scale(${_sceneCurrentScale})`;
+    }
+    requestAnimationFrame(mainLoop);
+}
+
+function closeStoryModal() { document.getElementById('storyModal').style.display = 'none'; }
+window.onload = () => {
+    const f = document.getElementById('starField');
+    for(let i=0; i<80; i++) {
+        const s = document.createElement('div'); s.className='star';
+        const x = Math.random()*100, y = Math.random()*100;
+        s.style.width='1px'; s.style.height='1px'; s.style.left=x+'%'; s.style.top=y+'%';
+        f.appendChild(s); _parallaxElements.push({el:s, x, y, speedMult:0.5+Math.random()});
+    }
+    document.getElementById('storyTitle').textContent = "ACT I: THE VOID CALLS";
+    document.getElementById('storyBody').textContent = "You awaken in the cramped cockpit of a Prospector-class vessel. The corporate debt is heavy, but the potential of the belt is limitless. ✨ AI Core Online.";
+    document.getElementById('storyModal').style.display='flex';
+    requestAnimationFrame(mainLoop);
+};
+</script>
+</body>
+</html>
