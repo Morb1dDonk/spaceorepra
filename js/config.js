@@ -148,4 +148,4 @@ let CREW_DELAY_MS = 8000;
 const SUPABASE_URL = 'https://gfwrhqjicixelcaxqpvv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmd3JocWppY2l4ZWxjYXhxcHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzAyOTEsImV4cCI6MjA5MDE0NjI5MX0.r2mNRSWC4inIIc2B8Bs7uWH302R4gZgofAvk8FKVDBM';
 
-let SHIP_PIPS = 4;
+let SHIP_PIPS = 3;

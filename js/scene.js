@@ -108,15 +108,12 @@ function setStarSpeed(target, rampMs) {
 
 // ── PHASE SCHEDULER ──
 // Tracks a single active transit leg. Exposes phaseEtaMs() for the timer display.
-// Boost adds a 1.5× speed multiplier for 3 seconds, consuming ETA faster,
-// then auto-deactivates.
 
-let _phaseTimeoutId  = null;
-let _phaseStartMs    = 0;    // wall-clock when current timeout was set
-let _phaseRemainsMs  = 0;    // ETA remaining at that moment (real ms)
-let _phaseCb         = null;
-let _boostSpeedMult  = 1;    // 1 = normal, 1.5 = boosted
-let _boostAccelTimer = null; // auto-deactivate after 3 real seconds
+let _phaseTimeoutId = null;
+let _phaseStartMs   = 0;    // wall-clock when current timeout was set
+let _phaseRemainsMs = 0;    // ETA remaining at that moment (real ms)
+let _phaseCb        = null;
+let _boostSpeedMult = 1;    // 1 = normal, >1 = mid-boost (for ETA display interpolation)
 
 function schedulePhase(cb, ms) {
   clearTimeout(_phaseTimeoutId);
@@ -126,87 +123,57 @@ function schedulePhase(cb, ms) {
   _phaseTimeoutId = setTimeout(() => { _phaseTimeoutId = null; _phaseCb = null; cb(); }, ms);
 }
 
-// Returns estimated ETA remaining in ms, accounting for boost speed
+// Returns estimated ETA remaining in ms
 function phaseEtaMs() {
   if (!_phaseTimeoutId) return 0;
-  const wallElapsed = performance.now() - _phaseStartMs;
-  const etaConsumed = wallElapsed * _boostSpeedMult;
-  return Math.max(0, _phaseRemainsMs - etaConsumed);
+  const elapsed = performance.now() - _phaseStartMs;
+  return Math.max(0, _phaseRemainsMs - elapsed * _boostSpeedMult);
 }
 
 function clearScheduledPhase() {
   clearTimeout(_phaseTimeoutId);
-  clearTimeout(_boostAccelTimer);
   _phaseTimeoutId = null;
   _phaseCb        = null;
   _boostSpeedMult = 1;
 }
 
-// Activate 1.5× speed for 3 seconds — reschedules the phase timeout accordingly
+// Halve the remaining transit time and reschedule the phase arrival
 function boostCutPhase() {
   if (!_phaseTimeoutId || !_phaseCb) return;
-
-  // Snapshot remaining ETA right now
   const remaining = phaseEtaMs();
-  if (remaining <= 800) return; // too close to arrival, skip
-
-  _boostSpeedMult = 1.5;
-
-  // How long does it take at 1.5× to burn 3 real seconds of boost?
-  // In 3 wall-seconds, we consume 4.5 ETA-seconds worth. Then revert to 1×.
-  const BOOST_WALL_MS  = 3000;
-  const etaBurned      = BOOST_WALL_MS * _boostSpeedMult; // 4500 ETA-ms consumed
-  const afterBoostEta  = Math.max(800, remaining - etaBurned);
-
-  // Reschedule: phase fires after boost window + remaining post-boost time
+  if (remaining <= 800) return; // too close, skip
+  const newDelay  = Math.max(500, remaining / 2);
   clearTimeout(_phaseTimeoutId);
-  const cb = _phaseCb;
+  const cb        = _phaseCb;
   _phaseStartMs   = performance.now();
-  _phaseRemainsMs = remaining;
-
-  // After 3 wall-seconds revert multiplier; phase timer = boost window + post-boost at 1×
-  _boostAccelTimer = setTimeout(() => {
-    _boostSpeedMult = 1;
-    // Reschedule phase for the remaining post-boost ETA (real ms = eta remaining at 1×)
-    const nowRemaining = phaseEtaMs(); // recalc at revert moment
-    clearTimeout(_phaseTimeoutId);
-    _phaseStartMs   = performance.now();
-    _phaseRemainsMs = nowRemaining;
-    _phaseTimeoutId = setTimeout(() => { _phaseTimeoutId = null; _phaseCb = null; cb(); },
-      nowRemaining);
-  }, BOOST_WALL_MS);
-
-  // Set a timeout for the full journey (boost window + post-boost) so it fires correctly
-  // even if the accel timer fires slightly late
-  _phaseTimeoutId = setTimeout(() => {
-    clearTimeout(_boostAccelTimer);
-    _boostSpeedMult = 1;
-    _phaseTimeoutId = null;
-    _phaseCb        = null;
-    cb();
-  }, BOOST_WALL_MS + afterBoostEta);
+  _phaseRemainsMs = newDelay;
+  _boostSpeedMult = 1;
+  _phaseTimeoutId = setTimeout(() => { _phaseTimeoutId = null; _phaseCb = null; cb(); }, newDelay);
 }
 
 // ── BOOST STATE ──
 let _boostActive    = false;
-let _boostCount     = 0;       // consumable charges (from shop)
+let _boostCount     = 0;
 let _boostTimeoutId = null;
+let _inFlightPhase  = false; // true only during the boostable FLIGHT_MS transit windows
 
 function toggleBoost() {
   if (_boostCount <= 0) {
     showShopPurchaseToast('No boost charges — buy one from the shop!', 'var(--red)');
     return;
   }
-  if (!dispatchInterval) {
-    showShopPurchaseToast('Boost only works while miner is in transit.', 'var(--text-dim)');
+  if (!_inFlightPhase) {
+    const msg = !dispatchInterval
+      ? 'Boost only works while miner is in transit.'
+      : 'Boost unavailable during docking, approach, or extraction.';
+    showShopPurchaseToast(msg, 'var(--text-dim)');
     return;
   }
-  // Only allow during outbound or return (not mining)
-  const status = document.getElementById('dispatchStatus')?.textContent;
-  if (status === 'Mining') {
-    showShopPurchaseToast('Boost unavailable during extraction.', 'var(--text-dim)');
-    return;
-  }
+
+  // Snapshot remaining before cut so we know how long to hold visuals
+  const remainingBefore = phaseEtaMs();
+  boostCutPhase(); // halve the remaining transit time
+  const timeSaved = Math.max(1500, remainingBefore - phaseEtaMs());
 
   _boostActive = true;
   _boostCount--;
@@ -214,29 +181,31 @@ function toggleBoost() {
   const canvas  = document.getElementById('spaceCanvas');
   const overlay = document.getElementById('mineStatusOverlay');
   const btn     = document.getElementById('boostEngineBtn');
+  const ship    = document.getElementById('minerShip');
+
+  // ── Warp flash — white vignette that punches in then fades ──
+  _boostWarpFlash();
 
   canvas.classList.add('scene-boosting');
-  setStarSpeed(3.0, 600); // smooth ramp to warp speed
+  setStarSpeed(4.0, 300);  // fast ramp up
   startBoostSprite();
-  boostCutPhase(); // 1.5× ETA speed for 3 seconds
 
-  // Shorten ship CSS transition to reflect higher speed visually
-  const ship = document.getElementById('minerShip');
+  // Engine glow behind ship
+  _boostShowGlow(true);
+
   if (ship) ship.style.transitionDuration = '0s';
-
-  if (overlay) { overlay.style.color = '#fff'; overlay.textContent = '◈ BOOST ACTIVE — BURNING HOT'; }
+  if (overlay) { overlay.style.color = '#fff'; overlay.textContent = '◈ BOOST ACTIVE'; }
   if (btn) {
-    btn.textContent       = `◈ BOOST ACTIVE`;
+    btn.textContent       = '◈ BOOST ACTIVE';
     btn.style.borderColor = '#fff';
     btn.style.color       = '#fff';
     btn.style.background  = 'rgba(255,255,255,.12)';
   }
-
   updateBoostBtn();
 
-  // Auto-deactivate visuals after 3 seconds (phase timer handles arrival)
+  // Visuals last for the time saved (feels proportional), min 1.5s
   clearTimeout(_boostTimeoutId);
-  _boostTimeoutId = setTimeout(() => deactivateBoost(), 3000);
+  _boostTimeoutId = setTimeout(() => deactivateBoost(), timeSaved);
 }
 
 function deactivateBoost() {
@@ -247,26 +216,86 @@ function deactivateBoost() {
   const canvas = document.getElementById('spaceCanvas');
   canvas.classList.remove('scene-boosting');
   stopBoostSprite();
-  // Return to engine-on image if still flying, otherwise engine-off
+  _boostShowGlow(false);
   setShipImage(dispatchInterval ? SHIP_ON : SHIP_OFF);
 
-  // Return star speed to cruise if still in transit
-  if (dispatchInterval) setStarSpeed(0.8, 800);
+  // Ramp stars back to cruise
+  if (dispatchInterval) setStarSpeed(0.8, 1200);
 
   const overlay = document.getElementById('mineStatusOverlay');
-  if (overlay) { overlay.style.color = 'var(--orange)'; overlay.textContent = '◈ Boost expired'; }
+  if (overlay) { overlay.style.color = 'var(--orange)'; overlay.textContent = '◈ Boost complete'; }
 
   updateBoostBtn();
+}
+
+// White vignette flash on warp activation
+function _boostWarpFlash() {
+  let flash = document.getElementById('_boostFlash');
+  if (!flash) {
+    flash = document.createElement('div');
+    flash.id = '_boostFlash';
+    flash.style.cssText = 'position:absolute;inset:0;z-index:80;pointer-events:none;background:radial-gradient(ellipse at center,rgba(180,220,255,.55) 0%,rgba(0,100,255,.15) 50%,transparent 75%);opacity:0;transition:opacity 0s;';
+    const canvas = document.getElementById('spaceCanvas');
+    if (canvas) canvas.appendChild(flash);
+  }
+  flash.style.transition = 'opacity 0s';
+  flash.style.opacity    = '1';
+  setTimeout(() => { flash.style.transition = 'opacity 1.2s ease'; flash.style.opacity = '0'; }, 60);
+}
+
+// Cyan engine glow orb that trails the ship
+function _boostShowGlow(visible) {
+  let glow = document.getElementById('_boostGlow');
+  if (!glow) {
+    glow = document.createElement('div');
+    glow.id = '_boostGlow';
+    glow.style.cssText = 'position:absolute;top:50%;z-index:9;pointer-events:none;width:60px;height:60px;border-radius:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,212,255,.55) 0%,rgba(0,150,255,.2) 40%,transparent 70%);opacity:0;transition:opacity 0.4s ease;';
+    const inner = document.getElementById('sceneInner');
+    if (inner) inner.appendChild(glow);
+  }
+  // Position: just behind the ship (ship is at left:50%, glow trails ~30px behind)
+  const ship = document.getElementById('minerShip');
+  if (ship) {
+    const shipLeft  = parseFloat(ship.style.left) || 50;
+    const trailDir  = _starDir === -1 ? 1 : -1; // trail opposite to travel direction
+    glow.style.left = `calc(${shipLeft}% + ${trailDir * 18}px)`;
+  }
+  glow.style.opacity = visible ? '1' : '0';
 }
 
 function updateBoostBtn() {
   const btn = document.getElementById('boostEngineBtn');
   if (!btn) return;
-  if (_boostActive) return; // already styled by toggleBoost
-  btn.textContent       = _boostCount > 0 ? `⚡ Boost Engines (${_boostCount} charge)` : '⬡ Boost Engines (0 left)';
-  btn.style.borderColor = _boostCount > 0 ? 'rgba(255,255,255,.5)' : '';
-  btn.style.color       = _boostCount > 0 ? 'var(--text-bright)' : '';
-  btn.style.background  = 'transparent';
+
+  if (_boostActive) {
+    // Mid-boost — already set by toggleBoost, leave it alone
+    return;
+  }
+
+  if (!_inFlightPhase) {
+    btn.textContent       = '⬡ BOOST DEACTIVATED';
+    btn.disabled          = true;
+    btn.style.borderColor = 'rgba(255,255,255,.1)';
+    btn.style.color       = 'var(--text-dim)';
+    btn.style.background  = 'transparent';
+    btn.style.opacity     = '0.45';
+    return;
+  }
+
+  // In flight phase — show charge state
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  if (_boostCount > 0) {
+    btn.textContent       = `⚡ BOOST ACTIVE (${_boostCount} charge)`;
+    btn.style.borderColor = 'rgba(255,255,255,.5)';
+    btn.style.color       = 'var(--text-bright)';
+    btn.style.background  = 'transparent';
+  } else {
+    btn.textContent       = '⬡ BOOST ACTIVE (0 charges)';
+    btn.style.borderColor = 'rgba(255,255,255,.2)';
+    btn.style.color       = 'var(--text-dim)';
+    btn.style.background  = 'transparent';
+  }
 }
 
 function addBoostCharge(n = 1) {

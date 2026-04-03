@@ -150,27 +150,6 @@
         <input id="pilotName" type="hidden" value="Pilot">
         <button class="btn-sys" onclick="toggleAdmin()">System Config</button>
         <button class="btn-sys" onclick="openShop()" id="shopHeaderBtn" style="color:var(--orange);border-color:rgba(232,141,45,.35);">🛒 Shop</button>
-        <div style="width:1px;height:24px;background:var(--border-bright);"></div>
-        <div id="dispatchStatus" class="card-sub">Ready</div>
-        <div id="dispatchCountdownWrap" style="display:none;align-items:center;gap:16px;">
-          <!-- ETA to Asteroid -->
-          <div id="etaAsteroidWrap" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--orange);text-transform:uppercase;letter-spacing:.12em;">Asteroid ETA</div>
-            <div id="etaAsteroid" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--orange);line-height:1;text-shadow:0 0 8px rgba(232,141,45,.5);">—:——</div>
-            <div style="width:80px;height:2px;background:rgba(255,255,255,.06);border:1px solid var(--border);">
-              <div id="etaAsteroidBar" style="height:100%;background:var(--orange);width:0%;transition:width .2s linear;box-shadow:0 0 4px rgba(232,141,45,.5);"></div>
-            </div>
-          </div>
-          <div style="width:1px;height:28px;background:var(--border-bright);"></div>
-          <!-- ETA to Station -->
-          <div id="etaStationWrap" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--cyan);text-transform:uppercase;letter-spacing:.12em;">Station ETA</div>
-            <div id="etaStation" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--cyan);line-height:1;text-shadow:0 0 8px rgba(0,212,255,.5);">—:——</div>
-            <div style="width:80px;height:2px;background:rgba(255,255,255,.06);border:1px solid var(--border);">
-              <div id="etaStationBar" style="height:100%;background:var(--cyan);width:0%;transition:width .2s linear;box-shadow:0 0 4px rgba(0,212,255,.5);"></div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
     <div class="card-body" style="padding:0;">
@@ -249,10 +228,6 @@
           <div id="asteroidObj" style="position:absolute;right:-260px;top:0;bottom:0;width:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:5;transition:right 0s;">
             <img id="asteroidImg" src="https://morb1ddonk.github.io/spaceorepra/img/asteroid_mini.png"
               style="width:192px;height:auto;opacity:0.7;transition:opacity .4s,filter .4s;" alt="asteroid">
-            <div id="asteroidNameWrap" style="text-align:center;">
-              <div id="asteroidName" style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(184,115,51,0.6);letter-spacing:.1em;text-transform:uppercase;min-width:80px;text-align:center;"></div>
-              <div id="asteroidPurity" style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(184,115,51,0.0);letter-spacing:.06em;margin-top:2px;transition:color .6s;text-align:center;"></div>
-            </div>
           </div>
 
           <!-- Prospector ship — always centered vertically, moves horizontally -->
@@ -266,22 +241,65 @@
         <!-- ── HUD LAYER — outside zoom, never scales ── -->
         <div id="sceneHud" style="position:absolute;inset:0;pointer-events:none;z-index:50;">
 
-          <!-- Idle objective overlay -->
-          <div id="sceneIdleOverlay" style="
-            position:absolute;inset:0;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-            transition:opacity .8s ease;
-          ">
-            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(0,212,255,.5);text-transform:uppercase;letter-spacing:.18em;">Current Objective</div>
-            <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-bright);letter-spacing:.06em;text-shadow:0 0 20px rgba(0,212,255,.3);">Dispatch the Miner</div>
-            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);">Head to the Aaron Belt — return with up to <span style="color:var(--orange);">48 SCU</span></div>
+
+          <!-- ── IN-SCENE NEWS PANEL ── -->
+          <div id="sceneNewsPanel" style="display:none;position:absolute;inset:0;z-index:70;animation:storyFadeIn .6s ease;">
+
+            <!-- Letterbox bars -->
+            <div style="position:absolute;top:0;left:0;right:0;height:20px;background:#000;z-index:2;"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:20px;background:#000;z-index:2;"></div>
+
+            <!-- Two-column grid: image left, text right -->
+            <div style="position:absolute;inset:0;display:grid;grid-template-columns:280px 1fr;background:var(--bg-card);border:1px solid rgba(255,255,255,.07);">
+
+              <!-- LEFT: image -->
+              <div style="position:relative;overflow:hidden;background:#050810;">
+                <img id="sceneNewsBg" src="" alt=""
+                  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1.2s ease;">
+                <!-- Gradient fade right into text panel -->
+                <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 40%,var(--bg-card) 100%);z-index:1;"></div>
+                <!-- Publication masthead overlay on image -->
+                <div style="position:absolute;top:20px;left:16px;z-index:2;display:flex;align-items:center;gap:8px;">
+                  <div id="sceneNewsSeverity" style="font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.16em;padding:3px 10px;border:1px solid;border-radius:3px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);"></div>
+                  <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.08em;">Market Bulletin</div>
+                </div>
+              </div>
+
+              <!-- RIGHT: article text -->
+              <div style="display:flex;flex-direction:column;justify-content:center;padding:24px 24px 24px 20px;gap:0;border-left:1px solid rgba(255,255,255,.05);">
+
+                <!-- Publication header -->
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07);">
+                  <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--cyan);text-transform:uppercase;letter-spacing:.2em;text-shadow:0 0 8px rgba(0,212,255,.4);">⬡ UEE Galactic Times</div>
+                  <div style="flex:1;height:1px;background:rgba(0,212,255,.12);"></div>
+                  <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.06em;">MARKET DISPATCH</div>
+                </div>
+
+                <!-- Headline -->
+                <div id="sceneNewsHeadline" style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text-bright);line-height:1.25;margin-bottom:10px;"></div>
+
+                <!-- Body copy — newspaper column feel with left border -->
+                <div id="sceneNewsBody" style="font-size:11px;color:var(--text-dim);line-height:1.7;border-left:2px solid;padding-left:10px;margin-bottom:12px;"></div>
+
+                <!-- Impact widget -->
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.3);">
+                  <div>
+                    <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px;">Market Impact</div>
+                    <div id="sceneNewsImpact" style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;line-height:1;"></div>
+                  </div>
+                  <div style="width:1px;height:28px;background:rgba(255,255,255,.08);"></div>
+                  <div id="sceneNewsMat" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;"></div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Timer bar — on top of letterbox at bottom -->
+            <div style="position:absolute;bottom:20px;left:0;right:0;height:2px;background:rgba(255,255,255,.04);z-index:3;">
+              <div id="sceneNewsTimer" style="height:100%;width:100%;"></div>
+            </div>
+
           </div>
-
-          <!-- Status overlay — bottom center -->
-          <div id="mineStatusOverlay" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:.08em;white-space:nowrap;opacity:0;text-shadow:0 0 8px rgba(232,141,45,0.6);pointer-events:none;"></div>
-
-          <!-- Station label — bottom left, always visible when docked -->
-          <div id="stationLabel" style="position:absolute;bottom:8px;left:12px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(0,212,255,0.5);letter-spacing:.08em;transition:opacity .5s;">Refinery Station</div>
 
         </div><!-- /sceneHud -->
 
@@ -307,6 +325,45 @@
 
         <!-- BARRELS — always visible, fill column height -->
         <div style="display:flex;flex-direction:column;justify-content:center;">
+
+          <!-- FLIGHT TERMINAL — compact nav readout above ore hold -->
+          <div style="background:rgba(0,0,0,.5);border:1px solid var(--border);padding:7px 9px;margin-bottom:8px;min-width:190px;">
+            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.14em;border-bottom:1px solid var(--border);padding-bottom:3px;margin-bottom:5px;">◈ Nav Terminal</div>
+            <!-- Status -->
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Status</span>
+              <span id="dispatchStatus" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--cyan);">Ready</span>
+            </div>
+            <!-- Idle objective (fades out during flight) -->
+            <div id="sceneIdleOverlay" style="transition:opacity .8s ease;">
+              <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-dim);line-height:1.6;">OBJ // Dispatch the Miner<br><span style="color:rgba(255,255,255,.25);">Belt: Aaron · Max <span style="color:var(--orange);">48 SCU</span></span></div>
+            </div>
+            <!-- Phase status (shown during flight) -->
+            <div id="mineStatusOverlay" style="opacity:0;font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);letter-spacing:.05em;transition:opacity .4s;line-height:1.4;"></div>
+            <!-- ETAs (shown during flight) -->
+            <div id="dispatchCountdownWrap" style="display:none;flex-direction:column;gap:4px;margin-top:4px;">
+              <div id="etaAsteroidWrap" style="display:flex;align-items:center;gap:6px;">
+                <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--orange);width:14px;flex-shrink:0;">◈</span>
+                <span id="etaAsteroid" style="font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--orange);width:34px;flex-shrink:0;">—:——</span>
+                <div style="flex:1;height:3px;background:rgba(255,255,255,.06);border:1px solid var(--border);">
+                  <div id="etaAsteroidBar" style="height:100%;background:var(--orange);width:0%;transition:width .2s linear;box-shadow:0 0 4px rgba(232,141,45,.5);"></div>
+                </div>
+              </div>
+              <div id="etaStationWrap" style="display:flex;align-items:center;gap:6px;">
+                <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--cyan);width:14px;flex-shrink:0;">⌂</span>
+                <span id="etaStation" style="font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--cyan);width:34px;flex-shrink:0;">—:——</span>
+                <div style="flex:1;height:3px;background:rgba(255,255,255,.06);border:1px solid var(--border);">
+                  <div id="etaStationBar" style="height:100%;background:var(--cyan);width:0%;transition:width .2s linear;box-shadow:0 0 4px rgba(0,212,255,.5);"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Asteroid name/purity (shown when at asteroid) -->
+            <div style="margin-top:4px;min-height:0;">
+              <div id="asteroidName" style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(184,115,51,0.6);letter-spacing:.1em;text-transform:uppercase;"></div>
+              <div id="asteroidPurity" style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(184,115,51,0.0);letter-spacing:.06em;margin-top:1px;transition:color .6s;"></div>
+            </div>
+          </div>
+
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Ore Hold</span>
             <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);" id="miningBarPct"></span>
@@ -386,7 +443,7 @@
 
         <!-- Dispatch button + fuel status -->
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:4px;">
-          <button class="btn-confirm" id="dispatchBtn" onclick="dispatchMiner()" style="padding:16px 28px;font-size:13px;white-space:nowrap;">
+          <button class="btn-confirm" id="dispatchBtn" onclick="openStarMap()" style="padding:16px 28px;font-size:13px;white-space:nowrap;">
             ⬡ Dispatch Miner
           </button>
           <button class="btn-confirm" id="contractsBtn" onclick="openContractBoard()" disabled style="padding:10px 28px;font-size:11px;white-space:nowrap;letter-spacing:.1em;">
@@ -591,6 +648,21 @@
             ⬡ Confirm Work Order
           </button>
         </div>
+
+        <!-- Abort confirm — shown inline when abort is clicked -->
+        <div id="abortConfirmRow" style="display:none;align-items:center;gap:10px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);letter-spacing:.06em;">Abort refinement?</div>
+          <button onclick="confirmAbortSell()"
+            style="padding:6px 16px;background:transparent;border:1px solid var(--orange);color:var(--orange);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;border-radius:8px;transition:all .2s;"
+            onmouseover="this.style.background='rgba(232,141,45,.12)'" onmouseout="this.style.background='transparent'">
+            Sell Partial &amp; Discard Rest
+          </button>
+          <button onclick="dismissAbortConfirm()"
+            style="padding:6px 16px;background:transparent;border:1px solid var(--border-bright);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;border-radius:8px;transition:all .2s;"
+            onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'">
+            Continue Refining
+          </button>
+        </div>
       </div>
     </div>
 
@@ -653,7 +725,7 @@
           <div class="results-scroll-inner" style="max-height:360px;overflow-y:auto;">
             <table class="results-table">
               <thead>
-                <tr><th>#</th><th>Grade</th><th>Purity</th><th>Outcome</th><th style="text-align:right">Value</th></tr>
+                <tr><th>#</th><th>Ore</th><th>Grade</th><th>Purity</th><th style="text-align:right">Value</th></tr>
               </thead>
               <tbody id="resultsBody"></tbody>
             </table>
@@ -1335,6 +1407,8 @@ let userWallet = 50000;
 let pendingRevenue = 0, currentWorkOrderFee = 0, liveAccumulatedValue = 0;
 
 let refineryUnits = [], refineryIdx = 0, refineryRunning = false, refineryAborted = false;
+let _refineryHaul = []; // full toRefine array passed from commitManifest
+let _dispatchTarget = null; // asteroid selected for current/next dispatch
 let currentTimeout = null, timerInterval = null;
 let refineryTotalMs = 0, refineryStartTime = 0;
 
@@ -1389,8 +1463,9 @@ let dispatchInterval = null;
 
 // ── FUEL SYSTEM ──
 const FUEL_MAX           = 100;
-const FUEL_TRIP_MIN      = 15;   // lightest possible one-way leg
-const FUEL_TRIP_MAX      = 35;   // heaviest possible one-way leg
+const FUEL_TRIP_MIN      = 15;   // one-way fuel at 300 Mm
+const FUEL_TRIP_MAX      = 45;   // one-way fuel at 900 Mm
+const DISTANCE_BASE_MM   = 300;  // baseline: 300 Mm = 12s flight, 15 fuel/leg
 let   minerFuel          = 100;
 
 // Roll random fuel cost for this trip (called at dispatch time)
@@ -1428,8 +1503,15 @@ function updateFuelUI() {
   document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
   document.getElementById('fuelRefuelCost').textContent =
     isFull ? 'Tank full' : refuelCost.toLocaleString() + ' aUEC';
-  document.getElementById('fuelTripCost').textContent =
-    `${minTrip}–${maxTrip} units · ${tripCostMin.toLocaleString()}–${tripCostMax.toLocaleString()} aUEC`;
+  if (_dispatchTarget) {
+    const _dtFuel = Math.round(15 * _dispatchTarget.distance / DISTANCE_BASE_MM) * 2;
+    const _dtCost = Math.round(_dtFuel * pricePerUnit);
+    document.getElementById('fuelTripCost').textContent =
+      `${_dispatchTarget.id} · ${_dispatchTarget.distance} Mm · ${_dtFuel} units · ${_dtCost.toLocaleString()} aUEC`;
+  } else {
+    document.getElementById('fuelTripCost').textContent =
+      `${minTrip}–${maxTrip} units · ${tripCostMin.toLocaleString()}–${tripCostMax.toLocaleString()} aUEC`;
+  }
 
   // Refuel button
   const refuelBtn = document.getElementById('refuelBtn');
@@ -1860,13 +1942,12 @@ function rollPurityBias() {
   return 'pristine';
 }
 
-function startAsteroidGlitch() {
+function startAsteroidGlitch(nameOverride) {
   const el = document.getElementById('asteroidName');
   const purEl = document.getElementById('asteroidPurity');
   if (!el) return;
 
-  // Pick a new mystery name each dispatch
-  asteroidDisplayName = rollAsteroidName();
+  asteroidDisplayName = nameOverride || rollAsteroidName();
   asteroidPurityBias  = null;
 
   // Reset purity reveal
@@ -1891,6 +1972,9 @@ function startAsteroidGlitch() {
 }
 
 function revealAsteroidName() {
+  // Mark the target asteroid as discovered on the star map
+  if (_dispatchTarget) { _dispatchTarget.discovered = true; }
+
   // Ship has arrived — roll the purity bias (slot machine lands)
   asteroidPurityBias = rollPurityBias();
   const bias = PURITY_BIAS_NAMES[asteroidPurityBias];
@@ -2058,8 +2142,6 @@ function payTowBack() {
   const _towIo = document.getElementById('sceneIdleOverlay');
   if (_towIo) _towIo.style.opacity = '1';
 
-  // Haul is lost — empty manifest
-  haul = [];
   minerFuel = 0;
   updateFuelUI();
 
@@ -2233,16 +2315,24 @@ function dispatchMiner() {
   if (dispatchInterval) return;
   if (minerFuel <= 0) return;
 
-  const tripFuelOneWay = rollTripFuel();  // random 15–35 units per leg
+  // Pick target asteroid — use star map selection or random
+  _dispatchTarget = (_smSelected && STAR_MAP_ASTEROIDS.find(a => a.id === _smSelected))
+    || STAR_MAP_ASTEROIDS[Math.floor(Math.random() * STAR_MAP_ASTEROIDS.length)];
+  const distRatio      = _dispatchTarget.distance / DISTANCE_BASE_MM;  // 1.0 at 300 Mm, 3.0 at 900 Mm
+  const tripFuelOneWay = Math.round(15 * distRatio);  // 15 at 300 Mm → 45 at 900 Mm
   const fuelRatio  = Math.min(1, minerFuel / (tripFuelOneWay * 2));
   const isPartial  = fuelRatio < 1;
   const fuelToUse  = Math.min(minerFuel, tripFuelOneWay * 2);
   const fuelStart  = minerFuel;
 
-  // Fixed 60-second trip: 25s out, 5-10s mining, 25-30s back
-  const miningMs   = 5000 + Math.random() * 5000;   // 5–10s
-  const transitMs  = (60000 - miningMs) / 2;         // split remainder evenly
-  const totalMs    = transitMs + miningMs + transitMs; // always ~60s
+  // Fixed phase durations — FLIGHT_MS: 300 Mm=12s, 600 Mm=24s, 900 Mm=36s
+  const UNDOCK_MS  = 3000;
+  const FLIGHT_MS  = Math.round(12000 * distRatio);  // 12s × (dist/300)
+  const APPROACH_MS = 3000;   // asteroid slides in / out
+  const miningMs    = 10000;  // extraction
+  const outboundMs  = UNDOCK_MS + FLIGHT_MS + APPROACH_MS; // 16 000ms
+  const returnMs    = APPROACH_MS + FLIGHT_MS + UNDOCK_MS;  // 16 000ms
+  const transitMs   = outboundMs; // kept for boost/ETA compatibility
 
   const btn       = document.getElementById('dispatchBtn');
   const refuelBtn = document.getElementById('refuelBtn');
@@ -2267,7 +2357,7 @@ function dispatchMiner() {
   const idleOverlay = document.getElementById('sceneIdleOverlay');
   if (idleOverlay) { idleOverlay.style.opacity = '0'; idleOverlay.style.pointerEvents = 'none'; }
   sceneZoomOut(); // ensure we start at normal view
-  startAsteroidGlitch();
+  startAsteroidGlitch(_dispatchTarget.id);
 
   document.getElementById('manifestCard').style.opacity = '.4';
   document.getElementById('manifestCard').style.pointerEvents = 'none';
@@ -2308,33 +2398,22 @@ function dispatchMiner() {
   overlay.style.opacity = '1';
   overlay.textContent   = MINE_PHASES[0];
 
-  // ── PHASE 1: Ship flies from left to center; station slides off left ──
+  // ── PHASE 1: Undock — ship to center, station exits (UNDOCK_MS = 3s) ──
   setTimeout(() => {
-    // Ship flies from near-station to scene center
-    ship.style.transition = `left ${transitMs * 0.3}ms cubic-bezier(0.2,0,0.5,1)`;
+    ship.style.transition = `left ${UNDOCK_MS}ms cubic-bezier(0.2,0,0.5,1)`;
     ship.style.left = '50%';
-
     if (stationObj) {
-      stationObj.style.transition = `left ${transitMs * 0.5}ms cubic-bezier(0.4,0,1,1)`;
+      stationObj.style.transition = `left ${UNDOCK_MS}ms cubic-bezier(0.4,0,1,1)`;
       stationObj.style.left = '-200px';
     }
     if (stationLbl) { stationLbl.style.transition = 'opacity 1s'; stationLbl.style.opacity = '0'; }
-    // Asteroid begins drifting into view from right; parallax decelerates in sync
-    setTimeout(() => {
-      if (asteroidObj) {
-        asteroidObj.style.transition = `right ${transitMs * 0.7}ms cubic-bezier(0.2,0,0.4,1)`;
-        asteroidObj.style.right = 'calc(50% - 252px)'; // stops just before ship
-      }
-      // Decelerate stars to a stop over the same duration as the asteroid approach
-      setStarSpeed(0, transitMs * 0.7);
-    }, transitMs * 0.25);
   }, 200);
 
   // ── Dual ETA countdown — reads directly from phaseEtaMs() ──
-  // Phase: 'outbound' | 'mining' | 'return'
-  let _timerPhase = 'outbound';
-  const _outboundMs = transitMs; // full outbound duration for progress bar
-  const _returnMs   = transitMs; // full return duration for progress bar
+  // _timerPhase: 'undocking' | 'outbound' | 'mining' | 'return'
+  let _timerPhase = 'undocking';
+  const _outboundMs = FLIGHT_MS;
+  const _returnMs   = FLIGHT_MS;
 
   function _fmtMs(ms) {
     const s = Math.max(0, Math.ceil(ms / 1000));
@@ -2348,9 +2427,8 @@ function dispatchMiner() {
       const pct = Math.min(100, (1 - eta / _outboundMs) * 100);
       document.getElementById('etaAsteroid').textContent = _fmtMs(eta);
       document.getElementById('etaAsteroidBar').style.width = pct + '%';
-      // Boost: flash orange-white
-      document.getElementById('etaAsteroid').style.color = _boostSpeedMult > 1 ? '#fff' : 'var(--orange)';
-      document.getElementById('etaAsteroid').style.textShadow = _boostSpeedMult > 1
+      document.getElementById('etaAsteroid').style.color = _boostActive ? '#fff' : 'var(--orange)';
+      document.getElementById('etaAsteroid').style.textShadow = _boostActive
         ? '0 0 12px rgba(255,255,255,.8)' : '0 0 8px rgba(232,141,45,.5)';
       document.getElementById('etaStation').textContent = '—:——';
       document.getElementById('etaStationBar').style.width = '0%';
@@ -2359,22 +2437,22 @@ function dispatchMiner() {
       document.getElementById('etaAsteroidBar').style.width = '100%';
       document.getElementById('etaStation').textContent = '—:——';
       document.getElementById('etaStationBar').style.width = '0%';
-    } else { // return
+    } else if (_timerPhase === 'return') {
       document.getElementById('etaAsteroid').textContent = '✓';
       document.getElementById('etaAsteroidBar').style.width = '100%';
       document.getElementById('etaAsteroid').style.color = 'var(--orange)';
       const pct = Math.min(100, (1 - eta / _returnMs) * 100);
       document.getElementById('etaStation').textContent = _fmtMs(eta);
       document.getElementById('etaStationBar').style.width = pct + '%';
-      // Boost: flash cyan-white
-      document.getElementById('etaStation').style.color = _boostSpeedMult > 1 ? '#fff' : 'var(--cyan)';
-      document.getElementById('etaStation').style.textShadow = _boostSpeedMult > 1
+      document.getElementById('etaStation').style.color = _boostActive ? '#fff' : 'var(--cyan)';
+      document.getElementById('etaStation').style.textShadow = _boostActive
         ? '0 0 12px rgba(255,255,255,.8)' : '0 0 8px rgba(0,212,255,.5)';
     }
+    // 'undocking' — bars hold at 0%, no update needed
   }, 100);
 
   // ── Real-time fuel drain ──
-  const totalTransit = transitMs * 2;
+  const totalTransit = outboundMs + returnMs;
   const fuelPerTick = (fuelToUse / (totalTransit / 200));
   fuelDrainInterval = setInterval(() => {
     if (encounterResumeFn) return;
@@ -2396,183 +2474,185 @@ function dispatchMiner() {
   const msgTimer = setInterval(() => {
     phaseIdx = Math.min(phaseIdx + 1, MINE_PHASES.length - 1);
     overlay.textContent = MINE_PHASES[phaseIdx];
-  }, transitMs / MINE_PHASES.length);
+  }, outboundMs / MINE_PHASES.length);
 
-  // ── PHASE 2: Arrive at asteroid → encounter → mine ──
-  schedulePhase(() => {
-    clearInterval(msgTimer);
-    deactivateBoost(); // boost off on arrival at asteroid
-
-    maybeFireEncounter('outbound', () => {
-      // Stars fully stopped (ramp already started with asteroid approach)
-      setStarSpeed(0, 0);
-      lockSceneOnMidpoint(); // no-op stub, zoom stays at 1.5×
-
-      setShipImage(SHIP_OFF); // engine off — docked at asteroid
-
-      if (asteroid) {
-        asteroid.style.opacity = '1';
-        asteroid.style.filter  = 'brightness(1.4) drop-shadow(0 0 6px rgba(232,141,45,.8))';
+  // ── Outbound flight — boostable, starts after undock ──
+  setTimeout(() => {
+    _inFlightPhase = true;
+    updateBoostBtn();
+    _timerPhase    = 'outbound';
+    schedulePhase(() => {
+      // ── Outbound flight complete → Asteroid approach (APPROACH_MS, fixed) ──
+      _inFlightPhase = false;
+      updateBoostBtn();
+      clearInterval(msgTimer);
+      if (asteroidObj) {
+        asteroidObj.style.transition = `right ${APPROACH_MS}ms cubic-bezier(0.2,0,0.4,1)`;
+        asteroidObj.style.right = 'calc(50% - 252px)';
       }
-      document.getElementById('dispatchStatus').textContent = 'Mining';
-      _timerPhase = 'mining';
-      revealAsteroidName();
-      overlay.textContent = MINING_LABELS[0];
-      if (isPartial) {
-        document.getElementById('miningBarLabel').textContent =
-          `Partial haul (~${Math.round(fuelRatio * 100)}% capacity)`;
-      }
+      setStarSpeed(0, APPROACH_MS);
 
-      const miningStart = Date.now();
-      let labelIdx = 0;
-      const labelStep = miningMs / MINING_LABELS.length;
-      resetBarrels();
-
-      const miningInterval = setInterval(() => {
-        const el  = Date.now() - miningStart;
-        const pct = Math.min(100, (el / miningMs) * 100);
-        updateBarrels(pct);
-        document.getElementById('miningBarPct').textContent = Math.round(pct) + '%';
-        const li = Math.floor(el / labelStep);
-        if (li !== labelIdx && li < MINING_LABELS.length) {
-          labelIdx = li;
-          overlay.textContent = MINING_LABELS[li];
-          document.getElementById('miningBarLabel').textContent = MINING_LABELS[li];
-        }
-
-        if (el >= miningMs) {
-          clearInterval(miningInterval);
-          updateBarrels(100);
-          document.getElementById('miningBarPct').textContent  = '100%';
-          document.getElementById('miningBarLabel').textContent = '✓ Hold secured';
-          if (asteroid) { asteroid.style.opacity = '0.5'; asteroid.style.filter = ''; }
-
-          // ── PHASE 3: Return — asteroid exits fast, station comes back, ship flies home ──
-          document.getElementById('dispatchStatus').textContent = 'Returning';
-          _timerPhase = 'return';
-          overlay.textContent = 'Hold secured — returning to station...';
-          _starDir = 1;
-          ship.style.transition = 'none';
-          ship.style.left = '50%'; // snap back to center before departing
-          ship.style.setProperty('--sx', '-1');
-          ship.style.transform = 'translate(-50%,-50%) scaleX(-1)';
-          setShipImage(SHIP_ON); // engine on — heading home
-          setStarSpeed(0.8, 1000);
-          sceneZoomOut();
-
-          // Asteroid exits right in exactly 2s
-          if (asteroidObj) {
-            asteroidObj.style.transition = 'right 2s cubic-bezier(0.4,0,1,1)';
-            asteroidObj.style.right = '-260px';
+      setTimeout(() => {
+        // ── Approach complete → Mining ──
+        deactivateBoost();
+        maybeFireEncounter('outbound', () => {
+          setStarSpeed(0, 0);
+          lockSceneOnMidpoint();
+          setShipImage(SHIP_OFF);
+          if (asteroid) {
+            asteroid.style.opacity = '1';
+            asteroid.style.filter  = 'brightness(1.4) drop-shadow(0 0 6px rgba(232,141,45,.8))';
           }
-          // Station slides back in from left
-          setTimeout(() => {
-            if (stationObj) {
-              stationObj.style.transition = `left ${transitMs * 0.6}ms cubic-bezier(0,0,0.3,1)`;
-              stationObj.style.left = '0px';
+          document.getElementById('dispatchStatus').textContent = 'Mining';
+          _timerPhase = 'mining';
+          revealAsteroidName();
+          overlay.textContent = MINING_LABELS[0];
+          if (isPartial) {
+            document.getElementById('miningBarLabel').textContent =
+              `Partial haul (~${Math.round(fuelRatio * 100)}% capacity)`;
+          }
+
+          const miningStart = Date.now();
+          let labelIdx = 0;
+          const labelStep = miningMs / MINING_LABELS.length;
+          resetBarrels();
+
+          const miningInterval = setInterval(() => {
+            const el  = Date.now() - miningStart;
+            const pct = Math.min(100, (el / miningMs) * 100);
+            updateBarrels(pct);
+            document.getElementById('miningBarPct').textContent = Math.round(pct) + '%';
+            const li = Math.floor(el / labelStep);
+            if (li !== labelIdx && li < MINING_LABELS.length) {
+              labelIdx = li;
+              overlay.textContent = MINING_LABELS[li];
+              document.getElementById('miningBarLabel').textContent = MINING_LABELS[li];
             }
-            if (stationLbl) { stationLbl.style.transition = 'opacity 1.5s 0.5s'; stationLbl.style.opacity = '1'; }
-          }, transitMs * 0.35);
 
-          // Ship flies left toward station, shrinks, then fades out before docking
-          // Parallax decelerates to stop over the same duration as the fly
-          setTimeout(() => {
-            const flyDur = transitMs * 0.5;
-            setStarSpeed(0, flyDur);
-            ship.style.transition = `left ${flyDur}ms ease-in, transform ${flyDur}ms ease-in`;
-            ship.style.left = '8%';
-            ship.style.transform = 'translate(-50%,-50%) scaleX(-1) scale(0.5)';
-            // Fade out in the final 30% of the fly animation
-            setTimeout(() => {
-              ship.style.transition += `, opacity ${flyDur * 0.35}ms ease-in`;
-              ship.style.opacity = '0';
-            }, flyDur * 0.65);
-          }, transitMs * 0.4);
+            if (el >= miningMs) {
+              clearInterval(miningInterval);
+              updateBarrels(100);
+              document.getElementById('miningBarPct').textContent  = '100%';
+              document.getElementById('miningBarLabel').textContent = '✓ Hold secured';
+              if (asteroid) { asteroid.style.opacity = '0.5'; asteroid.style.filter = ''; }
 
-          // Wait for ship to actually arrive, THEN fire return encounter + complete
-          schedulePhase(() => {
-            deactivateBoost(); // boost off on arrival at station
-            // Wrap in try/catch so a broken encounter never leaves the
-            // dispatch and fuel-drain intervals running indefinitely.
-            try {
-              maybeFireEncounter('return', () => {
-                // ── ARRIVAL — start offload sequence ──
-                clearInterval(dispatchInterval);
-                clearInterval(fuelDrainInterval);
-                dispatchInterval  = null;
-                fuelDrainInterval = null;
+              // ── Mining complete → Asteroid departs (APPROACH_MS, fixed) ──
+              document.getElementById('dispatchStatus').textContent = 'Returning';
+              overlay.textContent = 'Hold secured — returning to station...';
+              _starDir = 1;
+              if (asteroidObj) {
+                asteroidObj.style.transition = `right ${APPROACH_MS}ms cubic-bezier(0.4,0,1,1)`;
+                asteroidObj.style.right = '-260px';
+              }
+              ship.style.transition = 'none';
+              ship.style.left = '50%';
+              ship.style.setProperty('--sx', '-1');
+              ship.style.transform = 'translate(-50%,-50%) scaleX(-1)';
+              setShipImage(SHIP_ON);
+              setStarSpeed(0.8, 1000);
+              sceneZoomOut();
 
-                minerFuel = Math.max(0, fuelStart - fuelToUse);
-                updateFuelUI();
+              setTimeout(() => {
+                // ── Depart complete → Return flight (boostable, FLIGHT_MS) ──
+                _inFlightPhase = true;
+                updateBoostBtn();
+                _timerPhase    = 'return';
+                schedulePhase(() => {
+                  // ── Return flight complete → Dock (UNDOCK_MS, fixed) ──
+                  _inFlightPhase = false;
+                  updateBoostBtn();
+                  if (stationObj) {
+                    stationObj.style.transition = `left ${UNDOCK_MS}ms cubic-bezier(0,0,0.3,1)`;
+                    stationObj.style.left = '0px';
+                  }
+                  if (stationLbl) { stationLbl.style.transition = 'opacity 1.5s 0.5s'; stationLbl.style.opacity = '1'; }
+                  setStarSpeed(0, UNDOCK_MS);
+                  ship.style.transition = `left ${UNDOCK_MS}ms ease-in, transform ${UNDOCK_MS}ms ease-in`;
+                  ship.style.left = '8%';
+                  ship.style.transform = 'translate(-50%,-50%) scaleX(-1) scale(0.5)';
+                  setTimeout(() => {
+                    ship.style.transition += `, opacity ${UNDOCK_MS * 0.35}ms ease-in`;
+                    ship.style.opacity = '0';
+                  }, UNDOCK_MS * 0.65);
 
-                // Generate haul now so it's ready
-                let rawHaul = generateHaul(fuelRatio);
-                rawHaul     = applyHaulMods(rawHaul);
-                rawHaul     = applyAsteroidBiasToHaul(rawHaul);
-                haul        = rawHaul;
-                stopAsteroidGlitch();
+                  setTimeout(() => {
+                    // ── Dock complete → Arrival ──
+                    deactivateBoost();
+                    try {
+                      maybeFireEncounter('return', () => {
+                        clearInterval(dispatchInterval);
+                        clearInterval(fuelDrainInterval);
+                        dispatchInterval  = null;
+                        fuelDrainInterval = null;
 
-                // Stop parallax, clean up animation classes
-                setStarSpeed(0, 600);
-                deactivateBoost();
-                document.getElementById('spaceCanvas').classList.remove('scene-flying', 'scene-boosting', 'scene-drifting');
-                // Reset foreground objects
-                const _so = document.getElementById('stationObj');
-                const _ao = document.getElementById('asteroidObj');
-                if (_so) { _so.style.transition = 'none'; _so.style.left = '0px'; }
-                if (_ao) { _ao.style.transition = 'none'; _ao.style.right = '-260px'; }
+                        minerFuel = Math.max(0, fuelStart - fuelToUse);
+                        updateFuelUI();
 
-                // Hide ship, reset to start position for next dispatch
-                ship.style.transition = 'none';
-                ship.style.opacity    = '0';
-                ship.style.left       = '10%';
-                ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
-                ship.style.setProperty('--sx', '1');
-                setShipImage(SHIP_OFF); // engine off — docked
-                document.getElementById('dispatchCountdownWrap').style.display = 'none';
-                document.getElementById('dispatchIdleText').style.display = 'none';
+                        let rawHaul = generateHaul(fuelRatio);
+                        rawHaul     = applyHaulMods(rawHaul);
+                        rawHaul     = applyAsteroidBiasToHaul(rawHaul);
+                        haul        = rawHaul;
+                        stopAsteroidGlitch();
 
-                // Start offload visual
-                startOffloadSequence(haul, () => {
-                  // ── OFFLOAD COMPLETE — now unlock ──
-                  renderManifest();
-                  overlay.textContent = '✓ Manifest ready';
-                  overlay.style.opacity = '1';
-                  document.getElementById('dispatchStatus').textContent = 'Docked';
-                  document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
-                  document.getElementById('dispatchIdleText').style.display = 'none';
-                  const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
+                        setStarSpeed(0, 600);
+                        deactivateBoost();
+                        document.getElementById('spaceCanvas').classList.remove('scene-flying', 'scene-boosting', 'scene-drifting');
+                        const _so = document.getElementById('stationObj');
+                        const _ao = document.getElementById('asteroidObj');
+                        if (_so) { _so.style.transition = 'none'; _so.style.left = '0px'; }
+                        if (_ao) { _ao.style.transition = 'none'; _ao.style.right = '-260px'; }
 
-                  btn.disabled          = false;
-                  btn.textContent       = '⬡ Send Again';
-                  refuelBtn.disabled    = false;
-                  refuelBtn.style.opacity = '1';
-                  const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; }
-                  updateFuelUI();
-                });
-              });
-            } catch (e) {
-              // Ensure intervals are always cleared even if the encounter throws
-              console.error('[dispatch] return encounter error:', e);
-              clearInterval(dispatchInterval);
-              clearInterval(fuelDrainInterval);
-              dispatchInterval  = null;
-              fuelDrainInterval = null;
-              btn.disabled          = false;
-              btn.textContent       = '⬡ Send Again';
-              refuelBtn.disabled    = false;
-              refuelBtn.style.opacity = '1';
-              const _sb3 = document.getElementById('shopHeaderBtn'); if (_sb3) { _sb3.disabled = false; _sb3.style.opacity = '1'; }
-              document.getElementById('dispatchCountdownWrap').style.display = 'none';
-              document.getElementById('dispatchIdleText').style.display = 'none';
-                  const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
-              stopAsteroidGlitch();
+                        ship.style.transition = 'none';
+                        ship.style.opacity    = '0';
+                        ship.style.left       = '10%';
+                        ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
+                        ship.style.setProperty('--sx', '1');
+                        setShipImage(SHIP_OFF);
+                        document.getElementById('dispatchCountdownWrap').style.display = 'none';
+                        document.getElementById('dispatchIdleText').style.display = 'none';
+
+                        startOffloadSequence(haul, () => {
+                          renderManifest();
+                          overlay.textContent = '✓ Manifest ready';
+                          overlay.style.opacity = '1';
+                          document.getElementById('dispatchStatus').textContent = 'Docked';
+                          document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
+                          document.getElementById('dispatchIdleText').style.display = 'none';
+                          const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
+
+                          btn.disabled       = false;
+                          btn.textContent    = '⬡ Send Again';
+                          refuelBtn.disabled = false;
+                          refuelBtn.style.opacity = '1';
+                          const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; }
+                          updateFuelUI();
+                        });
+                      });
+                    } catch (e) {
+                      console.error('[dispatch] return encounter error:', e);
+                      clearInterval(dispatchInterval);
+                      clearInterval(fuelDrainInterval);
+                      dispatchInterval  = null;
+                      fuelDrainInterval = null;
+                      btn.disabled       = false;
+                      btn.textContent    = '⬡ Send Again';
+                      refuelBtn.disabled = false;
+                      refuelBtn.style.opacity = '1';
+                      const _sb3 = document.getElementById('shopHeaderBtn'); if (_sb3) { _sb3.disabled = false; _sb3.style.opacity = '1'; }
+                      document.getElementById('dispatchCountdownWrap').style.display = 'none';
+                      document.getElementById('dispatchIdleText').style.display = 'none';
+                      const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
+                      stopAsteroidGlitch();
+                    }
+                  }, UNDOCK_MS);
+                }, FLIGHT_MS);
+              }, APPROACH_MS);
             }
-          }, transitMs); // schedulePhase handles return leg
-        }
-      }, 80);
-    });
-  }, transitMs); // schedulePhase handles outbound leg
+          }, 80);
+        });
+      }, APPROACH_MS);
+    }, FLIGHT_MS);
+  }, UNDOCK_MS);
 }
 
 // ── OFFLOAD SEQUENCE ──
@@ -2639,6 +2719,7 @@ function startOffloadSequence(haulData, onComplete) {
     const elapsed = Date.now() - start;
     const pct     = Math.min(100, (elapsed / OFFLOAD_MS) * 100);
     bar.style.width = pct + '%';
+    updateBarrels(100 - pct);
 
     // Cycle status labels
     const li = Math.floor(elapsed / labelStep);
@@ -2651,6 +2732,7 @@ function startOffloadSequence(haulData, onComplete) {
       clearInterval(offloadInterval);
       bar.style.width = '100%';
       label.textContent = '✓ Offload complete';
+      resetBarrels();
 
       // Brief pause on complete state, then hide and unlock
       setTimeout(() => {
@@ -2836,6 +2918,9 @@ function commitManifest() {
   const blendedPurity = Math.round(toRefine.reduce((s, h) => s + h.purity * h.scu, 0) / totalScu);
   const dominant = toRefine.reduce((a, b) => a.scu >= b.scu ? a : b);
 
+  // Store full haul for per-material unit generation
+  _refineryHaul = toRefine;
+
   // Feed the hidden inputs
   document.getElementById('materialType').value = dominant.matKey;
   document.getElementById('scuInput').value = totalScu;
@@ -2930,7 +3015,7 @@ function updateAll() {
 // ═══════════════════════════════════════════
 // PIP SYSTEM
 // ═══════════════════════════════════════════
-let SHIP_PIPS = 4;  // upgradeable later — 0-indexed pips per axis (0=level 1 … 4=level 5)
+let SHIP_PIPS = 3;  // upgradeable later — 0-indexed pips per axis (0=level 1 … 4=level 5)
 
 function pipsUsed() {
   return allocation.speed + allocation.quality + allocation.cost;
@@ -3079,32 +3164,25 @@ function buildDefragGrid(count) {
   for(let i=0;i<count;i++){const b=document.createElement('div');b.className='defrag-block';b.id='db-'+i;g.appendChild(b);}
 }
 
-function buildDefragLegend(matKey) {
-  const mat = materials[matKey];
-  if (!mat) return;
+function buildDefragLegend(haulItems) {
   const legend = document.getElementById('defragLegend');
   if (!legend) return;
-
-  // Keep the first two static items (Queued, Processing, Inert) then add grade swatches
-  const gradeOrder = ['gangue','subordinate','massive','highgrade','pristine'];
-  const gradeLabels = { gangue:'Gangue', subordinate:'Subordinate', massive:'Massive', highgrade:'High-Grade', pristine:'Pristine' };
-
-  // Remove old grade swatches if any
   legend.querySelectorAll('.grade-swatch').forEach(el => el.remove());
 
-  // Add a separator
   const sep = document.createElement('div');
   sep.style.cssText = 'width:1px;height:14px;background:rgba(255,255,255,.1);margin:0 4px;';
   sep.className = 'grade-swatch';
   legend.appendChild(sep);
 
-  gradeOrder.forEach(key => {
-    const style = gradeBlockStyle(mat.color, key, key === 'pristine');
-    const item  = document.createElement('div');
+  // One swatch per ore type in this haul
+  haulItems.forEach(h => {
+    const mat = materials[h.matKey];
+    if (!mat) return;
+    const item = document.createElement('div');
     item.className = 'dl-item grade-swatch';
     item.innerHTML = `
-      <div class="dl-sw" style="background:${style.bg};box-shadow:${style.glow};border:1px solid ${style.border};${key==='pristine'?'animation:sparkle 1.5s infinite alternate;--sparkle-color:'+mat.color+';':''}"></div>
-      <span>${gradeLabels[key]}</span>
+      <div class="dl-sw" style="background:${mat.color};box-shadow:0 0 4px ${mat.color};border:1px solid ${mat.color};opacity:.85;"></div>
+      <span style="color:${mat.color}">${mat.name}</span>
     `;
     legend.appendChild(item);
   });
@@ -3179,37 +3257,46 @@ function startRefinement() {
   pendingRevenue=0;
   updateWallet();
 
-  // Build unit queue
+  // Build unit queue — proportional across all haul items by SCU
   refineryUnits=[];
   const pristineChance=getWeightVal('pristineProb',allocation.quality);
   const effPenalty=getWeightVal('efficiencyQualityPenalty',allocation.cost);
-
-  // Purity range per quality pip level (0 pips = index 0, 4 pips = index 4)
   const purityRanges = PURITY_RANGES[allocation.quality];
   const pMin = purityRanges[0];
   const pMax = purityRanges[1];
 
-  for(let i=0;i<unitCount;i++){
-    const spdVol=allocation.speed*20;
-    let purity, grade, isPristine=false, isGangue=false, success;
+  const haulItems = _refineryHaul.length > 0 ? _refineryHaul : [{ matKey: matKey, scu: scu, purity: orePurity }];
+  const haulTotalScu = haulItems.reduce((s, h) => s + h.scu, 0);
 
-    if(Math.random()<pristineChance){
-      isPristine=true; success=true;
-      purity=900+Math.random()*100;
-      grade=grades.find(g=>g.key==='pristine');
-    } else {
-      // Roll within the pip-defined range, with speed adding variance
-      let roll = pMin + Math.random()*(pMax - pMin);
-      roll += (Math.random()*spdVol)-(spdVol/2);  // speed adds purity jitter
-      roll -= effPenalty * Math.random();           // yield penalises slightly
-      purity=clamp(roll, 100, 899);
-      isGangue=purity<200;
-      grade=getGrade(purity);
-      success=!isGangue && Math.random()>getFailRate();
+  // Distribute unitCount across haul items proportionally, last item gets remainder
+  let assigned = 0;
+  haulItems.forEach((h, hi) => {
+    const hMat = materials[h.matKey];
+    const isLast = hi === haulItems.length - 1;
+    const hUnits = isLast ? (unitCount - assigned) : Math.round(h.scu / haulTotalScu * unitCount);
+    assigned += hUnits;
+
+    for(let i=0;i<hUnits;i++){
+      const spdVol=allocation.speed*20;
+      let purity, grade, isPristine=false, isGangue=false, success;
+
+      if(Math.random()<pristineChance){
+        isPristine=true; success=true;
+        purity=900+Math.random()*100;
+        grade=grades.find(g=>g.key==='pristine');
+      } else {
+        let roll = pMin + Math.random()*(pMax - pMin);
+        roll += (Math.random()*spdVol)-(spdVol/2);
+        roll -= effPenalty * Math.random();
+        purity=clamp(roll, 100, 899);
+        isGangue=purity<200;
+        grade=getGrade(purity);
+        success=!isGangue && Math.random()>getFailRate();
+      }
+      const val=success?Math.round((hMat.baseVal*0.1)*grade.multiplier):0;
+      refineryUnits.push({purity:Math.round(purity),grade,isPristine,isGangue,success,value:val,fee:feePerUnit,matColor:hMat.color,matName:hMat.name});
     }
-    const val=success?Math.round((mat.baseVal*0.1)*grade.multiplier):0;
-    refineryUnits.push({purity:Math.round(purity),grade,isPristine,isGangue,success,value:val,fee:feePerUnit,matColor:mat.color});
-  }
+  });
 
   refineryIdx=0; refineryRunning=true; refineryAborted=false;
   refineryTotalMs=getTotalMs();
@@ -3229,7 +3316,7 @@ function startRefinement() {
   if (rbg) rbg.style.opacity = '0.22';
 
   buildDefragGrid(unitCount);
-  buildDefragLegend(matKey);
+  buildDefragLegend(haulItems);
 
   // Countdown interval
   timerInterval=setInterval(()=>{
@@ -3341,24 +3428,37 @@ function processNext(msPerUnit) {
 
 function appendRow(i, u) {
   const tr=document.createElement('tr');
-  const outcome = u.isGangue
-    ? `<span style="color:var(--text-dim)">Gangue</span>`
-    : u.success
-      ? `<span style="color:var(--green)">Refined</span>`
-      : `<span style="color:var(--red)">Inert</span>`;
   tr.innerHTML=`<td>${String(i+1).padStart(3,'0')}</td>
+    <td style="color:${u.matColor};font-size:10px;">${u.matName||'—'}</td>
     <td><span class="g-chip" style="background:${u.grade.color}22;color:${u.grade.color}">${u.grade.label}</span></td>
     <td style="color:${u.grade.color}">${u.purity}</td>
-    <td>${outcome}</td>
-    <td style="text-align:right;color:${u.value>0?'var(--text-bright)':'var(--text-dim)'}">${u.value.toLocaleString()}</td>`;
+    <td style="text-align:right;color:${u.value>0?'var(--text-bright)':'var(--text-dim)'}">${u.value>0?u.value.toLocaleString():'—'}</td>`;
   document.getElementById('resultsBody').prepend(tr);
   const scrollEl=document.querySelector('.results-scroll-inner');
   if(scrollEl)scrollEl.scrollTop=0;
 }
 
 function abortRefinement(){
-  refineryAborted=true;
-  if(currentTimeout)clearTimeout(currentTimeout);
+  // Pause the timer visually and show the inline confirm row
+  const btn = document.getElementById('actionBtn');
+  if (btn) btn.style.display = 'none';
+  document.getElementById('abortConfirmRow').style.display = 'flex';
+}
+
+function dismissAbortConfirm(){
+  // Resume — just restore the abort button
+  document.getElementById('abortConfirmRow').style.display = 'none';
+  const btn = document.getElementById('actionBtn');
+  if (btn) btn.style.display = '';
+}
+
+function confirmAbortSell(){
+  document.getElementById('abortConfirmRow').style.display = 'none';
+  const btn = document.getElementById('actionBtn');
+  if (btn) btn.style.display = '';
+  // Stop the running refinement and settle with what's been refined so far
+  refineryAborted = true;
+  if(currentTimeout) clearTimeout(currentTimeout);
   const rbg = document.getElementById('refineryBg');
   if (rbg) rbg.style.opacity = '0';
   finishRefining();
@@ -3370,9 +3470,9 @@ function finishRefining() {
   document.getElementById('rsTimer').textContent='00:00';
   document.getElementById('rsProgressFill').style.width='100%';
 
-  const meta=refineryAborted?('Aborted at unit '+refineryIdx):('Complete — '+refineryUnits.length+' units');
+  const meta=refineryAborted?('Partial — '+refineryIdx+' of '+refineryUnits.length+' units refined'):('Complete — '+refineryUnits.length+' units');
   document.getElementById('refineryMeta').textContent=meta;
-  if(refineryAborted){ setActionBtn('confirm'); return; }
+  // Whether aborted or complete, fall through to the summary/transfer flow below
 
   // Fade out refinery background
   const rbg = document.getElementById('refineryBg');
@@ -3950,6 +4050,9 @@ function showSuccessModal(credits, instant) {
   const mat = materials[matKey];
   const scu = parseFloat(document.getElementById('sumScuHero')?.textContent) || rawScu;
 
+  // Fire a random news event after every sale
+  fireNextNewsEvent();
+
   document.getElementById('successAmount').textContent = '+' + credits.toLocaleString() + ' aUEC';
   document.getElementById('successWalletLine').textContent = 'New balance: ' + userWallet.toLocaleString() + ' aUEC';
 
@@ -4484,9 +4587,9 @@ let newsArchive = [];
 async function fireNextNewsEvent() {
   const rows = await sbFetch('news_events?fired_at=is.null&select=*');
   if (!rows || rows.length === 0) {
-    // All fired — reset and loop
+    // All fired — reset all events so they can fire again
     await sbFetch('news_events', 'PATCH', { fired_at: null }, true);
-    scheduleNextNews(); return;
+    return fireNextNewsEvent();
   }
   // Pick a random unfired event
   const event = rows[Math.floor(Math.random() * rows.length)];
@@ -4509,11 +4612,6 @@ async function fireNextNewsEvent() {
   showNewsBanner(event, affectedMats);
   newsArchive.unshift(event);
   renderNewsLog();
-  scheduleNextNews();
-}
-
-function scheduleNextNews() {
-  setTimeout(fireNextNewsEvent, (120 + Math.random() * 180) * 1000);
 }
 
 function showNewsBanner(event, affectedMats) {
@@ -4522,24 +4620,45 @@ function showNewsBanner(event, affectedMats) {
   const pct      = parseFloat(event.impact_pct);
   const sign     = pct >= 0 ? '+' : '';
   const matLabel = event.material_id ? (materials[event.material_id]?.name || event.material_id) : 'All Materials';
-  document.getElementById('newsSeverityTag').textContent    = event.severity.toUpperCase();
-  document.getElementById('newsSeverityTag').style.color    = color;
-  document.getElementById('newsSeverityTag').style.borderColor = color;
-  document.getElementById('newsSeverityTag').style.boxShadow   = `0 0 8px ${color}44`;
-  document.getElementById('newsHeadline').textContent = event.headline;
-  document.getElementById('newsBody').textContent     = event.body.slice(0,120) + (event.body.length > 120 ? '...' : '');
-  document.getElementById('newsImpactVal').textContent     = sign + pct + '%';
-  document.getElementById('newsImpactVal').style.color     = pct >= 0 ? 'var(--cyan)' : 'var(--red)';
-  document.getElementById('newsImpactMat').textContent     = matLabel;
-  const banner   = document.getElementById('newsBanner');
-  const timerBar = document.getElementById('newsBannerTimer');
-  timerBar.style.background  = color;
-  timerBar.style.transition  = 'none';
-  timerBar.style.width       = '100%';
-  banner.style.transform     = 'translateY(0)';
-  const SHOW_MS = 9000;
+  const SHOW_MS  = 10000;
+
+  // ── In-scene panel ──
+  const panel    = document.getElementById('sceneNewsPanel');
+  const timerBar = document.getElementById('sceneNewsTimer');
+  const bg       = document.getElementById('sceneNewsBg');
+
+  const impactColor = pct >= 0 ? 'var(--cyan)' : 'var(--red)';
+
+  document.getElementById('sceneNewsSeverity').textContent       = event.severity.toUpperCase();
+  document.getElementById('sceneNewsSeverity').style.color       = color;
+  document.getElementById('sceneNewsSeverity').style.borderColor = color;
+  document.getElementById('sceneNewsHeadline').textContent       = event.headline;
+  document.getElementById('sceneNewsBody').textContent           = event.body;
+  document.getElementById('sceneNewsBody').style.borderColor     = color;
+  document.getElementById('sceneNewsImpact').textContent         = sign + pct + '%';
+  document.getElementById('sceneNewsImpact').style.color         = impactColor;
+  document.getElementById('sceneNewsMat').textContent            = matLabel;
+
+  // Background image — use event image if available, otherwise coloured left-panel glow
+  bg.style.opacity = '0';
+  if (event.image_url) {
+    bg.src    = event.image_url;
+    bg.onload = () => { bg.style.opacity = '1'; };
+    bg.onerror = () => { bg.style.opacity = '0'; };
+  } else {
+    bg.src = '';
+  }
+
+  timerBar.style.background = color;
+  timerBar.style.transition = 'none';
+  timerBar.style.width      = '100%';
+  panel.style.display       = 'block';
+
   setTimeout(() => { timerBar.style.transition = `width ${SHOW_MS}ms linear`; timerBar.style.width = '0%'; }, 50);
-  setTimeout(() => { banner.style.transform = 'translateY(-100%)'; }, SHOW_MS);
+  setTimeout(() => {
+    panel.style.display = 'none';
+    bg.src = '';
+  }, SHOW_MS);
 }
 
 function renderNewsLog() {
@@ -4640,9 +4759,10 @@ function closeShop() {
 // ═══════════════════════════════════════════
 // SHOP SYSTEM
 // ═══════════════════════════════════════════
-let shopItems        = [];   // loaded from Supabase shop_items table
-let playerInventory  = [];   // item keys the player has purchased this session
-let _shopPendingItem = null; // item staged for confirm modal
+let shopItems          = [];   // loaded from Supabase shop_items table
+let playerInventory    = [];   // item keys the player has purchased this session
+let _shopPendingItem   = null; // item staged for confirm modal
+let _hasEngineUpgrade  = false; // unlocks 900 Mm danger-zone asteroids
 
 async function loadShop() {
   const grid = document.getElementById('shopItemsGrid');
@@ -4691,6 +4811,19 @@ insert into shop_items (name,description,effect_summary,item_type,price,sort_ord
 
     const rows = await res.json();
     shopItems = rows || [];
+    // Inject local engine upgrade if not supplied by Supabase
+    if (!shopItems.find(i => i.effect_key === 'engine_upgrade')) {
+      shopItems.push({
+        id: 'local_engine_upgrade',
+        name: 'Heavy Ion Thruster',
+        description: 'Military-grade ion drive rated for extreme deep-belt operations. Required to reach asteroids beyond 850 Mm.',
+        effect_summary: 'Unlocks access to 900 Mm danger-zone asteroids.',
+        item_type: 'upgrade',
+        effect_key: 'engine_upgrade',
+        price: 450000,
+        sort_order: 50,
+      });
+    }
     renderShopItems();
 
   } catch (err) {
@@ -4812,7 +4945,12 @@ function applyShopItemEffects(item) {
       showShopPurchaseToast(`⚡ Boost charge loaded — fire when ready.`, '#fff');
       break;
     case 'upgrade':
-      showShopPurchaseToast(`⬡ ${item.name} installed.`, 'var(--orange)');
+      if (item.effect_key === 'engine_upgrade') {
+        _hasEngineUpgrade = true;
+        showShopPurchaseToast(`🔥 ${item.name} installed — danger zone unlocked.`, 'var(--orange)');
+      } else {
+        showShopPurchaseToast(`⬡ ${item.name} installed.`, 'var(--orange)');
+      }
       break;
     case 'consumable':
       // Check for boost sub-type via effect_key field
@@ -5300,7 +5438,6 @@ async function initSupabase() {
   await loadContracts();
   await loadStoryBeats();
   setInterval(applyPriceRecovery, 5 * 60 * 1000);
-  scheduleNextNews();
   maybeShowIntro();
 }
 
@@ -5334,6 +5471,374 @@ window.addEventListener('DOMContentLoaded', () => {
 
   initSupabase();
 });
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     STAR MAP MODAL
+══════════════════════════════════════════════════════════ -->
+<div id="starMapModal" style="display:none;position:fixed;inset:0;z-index:1900;background:rgba(0,0,0,.92);align-items:center;justify-content:center;">
+  <div style="
+    width:580px;height:580px;max-width:96vw;max-height:96vw;
+    background:#020609;
+    border:1px solid var(--border-bright);
+    box-shadow:0 0 60px rgba(0,0,0,.95),0 0 0 1px rgba(0,212,255,.06);
+    display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+  ">
+    <!-- Header -->
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);background:var(--bg-header);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:.18em;text-shadow:0 0 8px rgba(0,212,255,.4);">◈ Aaron Belt — Sector Chart</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:2px;" id="starMapMeta">10 objects tracked · scan to discover</div>
+      </div>
+      <button onclick="closeStarMap()" style="background:transparent;border:1px solid var(--border-bright);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;">✕</button>
+    </div>
+
+    <!-- Canvas -->
+    <div style="flex:1;position:relative;overflow:hidden;" id="starMapViewport">
+      <canvas id="starMapCanvas"></canvas>
+    </div>
+
+    <!-- Footer: course plot + launch -->
+    <div id="starMapFooter" style="padding:10px 18px;border-top:1px solid var(--border);background:var(--bg-header);font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:12px;min-height:52px;flex-shrink:0;">
+      <div id="starMapFooterInfo" style="flex:1;display:flex;align-items:center;gap:10px;">
+        <span style="color:rgba(255,255,255,.2);letter-spacing:.08em;">PLOT A COURSE — SELECT A DESTINATION</span>
+      </div>
+      <button id="starMapLaunchBtn" onclick="launchFromStarMap()"
+        style="display:none;padding:10px 22px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);
+          font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;
+          letter-spacing:.1em;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;"
+        onmouseover="this.style.background='rgba(0,212,255,.1)'" onmouseout="this.style.background='transparent'">
+        ◈ Launch Ship
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STAR MAP ──────────────────────────────────────────────
+
+// distance tiers: 300–599 = standard, 600–849 = deep belt, 850–900 = danger zone (engine upgrade req'd)
+// Positions computed from station (x:0.08, y:0.50) using ring formula:
+//   r = (distance/900) * min(580,486) * 0.88   [canvas ~580×486]
+//   x = 0.08 + r/580 * cos(angle), y = 0.50 + r/486 * sin(angle)
+const STAR_MAP_ASTEROIDS = [
+  { id:'KL-7',   x:.22, y:.26, distance: 300, sz:14, discovered:false }, // -55°
+  { id:'VX-11',  x:.19, y:.15, distance: 380, sz:10, discovered:false }, // -70°
+  { id:'OB-44',  x:.42, y:.19, distance: 520, sz:16, discovered:false }, // -38°
+  { id:'TR-9B',  x:.61, y:.25, distance: 690, sz:12, discovered:false }, // -22°
+  { id:'NX-22',  x:.39, y:.73, distance: 440, sz: 9, discovered:false }, // +32°
+  { id:'QZ-03',  x:.46, y:.88, distance: 610, sz:15, discovered:false }, // +40°
+  { id:'YM-77',  x:.20, y:.78, distance: 320, sz:11, discovered:false }, // +62°
+  { id:'WR-X1',  x:.67, y:.73, distance: 750, sz:13, discovered:false }, // +18°
+  { id:'ΔP-4',   x:.36, y:.45, distance: 350, sz: 8, discovered:false }, // -8°
+  { id:'ΩK-88',  x:.82, y:.58, distance: 900, sz:16, discovered:false }, // +5°
+];
+
+// Station fixed at left-center
+const SM_STATION = { x:.08, y:.50 };
+
+let _smSelected = null;
+let _smAnimId   = null;
+let _smStars    = [];
+let _smTime     = 0;
+
+// Preload map images
+const _smStationImg  = new Image(); _smStationImg.src  = 'img/station_mini.png';
+const _smAsteroidImg = new Image(); _smAsteroidImg.src = 'img/asteroid_mini.png';
+
+function openStarMap() {
+  document.getElementById('starMapModal').style.display = 'flex';
+  // Restore selection if a target was already chosen
+  _smSelected = _dispatchTarget ? _dispatchTarget.id : null;
+  document.getElementById('starMapLaunchBtn').style.display = _smSelected ? '' : 'none';
+  _renderStarMap();
+  _smUpdateFooter();
+  const meta = `${STAR_MAP_ASTEROIDS.length} objects tracked · ${STAR_MAP_ASTEROIDS.filter(a=>a.discovered).length} discovered`;
+  document.getElementById('starMapMeta').textContent = meta;
+}
+
+function closeStarMap() {
+  document.getElementById('starMapModal').style.display = 'none';
+  cancelAnimationFrame(_smAnimId);
+  _smAnimId = null;
+}
+
+function launchFromStarMap() {
+  if (!_smSelected) return;
+  const ast = STAR_MAP_ASTEROIDS.find(a => a.id === _smSelected);
+  if (ast && ast.distance >= 900 && !_hasEngineUpgrade) {
+    _smUpdateFooter(); // re-render footer with lock warning
+    return;
+  }
+  closeStarMap();
+  dispatchMiner();
+}
+
+function _renderStarMap() {
+  const canvas = document.getElementById('starMapCanvas');
+  const vp     = document.getElementById('starMapViewport');
+  const W = vp.clientWidth;
+  const H = vp.clientHeight;
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Seed static stars once
+  if (_smStars.length === 0) {
+    for (let i = 0; i < 120; i++) {
+      _smStars.push({ x: Math.random(), y: Math.random(), r: Math.random() < .12 ? 1.4 : 0.7, a: 0.1 + Math.random() * 0.5 });
+    }
+  }
+
+  function draw() {
+    _smTime += 0.012;
+    ctx.clearRect(0, 0, W, H);
+
+    // Deep space gradient
+    const bg = ctx.createRadialGradient(W*.5, H*.5, 0, W*.5, H*.5, W*.7);
+    bg.addColorStop(0, 'rgba(0,8,24,1)');
+    bg.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Subtle sector grid
+    ctx.strokeStyle = 'rgba(0,212,255,0.04)';
+    ctx.lineWidth   = 1;
+    const GRID = 60;
+    for (let gx = 0; gx < W; gx += GRID) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+    for (let gy = 0; gy < H; gy += GRID) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+
+    // Distance rings from station — 300 / 600 / 900 Mm
+    const maxDist = 900;
+    const ringScale = Math.min(W, H) * 0.88;
+    [300, 600, 900].forEach(d => {
+      const r = (d / maxDist) * ringScale;
+      ctx.beginPath();
+      ctx.arc(SM_STATION.x * W, SM_STATION.y * H, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,212,255,0.28)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([4, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '9px DM Mono, monospace';
+      ctx.fillStyle = 'rgba(0,212,255,0.65)';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${d} Mm`, SM_STATION.x * W + r + 5, SM_STATION.y * H - 5);
+    });
+
+    // Background stars
+    _smStars.forEach(s => {
+      const twinkle = s.a * (0.6 + 0.4 * Math.sin(_smTime * 1.2 + s.x * 10));
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,220,255,${twinkle})`;
+      ctx.fill();
+    });
+
+    // Station — image, 20px, cyan glow
+    const sx = SM_STATION.x * W, sy = SM_STATION.y * H;
+    const STN_SIZE = 20;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,212,255,0.9)';
+    ctx.shadowBlur  = 14;
+    if (_smStationImg.complete && _smStationImg.naturalWidth) {
+      ctx.drawImage(_smStationImg, sx - STN_SIZE/2, sy - STN_SIZE/2, STN_SIZE, STN_SIZE);
+    } else {
+      // Fallback diamond while image loads
+      ctx.fillStyle = 'rgba(0,212,255,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(sx, sy-7); ctx.lineTo(sx+5,sy); ctx.lineTo(sx,sy+7); ctx.lineTo(sx-5,sy); ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.font = '8px DM Mono, monospace';
+    ctx.fillStyle = 'rgba(0,212,255,0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText('REFINERY STN', sx, sy + STN_SIZE/2 + 10);
+
+    // Course line — station to selected asteroid
+    if (_smSelected) {
+      const target = STAR_MAP_ASTEROIDS.find(a => a.id === _smSelected);
+      if (target) {
+        const tx = target.x * W, ty = target.y * H;
+        const dashOffset = (_smTime * 18) % 16;
+        ctx.save();
+        ctx.setLineDash([6, 10]);
+        ctx.lineDashOffset = -dashOffset;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(tx, ty);
+        ctx.strokeStyle = target.discovered ? 'rgba(245,200,66,.35)' : 'rgba(0,212,255,.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+    }
+
+    // Asteroids
+    STAR_MAP_ASTEROIDS.forEach(ast => {
+      const ax      = ast.x * W;
+      const ay      = ast.y * H;
+      const sz      = ast.sz;
+      const isSel   = _smSelected === ast.id;
+      const isLocked = ast.distance >= 900 && !_hasEngineUpgrade;
+      const pulse   = 0.5 + 0.5 * Math.sin(_smTime * 1.6 + ast.x * 7);
+
+      if (_smAsteroidImg.complete && _smAsteroidImg.naturalWidth) {
+        ctx.save();
+        if (isLocked) {
+          // Danger zone — desaturated red tint, lower alpha
+          ctx.shadowColor = isSel ? 'rgba(255,60,60,0.7)' : 'rgba(180,40,40,0.3)';
+          ctx.shadowBlur  = isSel ? 16 : 6;
+          ctx.globalAlpha = 0.35 + 0.1 * pulse;
+          ctx.filter      = 'grayscale(70%) sepia(40%)';
+        } else if (ast.discovered) {
+          // Full brightness, warm amber glow
+          ctx.shadowColor = isSel ? 'rgba(245,200,66,0.95)' : 'rgba(184,115,51,0.55)';
+          ctx.shadowBlur  = isSel ? 20 : 10;
+          ctx.globalAlpha = 1;
+        } else {
+          // Bright enough to see, slight blue-grey tint via composite
+          ctx.shadowColor = isSel ? 'rgba(120,160,220,0.7)' : 'rgba(100,130,200,0.35)';
+          ctx.shadowBlur  = isSel ? 14 : 6;
+          ctx.globalAlpha = 0.55 + 0.15 * pulse;
+        }
+        ctx.drawImage(_smAsteroidImg, ax - sz/2, ay - sz/2, sz, sz);
+        ctx.restore();
+      }
+
+      // Lock icon on danger-zone asteroids
+      if (isLocked) {
+        ctx.font = `${Math.round(sz * 0.7)}px serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = isSel ? 'rgba(255,80,80,0.9)' : 'rgba(200,60,60,0.65)';
+        ctx.fillText('⚠', ax, ay + sz * 0.25);
+      }
+
+      // Label
+      ctx.font = '9px DM Mono, monospace';
+      ctx.textAlign = 'center';
+      if (isLocked) {
+        ctx.fillStyle = isSel ? 'rgba(255,80,80,.85)' : 'rgba(180,60,60,.5)';
+        ctx.fillText(ast.discovered ? ast.id : '???', ax, ay - sz/2 - 5);
+      } else if (ast.discovered) {
+        ctx.fillStyle = isSel ? 'rgba(245,200,66,.95)' : 'rgba(184,115,51,0.75)';
+        ctx.fillText(ast.id, ax, ay - sz/2 - 5);
+      } else {
+        ctx.fillStyle = isSel ? 'rgba(160,180,230,.8)' : 'rgba(120,140,190,.55)';
+        ctx.fillText('???', ax, ay - sz/2 - 5);
+      }
+
+      // Radar sweep ring on undiscovered+selected
+      if (isSel && !ast.discovered) {
+        const ringR = sz/2 + 6 + 10 * pulse;
+        ctx.beginPath();
+        ctx.arc(ax, ay, ringR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0,212,255,${0.45 * (1 - pulse)})`;
+        ctx.lineWidth   = 1;
+        ctx.stroke();
+      }
+
+      // Selection ring
+      if (isSel) {
+        const selR = sz/2 + 5;
+        ctx.beginPath();
+        ctx.arc(ax, ay, selR, 0, Math.PI * 2);
+        ctx.strokeStyle = ast.discovered ? 'rgba(245,200,66,.6)' : 'rgba(0,212,255,.5)';
+        ctx.lineWidth   = 1;
+        ctx.setLineDash([3, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
+    _smAnimId = requestAnimationFrame(draw);
+  }
+
+  cancelAnimationFrame(_smAnimId);
+  draw();
+
+  // Click to select — also updates dispatch target
+  canvas.onclick = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    let hit = null;
+    STAR_MAP_ASTEROIDS.forEach(ast => {
+      const dx = ast.x * W - mx, dy = ast.y * H - my;
+      if (Math.sqrt(dx*dx + dy*dy) < ast.sz) hit = ast;
+    });
+    if (hit && hit.distance >= 900 && !_hasEngineUpgrade) {
+      // Show lock warning but do not select
+      _smSelected = hit.id;        // allow footer to describe it
+      _dispatchTarget = null;      // but don't set as dispatch target
+    } else {
+      _smSelected = hit ? hit.id : null;
+      _dispatchTarget = hit || null;
+    }
+    updateFuelUI(); // refresh trip cost display
+    _smUpdateFooter();
+  };
+}
+
+function _smUpdateFooter() {
+  const info       = document.getElementById('starMapFooterInfo');
+  const launchBtn  = document.getElementById('starMapLaunchBtn');
+
+  if (!_smSelected) {
+    info.innerHTML = `<span style="color:rgba(255,255,255,.2);letter-spacing:.08em;">PLOT A COURSE — SELECT A DESTINATION</span>`;
+    launchBtn.style.display = 'none';
+    return;
+  }
+
+  const ast = STAR_MAP_ASTEROIDS.find(a => a.id === _smSelected);
+  if (!ast) return;
+
+  const isLocked = ast.distance >= 900 && !_hasEngineUpgrade;
+  const flightS  = Math.round(12 * ast.distance / 300); // 12s per 300 Mm
+  const fuelRt   = Math.round(2 * 15 * ast.distance / 300); // 15 units/one-way per 300 Mm
+  const sep      = `<span style="color:var(--border-bright);">|</span>`;
+
+  if (isLocked) {
+    const nameHtml = ast.discovered
+      ? `<span style="color:rgba(255,80,80,.9);letter-spacing:.1em;font-size:11px;font-weight:600;">${ast.id}</span>`
+      : `<span style="color:rgba(255,80,80,.7);letter-spacing:.1em;font-size:11px;">UNKNOWN OBJECT</span>`;
+    info.innerHTML = `
+      ${nameHtml}
+      ${sep}
+      <span style="color:rgba(255,80,80,.6);font-size:9px;">${ast.distance} Mm</span>
+      ${sep}
+      <span style="color:rgba(255,80,80,.9);font-size:9px;font-weight:600;">⚠ DANGER ZONE — Heavy Ion Thruster required</span>
+    `;
+    launchBtn.style.display = 'none';
+    return;
+  }
+
+  const nameHtml = ast.discovered
+    ? `<span style="color:var(--orange);letter-spacing:.1em;font-size:11px;font-weight:600;">${ast.id}</span>`
+    : `<span style="color:rgba(160,160,210,.9);letter-spacing:.1em;font-size:11px;">UNKNOWN OBJECT</span>`;
+
+  const statusHtml = ast.discovered
+    ? `<span style="color:var(--cyan);font-size:9px;">Charted</span>`
+    : `<span style="color:var(--text-dim);font-size:9px;">Undiscovered — dispatch to chart</span>`;
+
+  info.innerHTML = `
+    ${nameHtml}
+    ${sep}
+    <span style="color:rgba(255,255,255,.4);font-size:9px;">${ast.distance} Mm</span>
+    ${sep}
+    <span style="color:var(--orange);font-size:9px;">~${flightS}s flight</span>
+    ${sep}
+    <span style="color:#22c55e;font-size:9px;">${fuelRt} units r/t</span>
+    ${sep}
+    ${statusHtml}
+  `;
+
+  // Show launch button — course is plotted
+  launchBtn.style.display = '';
+}
 </script>
 </body>
 </html>
