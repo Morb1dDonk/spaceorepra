@@ -34,6 +34,7 @@ let weights = {
   efficiencyFee:           { min:0.3,  max:2.2  },
   pristineProb:            { min:0.005,max:0.06 },
   efficiencyQualityPenalty:{ min:0,    max:80   },
+  yieldInertPenalty:       { min:40,   max:0    },
 };
 
 let PURITY_RANGES = [

@@ -569,7 +569,7 @@
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:3px;">
               <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);">Raw</span>
-              <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);">Pristine</span>
+              <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);">Artifact</span>
             </div>
           </div>
 
@@ -751,7 +751,7 @@
           <div class="hero-label inert">Inert Materials</div>
           <div class="hero-big" style="color:var(--text-dim);" id="sumInertScu">—</div>
           <div class="hero-sub" id="sumInertEscu">—</div>
-          <div style="margin-top:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Failed + Gangue — unrecoverable</div>
+          <div style="margin-top:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Failed + Inert — unrecoverable</div>
         </div>
         <div class="hero-card">
           <div class="hero-label breakdown">Run Breakdown</div>
@@ -814,10 +814,10 @@
     <!-- Shop layout: owner left, content right -->
     <div style="display:grid;grid-template-columns:240px 1fr;flex:1;overflow:hidden;">
 
-      <!-- LEFT: owner portrait -->
+      <!-- LEFT: shop image -->
       <div style="position:relative;overflow:hidden;background:#050810;min-height:500px;">
-        <img src="https://morb1ddonk.github.io/spaceorepra/img/owner.webp"
-          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.9;">
+        <img src="img/transfer.webp"
+          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.85;">
         <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 50%,var(--bg-card) 100%);z-index:1;"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%);z-index:1;"></div>
         <div style="position:absolute;bottom:24px;left:18px;z-index:2;">
@@ -842,15 +842,35 @@
         <!-- Tagline -->
         <div style="padding:14px 24px;border-bottom:1px solid var(--border);flex-shrink:0;">
           <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);border-left:2px solid var(--orange);padding-left:10px;line-height:1.7;">
-            Spend your earnings wisely, miner. Every upgrade stays with you.
+            Hey kid, take a look at what we got. As long as you got the creds, you get the goods. No refunds.
           </div>
         </div>
 
-        <!-- Scrollable item grid -->
-        <div style="flex:1;overflow-y:auto;padding:20px 24px;">
-          <div id="shopItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;">
-            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);padding:20px 0;">Loading inventory...</div>
+        <!-- Category tabs -->
+        <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;" id="shopCategoryTabs">
+          <button onclick="setShopCategory('consumables')" data-cat="consumables" style="flex:1;padding:11px 6px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;border:none;border-bottom:2px solid var(--orange);background:rgba(232,141,45,.08);color:var(--orange);cursor:pointer;transition:all .2s;">Consumables</button>
+          <button onclick="setShopCategory('upgrades')" data-cat="upgrades" style="flex:1;padding:11px 6px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer;transition:all .2s;">Ship Upgrades</button>
+          <button onclick="setShopCategory('ships')" data-cat="ships" style="flex:1;padding:11px 6px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer;transition:all .2s;">Ship For Sale</button>
+          <button onclick="setShopCategory('crew')" data-cat="crew" style="flex:1;padding:11px 6px;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer;transition:all .2s;">Hire Crew</button>
+        </div>
+
+        <!-- Body: compact list left + detail right -->
+        <div style="display:grid;grid-template-columns:220px 1fr;flex:1;overflow:hidden;min-height:0;">
+
+          <!-- Item list -->
+          <div style="overflow-y:auto;border-right:1px solid var(--border);">
+            <div id="shopItemsList">
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);padding:20px 14px;">Loading...</div>
+            </div>
           </div>
+
+          <!-- Detail panel -->
+          <div id="shopDetailPanel" style="overflow-y:auto;padding:24px 22px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.06em;line-height:2;">
+              ← Select an item to view details
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -1150,7 +1170,7 @@
   ">
     <!-- LEFT: hero image -->
     <div style="position:relative;overflow:hidden;background:#050810;min-height:480px;">
-      <img src="https://morb1ddonk.github.io/spaceorepra/img/transfer.webp"
+      <img src="img/transfer.webp"
         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.8;">
       <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 45%,var(--bg-card) 100%);z-index:1;"></div>
       <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,.6) 100%);z-index:1;"></div>
@@ -1348,7 +1368,7 @@ const MS_TOTAL_SLOW = 120000, MS_TOTAL_FAST = 12000;
 const AXIS_LABELS = { speed:'Speed', quality:'Purity', cost:'Yield' };
 const AXIS_DESC   = {
   speed:   ['Glacial','Slow','Standard','Fast','Rapid'],
-  quality: ['Raw','Low-Grade','Refined','High-Purity','Pristine'],
+  quality: ['Raw','Low-Grade','Refined','High-Purity','Artifact'],
   cost:    ['Minimal','Low','Standard','High','Maximum'],
 };
 
@@ -1360,24 +1380,24 @@ let materials = {
 };
 
 let grades = [
-  { min:100, max:199, key:'gangue',     label:'Gangue',     color:'#5a6068', multiplier:0.0  },
-  { min:200, max:449, key:'subordinate',label:'Subordinate',color:'#b5a642', multiplier:0.6  },
-  { min:450, max:699, key:'massive',    label:'Massive',    color:'#facc15', multiplier:1.0  },
-  { min:700, max:899, key:'highgrade',  label:'High-Grade', color:'#e88d2d', multiplier:2.0  },
-  { min:900, max:1000,key:'pristine',   label:'Pristine',   color:'#a855f7', multiplier:15.0 },
+  { min:100, max:199, key:'inert',    label:'Inert',    color:'#5a6068', multiplier:0.0  },
+  { min:200, max:699, key:'fine',     label:'Fine',     color:'#facc15', multiplier:1.0  },
+  { min:700, max:899, key:'pristine', label:'Pristine', color:'#e88d2d', multiplier:2.0  },
+  { min:900, max:1000,key:'artifact', label:'Artifact', color:'#a855f7', multiplier:15.0 },
 ];
 
 let weights = {
   speedFail:               { min:0.5,  max:20   },  // speed 1=0.5% fail, 5=20% fail
   efficiencyFee:           { min:0.3,  max:2.2  },  // yield 1=cheap, 5=costly
-  pristineProb:            { min:0.005,max:0.06 },  // quality drives pristine chance
+  artifactProb:            { min:0.005,max:0.06 },  // quality drives artifact chance
   efficiencyQualityPenalty:{ min:0,    max:80   },  // yield penalises purity slightly
+  yieldInertPenalty:       { min:350,  max:0    },  // low yield (0 pips) = heavy inert penalty; high yield (4 pips) = none
 };
 
 // Purity roll range per quality pip (index 0 = 0 pips, index 4 = 4 pips)
 // [min, max] — unit purity is rolled randomly within this range
 let PURITY_RANGES = [
-  [200, 400],  // 0 pips — Gangue/Subordinate only
+  [200, 750],  // 0 pips — Fine dominant, rare Pristine possible, no Artifact
   [200, 500],  // 1 pip
   [250, 500],  // 2 pips
   [300, 700],  // 3 pips
@@ -1393,7 +1413,7 @@ const PRESETS = {
   rush:      { speed:5, quality:1, cost:2, name:'Rush',      desc:'<span style="color:var(--orange)">Rush:</span> Maximum speed, minimum care. Fast runs, high failure rate, low purity.' },
   bulk:      { speed:4, quality:2, cost:5, name:'Bulk',      desc:'<span style="color:var(--orange)">Bulk:</span> Fast throughput with high yield output. Expensive but moves volume quickly.' },
   artisan:   { speed:2, quality:4, cost:3, name:'Artisan',   desc:'<span style="color:var(--orange)">Artisan:</span> Slow and careful. High purity, moderate yield, low failure rate.' },
-  precision: { speed:1, quality:5, cost:2, name:'Precision', desc:'<span style="color:var(--orange)">Precision:</span> Maximum purity ceiling. Extremely slow, costly, but pristine results.' },
+  precision: { speed:1, quality:5, cost:2, name:'Precision', desc:'<span style="color:var(--orange)">Precision:</span> Maximum purity ceiling. Extremely slow, costly, but artifact-grade results.' },
 };
 
 // ═══════════════════════════════════════════
@@ -1915,11 +1935,10 @@ const ASTEROID_PREFIXES = ['KL','VX','OB','TR','NX','QZ','YM','WR','ΔP','ΩK','
 const ASTEROID_SUFFIXES = ['7','11','44','9B','22','03','77','X1','Δ4','Ψ9','88','15'];
 const GLITCH_CHARS = '░▒▓█▄▀■□▪▫◆◇●○ΞΨΩΛΔΣΦ?#@!~%&*<>';
 const PURITY_BIAS_NAMES = {
-  gangue:     { label:'INERT',      color:'rgba(90,96,104,.8)'  },
-  subordinate:{ label:'LOW GRADE',  color:'rgba(181,166,66,.8)' },
-  massive:    { label:'STANDARD',   color:'rgba(250,204,21,.8)' },
-  highgrade:  { label:'HIGH GRADE', color:'rgba(232,141,45,.9)' },
-  pristine:   { label:'PRISTINE',   color:'rgba(168,85,247,.9)' },
+  inert:    { label:'INERT',    color:'rgba(90,96,104,.8)'  },
+  fine:     { label:'FINE',     color:'rgba(250,204,21,.8)' },
+  pristine: { label:'PRISTINE', color:'rgba(232,141,45,.9)' },
+  artifact: { label:'ARTIFACT', color:'rgba(168,85,247,.9)' },
 };
 
 let asteroidDisplayName = '';
@@ -1933,13 +1952,12 @@ function rollAsteroidName() {
 }
 
 function rollPurityBias() {
-  // Weighted random — gangue rare, pristine very rare
+  // Weighted random — inert rare, artifact very rare
   const roll = Math.random();
-  if (roll < 0.08) return 'gangue';
-  if (roll < 0.30) return 'subordinate';
-  if (roll < 0.62) return 'massive';
-  if (roll < 0.88) return 'highgrade';
-  return 'pristine';
+  if (roll < 0.08) return 'inert';
+  if (roll < 0.62) return 'fine';
+  if (roll < 0.88) return 'pristine';
+  return 'artifact';
 }
 
 function startAsteroidGlitch(nameOverride) {
@@ -2025,11 +2043,10 @@ function applyAsteroidBiasToHaul(haulArr) {
   if (!asteroidPurityBias || !haulArr.length) return haulArr;
   // Bias the haul purity by nudging each item's purity toward the revealed range
   const biasBumps = {
-    gangue:     -120,
-    subordinate: -60,
-    massive:       0,
-    highgrade:   +80,
-    pristine:   +200,
+    inert:    -120,
+    fine:        0,
+    pristine:  +80,
+    artifact: +200,
   };
   const bump = biasBumps[asteroidPurityBias] || 0;
   if (bump === 0) return haulArr;
@@ -3158,10 +3175,17 @@ function drawRadar() {
 // DEFRAG GRID
 // ═══════════════════════════════════════════
 function buildDefragGrid(count) {
-  const g=document.getElementById('defragGrid'); g.innerHTML='';
-  const cols=Math.ceil(Math.sqrt(count*2.5));
-  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  for(let i=0;i<count;i++){const b=document.createElement('div');b.className='defrag-block';b.id='db-'+i;g.appendChild(b);}
+  const g = document.getElementById('defragGrid');
+  g.innerHTML = '';
+  const cols = Math.max(1, Math.ceil(Math.sqrt(count)));
+  g.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  g.style.gridAutoRows = '18px';
+  for (let i = 0; i < count; i++) {
+    const b = document.createElement('div');
+    b.className = 'defrag-block';
+    b.id = 'db-' + i;
+    g.appendChild(b);
+  }
 }
 
 function buildDefragLegend(haulItems) {
@@ -3237,21 +3261,44 @@ function setActionBtn(state) {
 }
 function startRefinement() {
   if (refineryRunning) return;
-  const matKey=document.getElementById('materialType').value;
-  const mat=materials[matKey];
-  const scu=parseInt(document.getElementById('scuInput').value)||1;
-  const unitCount=Math.round(scu*10);
-  const effMult=getWeightVal('efficiencyFee',allocation.cost);
-  const feePerUnit=Math.round(BASE_FEE_PER_UNIT*effMult);
-  const totalFee=unitCount*feePerUnit;
-  if(totalFee>userWallet)return;
+
+  const activeCard = document.getElementById('activeProcessingCard');
+  const twoCol     = document.getElementById('twoColSteps');
+  const actionHdr  = document.getElementById('actionBtnHeader');
+  const refMeta    = document.getElementById('refineryMeta');
+
+  if (activeCard) activeCard.style.display = 'block';
+  if (twoCol) twoCol.style.display = 'none';
+  if (actionHdr) actionHdr.style.display = 'block';
+  if (refMeta) refMeta.textContent = 'Initializing refinery...';
+  document.getElementById('resultsBody').innerHTML = '';
+  document.getElementById('liveVal').textContent = '0';
+  document.getElementById('liveRoi').textContent = 'CALCULATING...';
+
+  const matKey = document.getElementById('materialType').value;
+  const mat = materials[matKey];
+  const scu = parseInt(document.getElementById('scuInput').value) || 1;
+  const unitCount = Math.round(scu * 10);
+  const effMult = getWeightVal('efficiencyFee', allocation.cost);
+  const feePerUnit = Math.round(BASE_FEE_PER_UNIT * effMult);
+  const totalFee = unitCount * feePerUnit;
+  if (totalFee > userWallet) {
+    if (refMeta) refMeta.textContent = 'Insufficient credits to start.';
+    return;
+  }
+
+  const confirmBtn = document.getElementById('confirmWorkBtn');
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.style.opacity = '0.35';
+  }
 
   // Switch layout: hide steps 1+2, show active processing full-width
-  document.getElementById('twoColSteps').style.display       = 'none';
-  document.getElementById('activeProcessingCard').style.display = 'block';
-  document.getElementById('actionBtnHeader').style.display   = 'block';
+  if (twoCol) twoCol.style.display = 'none';
+  if (activeCard) activeCard.style.display = 'block';
+  if (actionHdr) actionHdr.style.display = 'block';
 
-  userWallet-=totalFee;
+  userWallet -= totalFee;
   currentWorkOrderFee=totalFee;
   liveAccumulatedValue=0;
   pendingRevenue=0;
@@ -3259,11 +3306,13 @@ function startRefinement() {
 
   // Build unit queue — proportional across all haul items by SCU
   refineryUnits=[];
-  const pristineChance=getWeightVal('pristineProb',allocation.quality);
-  const effPenalty=getWeightVal('efficiencyQualityPenalty',allocation.cost);
-  const purityRanges = PURITY_RANGES[allocation.quality];
-  const pMin = purityRanges[0];
-  const pMax = purityRanges[1];
+  let artifactChance        = getWeightVal('artifactProb', allocation.quality);
+  if (allocation.quality === 0) artifactChance = 0; // require at least 1 pip to find artifacts
+  const effPenalty           = getWeightVal('efficiencyQualityPenalty', allocation.cost);
+  const yieldInertPenalty    = getWeightVal('yieldInertPenalty', allocation.cost);
+  const purityRanges         = PURITY_RANGES[allocation.quality];
+  const pMin                 = purityRanges[0];
+  const pMax                 = purityRanges[1];
 
   const haulItems = _refineryHaul.length > 0 ? _refineryHaul : [{ matKey: matKey, scu: scu, purity: orePurity }];
   const haulTotalScu = haulItems.reduce((s, h) => s + h.scu, 0);
@@ -3278,23 +3327,24 @@ function startRefinement() {
 
     for(let i=0;i<hUnits;i++){
       const spdVol=allocation.speed*20;
-      let purity, grade, isPristine=false, isGangue=false, success;
+      let purity, grade, isArtifact=false, isInert=false, success;
 
-      if(Math.random()<pristineChance){
-        isPristine=true; success=true;
+      if(Math.random()<artifactChance){
+        isArtifact=true; success=true;
         purity=900+Math.random()*100;
-        grade=grades.find(g=>g.key==='pristine');
+        grade=grades.find(g=>g.key==='artifact');
       } else {
-        let roll = pMin + Math.random()*(pMax - pMin);
-        roll += (Math.random()*spdVol)-(spdVol/2);
+        let roll = pMin + Math.random() * (pMax - pMin);
+        roll += (Math.random() * spdVol) - (spdVol / 2);
         roll -= effPenalty * Math.random();
-        purity=clamp(roll, 100, 899);
-        isGangue=purity<200;
+        roll -= yieldInertPenalty * Math.random();
+        purity = clamp(roll, 100, 899);
+        isInert=purity<200;
         grade=getGrade(purity);
-        success=!isGangue && Math.random()>getFailRate();
+        success=!isInert && Math.random()>getFailRate();
       }
       const val=success?Math.round((hMat.baseVal*0.1)*grade.multiplier):0;
-      refineryUnits.push({purity:Math.round(purity),grade,isPristine,isGangue,success,value:val,fee:feePerUnit,matColor:hMat.color,matName:hMat.name});
+      refineryUnits.push({purity:Math.round(purity),grade,isArtifact,isInert,success,value:val,fee:feePerUnit,matColor:hMat.color,matName:hMat.name});
     }
   });
 
@@ -3344,14 +3394,13 @@ function gradeBlockStyle(matColor, gradeKey, isPristine) {
 
   // Vibrance multipliers per grade: darker = less quality, brighter = better
   const vibrance = {
-    gangue:      { bg: 0.06, opacity: 0.5,  glow: 0    },
-    subordinate: { bg: 0.18, opacity: 0.75, glow: 0    },
-    massive:     { bg: 0.38, opacity: 0.9,  glow: 0.15 },
-    highgrade:   { bg: 0.65, opacity: 1.0,  glow: 0.4  },
-    pristine:    { bg: 1.0,  opacity: 1.0,  glow: 0.9  },
+    inert:    { bg: 0.06, opacity: 0.5,  glow: 0    },
+    fine:     { bg: 0.38, opacity: 0.9,  glow: 0.15 },
+    pristine: { bg: 0.65, opacity: 1.0,  glow: 0.4  },
+    artifact: { bg: 1.0,  opacity: 1.0,  glow: 0.9  },
   };
 
-  const v = vibrance[gradeKey] || vibrance.massive;
+  const v = vibrance[gradeKey] || vibrance.fine;
 
   const bgR = Math.round(r * v.bg);
   const bgG = Math.round(g * v.bg);
@@ -3377,10 +3426,10 @@ function processNext(msPerUnit) {
     const u=refineryUnits[i];
     const el=document.getElementById('db-'+i);
 
-    if(u.isGangue){
-      // Gangue: very dark ore tint — almost black
+    if(u.isInert){
+      // Inert: very dark ore tint — almost black
       if(el){
-        const style = gradeBlockStyle(u.matColor || '#5a6068', 'gangue', false);
+        const style = gradeBlockStyle(u.matColor || '#5a6068', 'inert', false);
         el.className='defrag-block';
         el.style.background  = style.bg;
         el.style.boxShadow   = 'none';
@@ -3389,12 +3438,12 @@ function processNext(msPerUnit) {
     } else if(u.success){
       // Success: ore colour at grade vibrance
       if(el){
-        const style = gradeBlockStyle(u.matColor, u.grade.key, u.isPristine);
-        el.className='defrag-block' + (u.isPristine?' pristine':'');
+        const style = gradeBlockStyle(u.matColor, u.grade.key, u.isArtifact);
+        el.className='defrag-block' + (u.isArtifact?' artifact':'');
         el.style.background  = style.bg;
         el.style.boxShadow   = style.glow;
         el.style.borderColor = style.border;
-        if(u.isPristine){
+        if(u.isArtifact){
           // Override sparkle animation with ore colour
           const [r,g,b] = hexToRgb(u.matColor);
           el.style.setProperty('--sparkle-color', `rgb(${r},${g},${b})`);
@@ -3551,7 +3600,7 @@ function logRun({profileName,rev,totalScu,inertScu,succeeded,inert,rate,avgPurit
   document.getElementById('logMeta').textContent=sessionLog.length+' run'+(sessionLog.length>1?'s':'');
   document.getElementById('logBody').innerHTML=sessionLog.slice(0,8).map(e=>{
     const gc=e.avgGrade?e.avgGrade.color:'var(--text-dim)';
-    const gk=e.avgGrade?e.avgGrade.key:'gangue';
+    const gk=e.avgGrade?e.avgGrade.key:'inert';
     const gl=e.avgGrade?e.avgGrade.label:'—';
     return `<div class="log-entry">
       <span class="log-run">Run ${e.n}</span>
@@ -4112,6 +4161,12 @@ function resetProcessingSection() {
   document.getElementById('liveRoi').textContent = '—';
   document.getElementById('liveRoi').style.color = 'var(--text-dim)';
 
+  const confirmBtn = document.getElementById('confirmWorkBtn');
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = '1';
+  }
+
   // Clear defrag grid
   document.getElementById('defragGrid').innerHTML = '';
 
@@ -4194,10 +4249,10 @@ function renderAdmin(){
     </div>
 
     <div style="margin-bottom:12px;padding:8px;border-left:2px solid var(--blue);background:rgba(74,174,242,.05);">
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);margin-bottom:6px;text-transform:uppercase;">✨ Purity — Pristine Chance %</div>
-      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:6px;">Chance of a pristine unit. Pip 1 = rare, Pip 5 = more frequent.</div>
-      <div class="admin-row"><span style="color:var(--orange)">Pip 1 %</span><input type="number" step="0.001" min="0" max="1" value="${weights.pristineProb.min}" onchange="weights.pristineProb.min=parseFloat(this.value);updateAll()"></div>
-      <div class="admin-row"><span style="color:var(--cyan)">Pip 5 %</span><input type="number" step="0.001" min="0" max="1" value="${weights.pristineProb.max}" onchange="weights.pristineProb.max=parseFloat(this.value);updateAll()"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);margin-bottom:6px;text-transform:uppercase;">✨ Purity — Artifact Chance %</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:6px;">Chance of an artifact unit. Pip 1 = rare, Pip 5 = more frequent.</div>
+      <div class="admin-row"><span style="color:var(--orange)">Pip 1 %</span><input type="number" step="0.001" min="0" max="1" value="${weights.artifactProb.min}" onchange="weights.artifactProb.min=parseFloat(this.value);updateAll()"></div>
+      <div class="admin-row"><span style="color:var(--cyan)">Pip 5 %</span><input type="number" step="0.001" min="0" max="1" value="${weights.artifactProb.max}" onchange="weights.artifactProb.max=parseFloat(this.value);updateAll()"></div>
     </div>
 
     <div style="margin-bottom:12px;padding:8px;border-left:2px solid var(--purple);background:rgba(168,85,247,.05);">
@@ -4748,7 +4803,9 @@ function openShop() {
     showShopPurchaseToast('Shop unavailable — miner is in transit.', 'var(--red)');
     return;
   }
+  _shopCategory = 'consumables';
   document.getElementById('shopModal').style.display = 'flex';
+  setShopCategory('consumables');
 }
 
 function closeShop() {
@@ -4763,6 +4820,7 @@ let shopItems          = [];   // loaded from Supabase shop_items table
 let playerInventory    = [];   // item keys the player has purchased this session
 let _shopPendingItem   = null; // item staged for confirm modal
 let _hasEngineUpgrade  = false; // unlocks 900 Mm danger-zone asteroids
+let _shopCategory      = 'consumables'; // active category tab
 
 async function loadShop() {
   const grid = document.getElementById('shopItemsGrid');
@@ -4832,57 +4890,147 @@ insert into shop_items (name,description,effect_summary,item_type,price,sort_ord
   }
 }
 
+function setShopCategory(cat) {
+  _shopCategory = cat;
+  document.querySelectorAll('#shopCategoryTabs button').forEach(btn => {
+    const active = btn.dataset.cat === cat;
+    btn.style.borderBottomColor = active ? 'var(--orange)' : 'transparent';
+    btn.style.background        = active ? 'rgba(232,141,45,.08)' : 'transparent';
+    btn.style.color             = active ? 'var(--orange)' : 'var(--text-dim)';
+  });
+  const detail = document.getElementById('shopDetailPanel');
+  if (detail) {
+    detail.style.justifyContent = 'center';
+    detail.style.alignItems     = 'center';
+    detail.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.06em;line-height:2;">← Select an item to view details</div>';
+  }
+  renderShopItems();
+}
+
+function _shopTagColor(item) {
+  const isBoost = item.item_type === 'boost' || item.effect_key === 'boost';
+  if (item.item_type === 'ship')        return 'var(--cyan)';
+  if (isBoost)                          return '#ffffff';
+  if (item.item_type === 'upgrade')     return 'var(--orange)';
+  if (item.item_type === 'consumable')  return '#a855f7';
+  if (item.item_type === 'crew')        return '#22c55e';
+  return 'var(--text-dim)';
+}
+function _shopTypeIcon(item) {
+  const isBoost = item.item_type === 'boost' || item.effect_key === 'boost';
+  if (item.item_type === 'ship')       return '🚀';
+  if (isBoost)                         return '⚡';
+  if (item.item_type === 'upgrade')    return '⬡';
+  if (item.item_type === 'consumable') return '🧪';
+  if (item.item_type === 'crew')       return '👤';
+  return '✦';
+}
+
 function renderShopItems() {
-  const grid = document.getElementById('shopItemsGrid');
-  if (!grid) return;
-  if (!shopItems.length) {
-    grid.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-dim);padding:20px 0;grid-column:1/-1;">No items available.</div>';
+  const list   = document.getElementById('shopItemsList');
+  const detail = document.getElementById('shopDetailPanel');
+  if (!list) return;
+
+  const catMap = {
+    consumables: i => i.item_type === 'consumable' || i.item_type === 'boost' || i.effect_key === 'boost',
+    upgrades:    i => i.item_type === 'upgrade',
+    ships:       i => i.item_type === 'ship',
+    crew:        i => i.item_type === 'crew',
+  };
+  const filtered = shopItems.filter(catMap[_shopCategory] || (() => true));
+
+  // Reset detail pane
+  if (detail) detail.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.06em;line-height:2;">← Select an item to view details</div>';
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-dim);padding:24px 14px;text-align:center;letter-spacing:.06em;">Nothing available.</div>';
+    document.getElementById('shopMeta').textContent = '0 items';
     return;
   }
 
-  grid.innerHTML = shopItems.map(item => {
+  list.innerHTML = filtered.map(item => {
     const owned     = playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip);
     const canAfford = userWallet >= item.price;
-    const isShip    = item.item_type === 'ship';
-    const isBoost   = item.item_type === 'boost' || item.effect_key === 'boost';
-    const tagColor  = isShip ? 'var(--cyan)' : isBoost ? '#ffffff' : item.item_type === 'upgrade' ? 'var(--orange)' : item.item_type === 'consumable' ? '#a855f7' : 'var(--text-dim)';
-    const typeIcon  = isShip ? '🚀' : isBoost ? '⚡' : item.item_type === 'upgrade' ? '⬡' : item.item_type === 'consumable' ? '🧪' : '✦';
-    const typeLabel = isBoost ? 'BOOST' : (item.item_type || 'item').toUpperCase();
-    // Consumables can be repurchased — only ships/upgrades are "owned once"
-    const isOneTime = isShip || item.item_type === 'upgrade';
+    const isOneTime = item.item_type === 'ship' || item.item_type === 'upgrade';
     const showOwned = isOneTime && owned;
+    const tagColor  = _shopTagColor(item);
+    const typeIcon  = _shopTypeIcon(item);
 
-    const btnStyle = showOwned
-      ? `background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.4);color:#22c55e;cursor:default;`
+    const statusDot = showOwned
+      ? `<span style="font-family:'DM Mono',monospace;font-size:9px;color:#22c55e;">✓</span>`
       : !canAfford
-        ? `background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text-dim);cursor:not-allowed;opacity:.45;`
-        : `background:transparent;border:1px solid ${tagColor};color:${tagColor};cursor:pointer;`;
-    const btnText = showOwned ? '✓ Owned' : isBoost
-      ? `⚡ Buy 1 Charge — ${item.price.toLocaleString()} aUEC`
-      : `Purchase — ${item.price.toLocaleString()} aUEC`;
+        ? `<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);opacity:.5;">✕</span>`
+        : '';
 
-    return `
-      <div style="background:rgba(0,0,0,.25);border:1px solid ${showOwned ? 'rgba(34,197,94,.25)' : 'var(--border)'};border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s;">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-          <div>
-            <div style="font-family:'DM Mono',monospace;font-size:8px;color:${tagColor};text-transform:uppercase;letter-spacing:.14em;margin-bottom:4px;">${typeIcon} ${typeLabel}</div>
-            <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text-bright);line-height:1.2;">${item.name}</div>
-          </div>
-          ${isShip ? '<div style="font-family:\'DM Mono\',monospace;font-size:8px;color:var(--orange);text-transform:uppercase;letter-spacing:.08em;text-align:right;margin-top:2px;">⭐ Key<br>Purchase</div>' : ''}
-          ${isBoost ? `<div style="font-family:'DM Mono',monospace;font-size:11px;color:#fff;font-weight:700;">×1</div>` : ''}
-        </div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.6;">${item.description || ''}</div>
-        ${item.effect_summary ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:${tagColor};padding:8px 10px;background:rgba(0,0,0,.3);border-left:2px solid ${tagColor};line-height:1.6;border-radius:0 4px 4px 0;">${item.effect_summary}</div>` : ''}
-        <button
-          onclick="${showOwned || !canAfford ? '' : `openShopConfirm(${item.id})`}"
-          style="width:100%;padding:10px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-radius:8px;transition:all .2s;${btnStyle}"
-          ${showOwned || !canAfford ? 'disabled' : ''}
-        >${btnText}</button>
-      </div>`;
+    return `<div
+      onclick="showShopItem('${item.id}')"
+      data-shop-id="${item.id}"
+      style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;"
+      onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:13px;flex-shrink:0;">${typeIcon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:${tagColor};text-transform:uppercase;letter-spacing:.08em;margin-top:1px;">${item.price.toLocaleString()} aUEC</div>
+      </div>
+      ${statusDot}
+    </div>`;
   }).join('');
 
   document.getElementById('shopMeta').textContent =
-    `${shopItems.length} item${shopItems.length !== 1 ? 's' : ''} · ${playerInventory.length} owned`;
+    `${filtered.length} item${filtered.length !== 1 ? 's' : ''} · ${playerInventory.length} owned`;
+}
+
+function showShopItem(itemId) {
+  const item = shopItems.find(i => String(i.id) === String(itemId));
+  if (!item) return;
+
+  // Highlight selected row
+  document.querySelectorAll('[data-shop-id]').forEach(el => {
+    el.style.background = String(el.dataset.shopId) === String(itemId)
+      ? 'rgba(232,141,45,.08)' : 'transparent';
+  });
+
+  const detail    = document.getElementById('shopDetailPanel');
+  const owned     = playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip);
+  const canAfford = userWallet >= item.price;
+  const isOneTime = item.item_type === 'ship' || item.item_type === 'upgrade';
+  const showOwned = isOneTime && owned;
+  const tagColor  = _shopTagColor(item);
+  const typeIcon  = _shopTypeIcon(item);
+  const isBoost   = item.item_type === 'boost' || item.effect_key === 'boost';
+
+  const btnStyle = showOwned
+    ? `background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.4);color:#22c55e;cursor:default;`
+    : !canAfford
+      ? `background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text-dim);cursor:not-allowed;opacity:.45;`
+      : `background:transparent;border:1px solid ${tagColor};color:${tagColor};cursor:pointer;`;
+  const btnText = showOwned ? '✓ Already Owned' : isBoost
+    ? `⚡ Buy 1 Charge — ${item.price.toLocaleString()} aUEC`
+    : `Purchase — ${item.price.toLocaleString()} aUEC`;
+
+  detail.style.justifyContent = 'flex-start';
+  detail.style.alignItems     = 'stretch';
+  detail.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <span style="font-size:22px;">${typeIcon}</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:8px;color:${tagColor};text-transform:uppercase;letter-spacing:.14em;">${(item.item_type||'item').toUpperCase()}${item.item_type==='ship'?' · ⭐ Key Purchase':''}</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:17px;font-weight:700;color:var(--text-bright);line-height:1.2;margin-top:3px;">${item.name}</div>
+      </div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.75;margin-bottom:14px;">${item.description || 'No description available.'}</div>
+    ${item.effect_summary ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:${tagColor};padding:10px 12px;background:rgba(0,0,0,.3);border-left:2px solid ${tagColor};line-height:1.7;border-radius:0 4px 4px 0;margin-bottom:16px;">${item.effect_summary}</div>` : ''}
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;margin-bottom:10px;">
+        <span style="color:var(--text-dim);">Price</span>
+        <span style="color:var(--orange);font-weight:700;">${item.price.toLocaleString()} aUEC</span>
+      </div>
+      <button
+        onclick="${showOwned || !canAfford ? '' : `openShopConfirm(${item.id})`}"
+        style="width:100%;padding:12px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-radius:8px;transition:all .2s;${btnStyle}"
+        ${showOwned || !canAfford ? 'disabled' : ''}
+      >${btnText}</button>
+    </div>`;
 }
 
 function openShopConfirm(itemId) {
@@ -5368,8 +5516,9 @@ function showStory(beatKey, onClose) {
 
   const img     = document.getElementById('storyImage');
   const imgWrap = document.getElementById('storyImageWrap');
-  if (beat.image) {
-    img.src     = beat.image;
+  const imageSrc = beatKey === 'act1_intro' ? '/img/Act_1-TheHero.webp' : beat.image;
+  if (imageSrc) {
+    img.src     = imageSrc;
     img.onload  = () => { img.style.opacity = '1'; };
     img.onerror = () => { imgWrap.style.background = `radial-gradient(ellipse 80% 60% at 30% 50%, ${act.color}20, ${act.color}06, #050810)`; };
     img.style.opacity = '0';
@@ -5421,7 +5570,7 @@ function maybeShowIntro() {
   if (localStorage.getItem('soms_story_act1_seen')) return;
   if (!STORY_BEATS['act1_intro']) return;
   localStorage.setItem('soms_story_act1_seen', '1');
-  setTimeout(() => showStory('act1_intro'), 1400);
+  showStory('act1_intro');
 }
 
 async function initSupabase() {
@@ -5478,7 +5627,7 @@ window.addEventListener('DOMContentLoaded', () => {
 ══════════════════════════════════════════════════════════ -->
 <div id="starMapModal" style="display:none;position:fixed;inset:0;z-index:1900;background:rgba(0,0,0,.92);align-items:center;justify-content:center;">
   <div style="
-    width:580px;height:580px;max-width:96vw;max-height:96vw;
+    width:920px;height:560px;max-width:96vw;max-height:85vh;
     background:#020609;
     border:1px solid var(--border-bright);
     box-shadow:0 0 60px rgba(0,0,0,.95),0 0 0 1px rgba(0,212,255,.06);
@@ -5575,7 +5724,23 @@ function launchFromStarMap() {
   dispatchMiner();
 }
 
-function _renderStarMap() {
+function _smPos(ast, W, H) {
+    const centerX = SM_STATION.x * W;
+    const centerY = SM_STATION.y * H;
+    const dxOrig  = (ast.x - 0.08) * 580;
+    const dyOrig  = (ast.y - 0.5) * 486;
+    const angle   = Math.atan2(dyOrig, dxOrig);
+    const maxX    = W * 0.88;
+    const maxY    = H * 0.88;
+    const radiusX = (ast.distance / 900) * maxX;
+    const radiusY = (ast.distance / 900) * maxY;
+    return {
+      x: centerX + Math.cos(angle) * radiusX,
+      y: centerY + Math.sin(angle) * radiusY,
+    };
+  }
+
+  function _renderStarMap() {
   const canvas = document.getElementById('starMapCanvas');
   const vp     = document.getElementById('starMapViewport');
   const W = vp.clientWidth;
@@ -5611,11 +5776,11 @@ function _renderStarMap() {
 
     // Distance rings from station — 300 / 600 / 900 Mm
     const maxDist = 900;
-    const ringScale = Math.min(W, H) * 0.88;
     [300, 600, 900].forEach(d => {
-      const r = (d / maxDist) * ringScale;
+      const rx = (d / maxDist) * W * 0.88;
+      const ry = (d / maxDist) * H * 0.88;
       ctx.beginPath();
-      ctx.arc(SM_STATION.x * W, SM_STATION.y * H, r, 0, Math.PI * 2);
+      ctx.ellipse(SM_STATION.x * W, SM_STATION.y * H, rx, ry, 0, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(0,212,255,0.28)';
       ctx.lineWidth   = 1;
       ctx.setLineDash([4, 8]);
@@ -5624,7 +5789,7 @@ function _renderStarMap() {
       ctx.font = '9px DM Mono, monospace';
       ctx.fillStyle = 'rgba(0,212,255,0.65)';
       ctx.textAlign = 'left';
-      ctx.fillText(`${d} Mm`, SM_STATION.x * W + r + 5, SM_STATION.y * H - 5);
+      ctx.fillText(`${d} Mm`, SM_STATION.x * W + rx + 5, SM_STATION.y * H - 5);
     });
 
     // Background stars
@@ -5661,14 +5826,14 @@ function _renderStarMap() {
     if (_smSelected) {
       const target = STAR_MAP_ASTEROIDS.find(a => a.id === _smSelected);
       if (target) {
-        const tx = target.x * W, ty = target.y * H;
+        const pos = _smPos(target, W, H);
         const dashOffset = (_smTime * 18) % 16;
         ctx.save();
         ctx.setLineDash([6, 10]);
         ctx.lineDashOffset = -dashOffset;
         ctx.beginPath();
         ctx.moveTo(sx, sy);
-        ctx.lineTo(tx, ty);
+        ctx.lineTo(pos.x, pos.y);
         ctx.strokeStyle = target.discovered ? 'rgba(245,200,66,.35)' : 'rgba(0,212,255,.3)';
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -5679,8 +5844,9 @@ function _renderStarMap() {
 
     // Asteroids
     STAR_MAP_ASTEROIDS.forEach(ast => {
-      const ax      = ast.x * W;
-      const ay      = ast.y * H;
+      const pos     = _smPos(ast, W, H);
+      const ax      = pos.x;
+      const ay      = pos.y;
       const sz      = ast.sz;
       const isSel   = _smSelected === ast.id;
       const isLocked = ast.distance >= 900 && !_hasEngineUpgrade;
@@ -5767,7 +5933,8 @@ function _renderStarMap() {
     const my = e.clientY - rect.top;
     let hit = null;
     STAR_MAP_ASTEROIDS.forEach(ast => {
-      const dx = ast.x * W - mx, dy = ast.y * H - my;
+      const pos = _smPos(ast, W, H);
+      const dx = pos.x - mx, dy = pos.y - my;
       if (Math.sqrt(dx*dx + dy*dy) < ast.sz) hit = ast;
     });
     if (hit && hit.distance >= 900 && !_hasEngineUpgrade) {
