@@ -905,7 +905,7 @@
   <div style="position:absolute;bottom:0;left:0;right:0;height:48px;background:#000;z-index:1;"></div>
 
   <!-- Main panel — side by side -->
-  <div style="
+  <div id="storyPanel" style="
     position:relative;z-index:2;
     width:980px;max-width:96vw;
     background:var(--bg-card);
@@ -965,7 +965,7 @@
         </div>
 
         <!-- Continue button -->
-        <button id="storyNextBtn" onclick="closeStoryModal()"
+        <button id="storyNextBtn" onclick="closeStoryModalAnimated()"
           style="width:100%;margin-top:14px;padding:14px;background:transparent;border:1px solid;
             font-family:'DM Mono',monospace;font-size:13px;font-weight:700;text-transform:uppercase;
             letter-spacing:.12em;cursor:pointer;transition:all .2s;border-radius:10px;">
@@ -977,10 +977,20 @@
   </div><!-- /main panel -->
 </div>
 
+<audio id="storyMusic" src="audio/Starwalk Drift.mp3" loop preload="auto"></audio>
+
 <style>
 @keyframes storyFadeIn {
   from { opacity:0; transform:scale(.98); }
   to   { opacity:1; transform:none; }
+}
+@keyframes storyPixelOut {
+  0%   { opacity:1; filter:none;                                        transform:scale(1); }
+  15%  { opacity:1; filter:contrast(2) brightness(1.2);                 transform:scale(1); }
+  35%  { opacity:.85; filter:contrast(4) blur(.6px) brightness(1.4);   transform:scale(1.004); }
+  55%  { opacity:.55; filter:contrast(2) blur(2.5px) brightness(.85);  transform:scale(1.009); }
+  80%  { opacity:.2;  filter:blur(6px) brightness(.4);                 transform:scale(1.014); }
+  100% { opacity:0;   filter:blur(12px) brightness(0);                 transform:scale(1.02); }
 }
 </style>
 
@@ -5506,6 +5516,10 @@ function showStory(beatKey, onClose) {
   const act = STORY_ACTS[beat.act];
   storyOnClose = onClose || null;
 
+  // Reset panel animation in case it was previously pixelated out
+  const panel = document.getElementById('storyPanel');
+  if (panel) panel.style.animation = 'storyFadeIn .8s ease';
+
   const actTag = document.getElementById('storyActTag');
   actTag.textContent       = act.label.toUpperCase();
   actTag.style.color       = act.color;
@@ -5516,7 +5530,7 @@ function showStory(beatKey, onClose) {
 
   const img     = document.getElementById('storyImage');
   const imgWrap = document.getElementById('storyImageWrap');
-  const imageSrc = beatKey === 'act1_intro' ? '/img/Act_1-TheHero.webp' : beat.image;
+  const imageSrc = beatKey === 'act1_intro' ? 'img/Act_1-TheHero.webp' : beat.image;
   if (imageSrc) {
     img.src     = imageSrc;
     img.onload  = () => { img.style.opacity = '1'; };
@@ -5556,12 +5570,58 @@ function showStory(beatKey, onClose) {
   nextBtn.onmouseover = () => { nextBtn.style.background = act.color + '18'; };
   nextBtn.onmouseout  = () => { nextBtn.style.background = 'transparent'; };
 
+  // Music — fade in only for act1_intro
+  const music = document.getElementById('storyMusic');
+  if (music) {
+    if (beatKey === 'act1_intro') {
+      music.currentTime = 0;
+      music.volume = 0;
+      music.play().catch(() => {});
+      let v = 0;
+      const fadeIn = setInterval(() => {
+        v = Math.min(v + 0.04, 0.55);
+        music.volume = v;
+        if (v >= 0.55) clearInterval(fadeIn);
+      }, 80);
+    } else {
+      // Stop any lingering music for non-act1 beats
+      if (!music.paused) {
+        music.pause();
+        music.currentTime = 0;
+      }
+    }
+  }
+
   document.getElementById('storyModal').style.display = 'flex';
 }
 
 function closeStoryModal() {
   document.getElementById('storyModal').style.display = 'none';
   if (storyOnClose) { storyOnClose(); storyOnClose = null; }
+}
+
+function closeStoryModalAnimated() {
+  const music = document.getElementById('storyMusic');
+  const panel = document.getElementById('storyPanel');
+
+  // Fade out music
+  if (music && !music.paused) {
+    const startVol = music.volume;
+    let v = startVol;
+    const fadeOut = setInterval(() => {
+      v = Math.max(v - 0.04, 0);
+      music.volume = v;
+      if (v <= 0) { clearInterval(fadeOut); music.pause(); music.currentTime = 0; }
+    }, 50);
+  }
+
+  // Pixelate + fade the panel, then close
+  if (panel) {
+    panel.style.animation = 'storyPixelOut 1.3s ease-in forwards';
+    setTimeout(() => closeStoryModal(), 1250);
+  } else {
+    closeStoryModal();
+  }
 }
 
 function maybeShowIntro() {
