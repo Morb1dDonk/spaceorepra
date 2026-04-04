@@ -11,26 +11,118 @@
 </head>
 <body>
 
-<!-- AUTH TEMPORARILY DISABLED — game runs as guest -->
-<div id="gameLock" style="display:none;"></div>
-<div id="authModal" style="display:none;">
-  <!-- stub elements so JS references don't crash -->
-  <div id="formSignIn"></div>
-  <div id="formSignUp"></div>
-  <div id="authLoading"></div>
-  <button id="tabSignIn"></button>
-  <button id="tabSignUp"></button>
-  <input id="siEmail" type="hidden">
-  <input id="siPassword" type="hidden">
-  <input id="suName" type="hidden">
-  <input id="suEmail" type="hidden">
-  <input id="suPassword" type="hidden">
-  <input id="suConfirm" type="hidden">
-  <div id="siError"></div>
-  <div id="suError"></div>
-  <div id="pwStrengthBar"></div>
-  <div id="pwStrengthLabel"></div>
+<!-- GAME LOCK OVERLAY -->
+<div id="gameLock" style="display:none;position:fixed;inset:0;z-index:8000;background:#050810;transition:opacity .4s ease;opacity:1;"></div>
+
+<!-- PILOT AUTH MODAL -->
+<div id="authModal" style="display:none;position:fixed;inset:0;z-index:8500;align-items:center;justify-content:center;">
+
+  <!-- Scanline + vignette overlay -->
+  <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);pointer-events:none;z-index:1;"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.7) 100%);pointer-events:none;z-index:1;"></div>
+
+  <!-- Login card -->
+  <div style="position:relative;z-index:2;width:420px;max-width:94vw;background:rgba(8,12,24,.97);border:1px solid rgba(0,212,255,.2);box-shadow:0 0 60px rgba(0,212,255,.08),0 0 0 1px rgba(255,255,255,.04);overflow:hidden;">
+
+    <!-- Header bar -->
+    <div style="padding:20px 24px 16px;border-bottom:1px solid rgba(0,212,255,.12);background:rgba(0,212,255,.04);">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--cyan);text-transform:uppercase;letter-spacing:.22em;margin-bottom:6px;opacity:.7;">// Stanton Network — Aaron Belt Node</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:.02em;">Pilot Authentication</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:4px;">Enter callsign &amp; access code to continue</div>
+    </div>
+
+    <div style="padding:22px 24px 26px;">
+
+      <!-- Callsign input -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--cyan);text-transform:uppercase;letter-spacing:.16em;margin-bottom:7px;">Callsign</div>
+        <input id="loginUsername" type="text" maxlength="24" autocomplete="off" spellcheck="false"
+          placeholder="ENTER CALLSIGN"
+          style="width:100%;box-sizing:border-box;background:rgba(0,0,0,.5);border:1px solid rgba(0,212,255,.25);color:var(--text-bright);font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.08em;padding:11px 14px;outline:none;text-transform:uppercase;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='rgba(0,212,255,.25)'"
+          onkeydown="if(event.key==='Enter')document.getElementById('kp-ok').click()">
+      </div>
+
+      <!-- 6-digit code display -->
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--cyan);text-transform:uppercase;letter-spacing:.16em;margin-bottom:10px;">Access Code</div>
+      <div id="loginCodeDots" style="display:flex;gap:10px;justify-content:center;margin-bottom:18px;">
+        <div class="kp-dot" id="kd0"></div>
+        <div class="kp-dot" id="kd1"></div>
+        <div class="kp-dot" id="kd2"></div>
+        <div class="kp-dot" id="kd3"></div>
+        <div class="kp-dot" id="kd4"></div>
+        <div class="kp-dot" id="kd5"></div>
+      </div>
+
+      <!-- Keypad -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+        <button class="kp-btn" onclick="keypadPress('1')">1</button>
+        <button class="kp-btn" onclick="keypadPress('2')">2</button>
+        <button class="kp-btn" onclick="keypadPress('3')">3</button>
+        <button class="kp-btn" onclick="keypadPress('4')">4</button>
+        <button class="kp-btn" onclick="keypadPress('5')">5</button>
+        <button class="kp-btn" onclick="keypadPress('6')">6</button>
+        <button class="kp-btn" onclick="keypadPress('7')">7</button>
+        <button class="kp-btn" onclick="keypadPress('8')">8</button>
+        <button class="kp-btn" onclick="keypadPress('9')">9</button>
+        <button class="kp-btn kp-back" onclick="keypadBack()">⌫</button>
+        <button class="kp-btn" onclick="keypadPress('0')">0</button>
+        <button class="kp-btn kp-ok" id="kp-ok" onclick="keypadSubmit()">✓</button>
+      </div>
+
+      <!-- Error line -->
+      <div id="loginError" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);text-align:center;min-height:16px;letter-spacing:.06em;"></div>
+    </div>
+  </div>
+
+  <!-- Hidden stubs so existing JS refs don't crash -->
+  <div id="formSignIn" style="display:none;"></div>
+  <div id="formSignUp" style="display:none;"></div>
+  <div id="authLoading" style="display:none;"></div>
+  <button id="tabSignIn" style="display:none;"></button>
+  <button id="tabSignUp" style="display:none;"></button>
+  <input id="siEmail" type="hidden"><input id="siPassword" type="hidden">
+  <input id="suName" type="hidden"><input id="suEmail" type="hidden">
+  <input id="suPassword" type="hidden"><input id="suConfirm" type="hidden">
+  <div id="siError" style="display:none;"></div><div id="suError" style="display:none;"></div>
+  <div id="pwStrengthBar" style="display:none;"></div><div id="pwStrengthLabel" style="display:none;"></div>
 </div>
+
+<style>
+.kp-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1px solid rgba(0,212,255,.3);
+  background: transparent;
+  transition: background .15s, box-shadow .15s;
+}
+.kp-dot.filled {
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(0,212,255,.7);
+  border-color: var(--cyan);
+}
+.kp-btn {
+  padding: 14px 8px;
+  background: rgba(0,212,255,.05);
+  border: 1px solid rgba(0,212,255,.18);
+  color: var(--text-bright);
+  font-family: 'DM Mono', monospace;
+  font-size: 16px; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s;
+  letter-spacing: .04em;
+}
+.kp-btn:hover  { background: rgba(0,212,255,.14); box-shadow: 0 0 10px rgba(0,212,255,.15); }
+.kp-btn:active { background: rgba(0,212,255,.22); transform: scale(.96); }
+.kp-back { color: var(--orange); border-color: rgba(232,141,45,.3); background: rgba(232,141,45,.05); }
+.kp-back:hover { background: rgba(232,141,45,.12); box-shadow: 0 0 10px rgba(232,141,45,.15); }
+.kp-ok   { color: #000; background: var(--cyan); border-color: var(--cyan); font-size: 18px; }
+.kp-ok:hover   { background: #00eeff; box-shadow: 0 0 16px rgba(0,212,255,.5); }
+@keyframes kpShake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-6px); }
+  40%,80% { transform: translateX(6px); }
+}
+</style>
 
 <!-- NEWS TICKER BANNER -->
 <div id="newsBanner" style="
@@ -5576,13 +5668,31 @@ function showStory(beatKey, onClose) {
     if (beatKey === 'act1_intro') {
       music.currentTime = 0;
       music.volume = 0;
-      music.play().catch(() => {});
-      let v = 0;
-      const fadeIn = setInterval(() => {
-        v = Math.min(v + 0.04, 0.55);
-        music.volume = v;
-        if (v >= 0.55) clearInterval(fadeIn);
-      }, 80);
+
+      const doFadeIn = () => {
+        let v = 0;
+        const fadeIn = setInterval(() => {
+          v = Math.min(v + 0.04, 0.55);
+          music.volume = v;
+          if (v >= 0.55) clearInterval(fadeIn);
+        }, 80);
+      };
+
+      // Browsers block autoplay unless triggered by a user gesture.
+      // Attempt immediate play; if blocked, start on the first click inside the modal.
+      const playAttempt = music.play();
+      if (playAttempt !== undefined) {
+        playAttempt.then(doFadeIn).catch(() => {
+          const modal = document.getElementById('storyModal');
+          const startOnClick = () => {
+            music.play().then(doFadeIn).catch(() => {});
+            modal.removeEventListener('pointerdown', startOnClick);
+          };
+          modal.addEventListener('pointerdown', startOnClick, { once: true });
+        });
+      } else {
+        doFadeIn();
+      }
     } else {
       // Stop any lingering music for non-act1 beats
       if (!music.paused) {
@@ -5633,21 +5743,79 @@ function maybeShowIntro() {
   showStory('act1_intro');
 }
 
-async function initSupabase() {
-  // AUTH TEMPORARILY DISABLED — unlock as guest immediately
+// ── KEYPAD LOGIN ──
+let _loginCode = '';
+
+function _updateCodeDots() {
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById('kd' + i);
+    if (dot) dot.className = 'kp-dot' + (i < _loginCode.length ? ' filled' : '');
+  }
+}
+
+function keypadPress(digit) {
+  if (_loginCode.length >= 6) return;
+  _loginCode += digit;
+  _updateCodeDots();
+  document.getElementById('loginError').textContent = '';
+  if (_loginCode.length === 6) {
+    // Brief pause so last dot is visible before auto-submit
+    setTimeout(keypadSubmit, 180);
+  }
+}
+
+function keypadBack() {
+  _loginCode = _loginCode.slice(0, -1);
+  _updateCodeDots();
+  document.getElementById('loginError').textContent = '';
+}
+
+function keypadSubmit() {
+  const name = document.getElementById('loginUsername').value.trim();
+  const err  = document.getElementById('loginError');
+  const dots = document.getElementById('loginCodeDots');
+
+  if (!name) {
+    err.textContent = 'Callsign required.';
+    document.getElementById('loginUsername').focus();
+    return;
+  }
+  if (_loginCode.length < 6) {
+    err.textContent = 'Enter all 6 digits.';
+    dots.style.animation = 'kpShake .4s ease';
+    setTimeout(() => dots.style.animation = '', 400);
+    return;
+  }
+
+  // Any callsign + any 6-digit code is accepted (DB auth comes later)
+  _completeLogin(name);
+}
+
+function _completeLogin(pilotName) {
+  localStorage.setItem('soms_pilot', pilotName);
   userWallet = 50000;
   updateWallet();
-  document.getElementById('pilotNameDisplay').textContent = 'Guest';
+  document.getElementById('pilotNameDisplay').textContent = pilotName;
   document.getElementById('authUserBox').style.display = 'flex';
-
-  // Load market + leaderboard + encounters (all public data)
-  await loadMarketPrices();
-  await loadEncounters();
-  await loadShop();
-  await loadContracts();
-  await loadStoryBeats();
-  setInterval(applyPriceRecovery, 5 * 60 * 1000);
+  unlockGame();
   maybeShowIntro();
+}
+
+async function initSupabase() {
+  // Show login screen — load public data in background while user authenticates
+  document.getElementById('gameLock').style.display = 'block';
+  document.getElementById('authModal').style.display = 'flex';
+  document.getElementById('loginUsername').focus();
+
+  // Load all public data quietly in the background
+  loadMarketPrices();
+  loadEncounters();
+  loadShop();
+  loadContracts();
+  loadStoryBeats().then(() => {
+    // Story beats ready — login can proceed to intro immediately
+  });
+  setInterval(applyPriceRecovery, 5 * 60 * 1000);
 }
 
 
@@ -5659,6 +5827,15 @@ updateFuelUI();
 
 // Wire patches after all functions defined, then init Supabase
 window.addEventListener('DOMContentLoaded', () => {
+  // Keyboard support for keypad login
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('authModal').style.display === 'none') return;
+    if (document.activeElement === document.getElementById('loginUsername')) return;
+    if (e.key >= '0' && e.key <= '9') keypadPress(e.key);
+    else if (e.key === 'Backspace') keypadBack();
+    else if (e.key === 'Enter') keypadSubmit();
+  });
+
   // Wire the action button initial state
   setActionBtn('confirm');
 
