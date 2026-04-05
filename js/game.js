@@ -65,8 +65,8 @@ function updateFuelUI() {
   const isFull     = minerFuel >= FUEL_MAX;
   const refuelCost = getFuelRefuelCost();
   const canAfford  = userWallet >= refuelCost || refuelCost === 0;
-  const minTrip    = FUEL_TRIP_MIN * 2;
-  const maxTrip    = FUEL_TRIP_MAX * 2;
+  const minTrip    = FUEL_TRIP_MIN;
+  const maxTrip    = FUEL_TRIP_MAX;
   const fuelRatio  = Math.min(1, minerFuel / maxTrip);
   const isPartial  = minerFuel > 0 && minerFuel < minTrip;
   const pricePerUnit = getFuelPrice();
@@ -81,9 +81,9 @@ function updateFuelUI() {
 
   document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
   document.getElementById('fuelRefuelCost').textContent =
-    isFull ? 'Tank full' : refuelCost.toLocaleString() + ' aUEC';
+    isFull ? 'Tank full' : refuelCost.toLocaleString() + ' GC';
   document.getElementById('fuelTripCost').textContent =
-    `${minTrip}–${maxTrip} units · ${tripCostMin.toLocaleString()}–${tripCostMax.toLocaleString()} aUEC`;
+    `${minTrip}–${maxTrip} units · ${tripCostMin.toLocaleString()}–${tripCostMax.toLocaleString()} GC`;
 
   // Refuel button
   const refuelBtn = document.getElementById('refuelBtn');
@@ -93,7 +93,7 @@ function updateFuelUI() {
   refuelBtn.style.opacity = (isFull || !canAfford || isFlight) ? '0.35' : '1';
   refuelBtn.textContent = isFull
     ? 'Tank Full'
-    : `Refuel +${neededUnits} units — ${refuelCost.toLocaleString()} aUEC`;
+    : `Refuel +${neededUnits} units — ${refuelCost.toLocaleString()} GC`;
 
   // Status text in header
   const statusEl = document.getElementById('dispatchStatus');
@@ -140,7 +140,7 @@ function refuelMiner() {
     document.getElementById('fuelWarning').style.display = 'block';
     document.getElementById('fuelWarning').style.color   = 'var(--red)';
     document.getElementById('fuelWarning').textContent   =
-      '⚠ Insufficient aUEC — fuel costs ' + pricePerUnit.toLocaleString() + ' aUEC/unit';
+      '⚠ Insufficient GC — fuel costs ' + pricePerUnit.toLocaleString() + ' GC/unit';
     return;
   }
 
@@ -273,9 +273,9 @@ function dispatchMiner() {
   if (minerFuel <= 0) return;
 
   const tripFuelOneWay = rollTripFuel();  // random 15–35 units per leg
-  const fuelRatio  = Math.min(1, minerFuel / (tripFuelOneWay * 2));
+  const fuelRatio  = Math.min(1, minerFuel / tripFuelOneWay);
   const isPartial  = fuelRatio < 1;
-  const fuelToUse  = Math.min(minerFuel, tripFuelOneWay * 2);
+  const fuelToUse  = Math.min(minerFuel, tripFuelOneWay);
   const fuelStart  = minerFuel;
 
   // Fixed 60-second trip: 25s out, 5-10s mining, 25-30s back
@@ -372,13 +372,14 @@ function dispatchMiner() {
       Math.min(100, (elapsed / totalMs) * 100) + '%';
   }, 200);
 
-  // ── Real-time fuel drain ──
-  const totalTransit = transitMs * 2;
-  const fuelPerTick = (fuelToUse / (totalTransit / 200));
+  // ── Real-time fuel drain — outbound only ──
+  // Rate is based on the full trip cost so under-fueled ships run dry
+  // before the arrival timeout fires, not in a race with it.
+  const fuelPerTick = (tripFuelOneWay / (transitMs / 200));
   fuelDrainInterval = setInterval(() => {
     if (encounterResumeFn) return;
     const status = document.getElementById('dispatchStatus').textContent;
-    if (status === 'Mining') return;
+    if (status === 'Mining' || status === 'Returning') return;
     minerFuel = Math.max(0, minerFuel - fuelPerTick * _boostFuelMult);
     document.getElementById('fuelBar').style.width = (minerFuel / FUEL_MAX * 100) + '%';
     document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
@@ -387,6 +388,12 @@ function dispatchMiner() {
       clearInterval(fuelDrainInterval);
       dispatchInterval  = null;
       fuelDrainInterval = null;
+      const _towStatus = document.getElementById('dispatchStatus').textContent;
+      window._towContext = {
+        fuelRatio,
+        isPartial,
+        miningComplete: _towStatus === 'Returning'
+      };
       triggerTowBack(btn, refuelBtn);
     }
   }, 200);
@@ -910,16 +917,16 @@ function triggerTowBack(btn, refuelBtn) {
       <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:.1em;text-shadow:0 0 10px rgba(255,64,96,.7);">Miner Stranded</div>
       <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;max-width:260px;line-height:1.7;">Fuel reserves depleted mid-flight.<br>A rescue tow has been dispatched.</div>
       <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);padding:8px 16px;border:1px solid var(--red);background:rgba(255,64,96,.08);">
-        Tow cost: <strong style="color:var(--text-bright);">${TOW_COST.toLocaleString()} aUEC</strong>
+        Tow cost: <strong style="color:var(--text-bright);">${TOW_COST.toLocaleString()} GC</strong>
       </div>
       <button onclick="payTowBack()"
         style="padding:12px 28px;background:transparent;border:1px solid var(--orange);color:var(--orange);
           font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase;
           letter-spacing:.1em;cursor:pointer;border-radius:10px;transition:all .2s;"
         onmouseover="this.style.background='rgba(232,141,45,.1)'" onmouseout="this.style.background='transparent'">
-        Pay Tow — ${TOW_COST.toLocaleString()} aUEC
+        Pay Tow — ${TOW_COST.toLocaleString()} GC
       </button>
-      ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} aUEC</div>` : ''}
+      ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} GC</div>` : ''}
     `;
     if (scene) scene.appendChild(towDiv);
 
@@ -973,7 +980,7 @@ function payTowBack() {
   if (window._towRefuel) { window._towRefuel.disabled = false; window._towRefuel.style.opacity = '1'; }
   const _sb4 = document.getElementById('shopHeaderBtn'); if (_sb4) { _sb4.disabled = false; _sb4.style.opacity = '1'; }
 
-  showContractToast(`Tow cost: −${cost.toLocaleString()} aUEC. Refuel before next dispatch.`, 'var(--red)');
+  showContractToast(`Tow cost: −${cost.toLocaleString()} GC. Refuel before next dispatch.`, 'var(--red)');
 }
 
 // ── ENCOUNTER SYSTEM ──
@@ -1070,7 +1077,7 @@ function resolveEncounter(choice) {
       userWallet = Math.max(0, userWallet - damage);
       updateWallet();
       effectLines.push(`✗ They opened fire as you ran. Hull damage sustained.`);
-      effectLines.push(`Repair cost: −${damage.toLocaleString()} aUEC deducted.`);
+      effectLines.push(`Repair cost: −${damage.toLocaleString()} GC deducted.`);
       effectColor = 'var(--red)';
     } else {
       effectLines.push(`✓ No complications encountered.`);
@@ -1130,7 +1137,7 @@ function applyOutcome(outcome) {
     encounterHaulMods.shipDamage = amt;
     userWallet = Math.max(0, userWallet - amt);
     updateWallet();
-    text = `✗ Hull damage sustained. Repair cost: −${amt.toLocaleString()} aUEC.`;
+    text = `✗ Hull damage sustained. Repair cost: −${amt.toLocaleString()} GC.`;
   } else if (outcome.startsWith('lose_fuel:')) {
     const u = parseInt(outcome.split(':')[1]);
     encounterHaulMods.fuelLoss = u;

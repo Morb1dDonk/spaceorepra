@@ -33,7 +33,7 @@ A 3-Act web-game about the "Operatic" struggle of a space miner. It focuses on e
 1.  **Narrative Design:** Help write the "character arcs" for 3-4 key NPC miners. How do they interact with the player in each Act?
 2.  **Systemic Design:** Design a "Reputation/Loyalty" system that tracks how much the NPCs trust the player.
 3.  **Puzzle Logic:** Create maintenance scenarios that can be used as "Social Missions" (e.g., "Fix Elias's cooling pump so he doesn't overheat").
-4.  **Star Citizen DNA:** Maintain the lore flavor (aUEC, SCU, Quantanium, Stanton/Pyro vibes).
+4.  **Star Citizen DNA:** Maintain the lore flavor (GC, SCU, Quantanium, Stanton/Pyro vibes).
 
 **Initial Task:**
 1.  Acknowledge your role as Lead Designer for **"A Miner Space Orepra."**

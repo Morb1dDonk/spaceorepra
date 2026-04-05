@@ -33,7 +33,7 @@ No build system, no npm, no bundler. Open `index.html` directly in a browser. `s
 ### Global State
 
 Everything lives as `let` globals in [js/utils.js](js/utils.js):
-- `userWallet` — aUEC balance
+- `userWallet` — GC balance
 - `minerFuel` — current fuel (max: `FUEL_MAX = 100`)
 - `haul[]` — active cargo `[{ matKey, scu, purity, refine }]`
 - `allocation` — `{ speed, quality, cost }` refinery slider values (0–4)
@@ -55,7 +55,7 @@ Everything lives as `let` globals in [js/utils.js](js/utils.js):
 `allocation.speed/quality/cost` (pips 0–4) feed into `weights` from config to compute purity distribution, fail rate, and efficiency fee. `getGrade(purityValue)` maps 100–1000 to: Gangue (0×) → Subordinate (0.6×) → Massive (1×) → High-Grade (2×) → Pristine (15×).
 
 ### Fuel System
-Random `FUEL_TRIP_MIN`–`FUEL_TRIP_MAX` fuel consumed per trip. Empty tank = stranded; tow costs `TOW_COST = 30,000 aUEC`.
+Random `FUEL_TRIP_MIN`–`FUEL_TRIP_MAX` fuel consumed per trip. Empty tank = stranded; tow costs `TOW_COST = 30,000 GC`.
 
 ### Loading Mini-Game
 Canvas crate-catching game on manual offload. All state uses `_lg*` prefix in `utils.js`.
@@ -67,7 +67,7 @@ Ship sprites: `Ship_0` (docked/off), `Ship_1` (flying), `Ship_2–4` (boost fram
 
 ## Game Design & Narrative Context
 
-This is a 3-Act "Space Opera" about a space miner's journey from indentured servant → station tycoon → fleet commander defending against an alien invasion. Lore to maintain: **aUEC** (currency), **SCU** (cargo volume), ore types **Quantainium / Bexalite / Gold / Iron**, Star Citizen system vibes (Stanton/Pyro). NPC relationship system and Act progression are the emotional core — see the original design brief below.
+This is a 3-Act "Space Opera" about a space miner's journey from indentured servant → station tycoon → fleet commander defending against an alien invasion. Lore to maintain: **GC** (currency), **SCU** (cargo volume), ore types **Quantainium / Bexalite / Gold / Iron**, Star Citizen system vibes (Stanton/Pyro). NPC relationship system and Act progression are the emotional core — see the original design brief below.
 
 ---
 

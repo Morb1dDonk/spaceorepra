@@ -193,7 +193,7 @@
     <div class="hdr-right">
       <div class="wallet-box" style="display:flex;align-items:center;gap:16px;">
         <div>
-          <div class="wallet-label">User Balance</div>
+          <div class="wallet-label">Galactic Credits</div>
           <div class="wallet-val" id="userWallet">—</div>
         </div>
         <button class="btn-sys" onclick="openShop()" id="shopHeaderBtn" style="color:var(--orange);border-color:rgba(232,141,45,.45);white-space:nowrap;flex-shrink:0;">🛒 Shop</button>
@@ -253,7 +253,7 @@
         </div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:12px;font-size:10px;color:var(--text-dim);line-height:1.6;">
-        Keep fuel topped up — empty tank = stranded. Tow costs <span style="color:var(--red)">30,000 aUEC</span>. Buy boost charges from the Shop to cut transit time in half.
+        Keep fuel topped up — empty tank = stranded. Tow costs <span style="color:var(--red)">30,000 GC</span>. Buy boost charges from the Shop to cut transit time in half.
       </div>
     </div>
   </div>
@@ -264,7 +264,7 @@
       <button class="btn-sys" onclick="toggleAdmin()">Close</button>
     </div>
     <div class="admin-grid" style="grid-template-columns:repeat(6,1fr);">
-      <div><span class="admin-section-title">Base Value (aUEC/SCU)</span><div id="adminMats"></div></div>
+      <div><span class="admin-section-title">Base Value (GC/SCU)</span><div id="adminMats"></div></div>
       <div><span class="admin-section-title">Ore Rarity</span><div id="adminRarity"></div></div>
       <div><span class="admin-section-title">Grade Config</span><div id="adminGrades"></div></div>
       <div><span class="admin-section-title">Processing Profile</span><div id="adminWeights"></div></div>
@@ -388,64 +388,6 @@
         <div id="sceneHud" style="position:absolute;inset:0;pointer-events:none;z-index:50;">
 
 
-          <!-- ── IN-SCENE NEWS PANEL ── -->
-          <div id="sceneNewsPanel" style="display:none;position:absolute;inset:0;z-index:70;animation:storyFadeIn .6s ease;">
-
-            <!-- Letterbox bars -->
-            <div style="position:absolute;top:0;left:0;right:0;height:20px;background:#000;z-index:2;"></div>
-            <div style="position:absolute;bottom:0;left:0;right:0;height:20px;background:#000;z-index:2;"></div>
-
-            <!-- Two-column grid: image left, text right -->
-            <div style="position:absolute;inset:0;display:grid;grid-template-columns:280px 1fr;background:var(--bg-card);border:1px solid rgba(255,255,255,.07);">
-
-              <!-- LEFT: image -->
-              <div style="position:relative;overflow:hidden;background:#050810;">
-                <img id="sceneNewsBg" src="" alt=""
-                  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1.2s ease;">
-                <!-- Gradient fade right into text panel -->
-                <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 40%,var(--bg-card) 100%);z-index:1;"></div>
-                <!-- Publication masthead overlay on image -->
-                <div style="position:absolute;top:20px;left:16px;z-index:2;display:flex;align-items:center;gap:8px;">
-                  <div id="sceneNewsSeverity" style="font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.16em;padding:3px 10px;border:1px solid;border-radius:3px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);"></div>
-                  <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.08em;">Market Bulletin</div>
-                </div>
-              </div>
-
-              <!-- RIGHT: article text -->
-              <div style="display:flex;flex-direction:column;justify-content:center;padding:24px 24px 24px 20px;gap:0;border-left:1px solid rgba(255,255,255,.05);">
-
-                <!-- Publication header -->
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07);">
-                  <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--cyan);text-transform:uppercase;letter-spacing:.2em;text-shadow:0 0 8px rgba(0,212,255,.4);">⬡ UEE Galactic Times</div>
-                  <div style="flex:1;height:1px;background:rgba(0,212,255,.12);"></div>
-                  <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.06em;">MARKET DISPATCH</div>
-                </div>
-
-                <!-- Headline -->
-                <div id="sceneNewsHeadline" style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text-bright);line-height:1.25;margin-bottom:10px;"></div>
-
-                <!-- Body copy — newspaper column feel with left border -->
-                <div id="sceneNewsBody" style="font-size:11px;color:var(--text-dim);line-height:1.7;border-left:2px solid;padding-left:10px;margin-bottom:12px;"></div>
-
-                <!-- Impact widget -->
-                <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.3);">
-                  <div>
-                    <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px;">Market Impact</div>
-                    <div id="sceneNewsImpact" style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;line-height:1;"></div>
-                  </div>
-                  <div style="width:1px;height:28px;background:rgba(255,255,255,.08);"></div>
-                  <div id="sceneNewsMat" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;"></div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Timer bar — on top of letterbox at bottom -->
-            <div style="position:absolute;bottom:20px;left:0;right:0;height:2px;background:rgba(255,255,255,.04);z-index:3;">
-              <div id="sceneNewsTimer" style="height:100%;width:100%;"></div>
-            </div>
-
-          </div>
 
         </div><!-- /sceneHud -->
 
@@ -564,32 +506,56 @@
           <div id="dispatchIdleText" style="display:none;"></div>
         </div>
 
-        <!-- Fuel gauge -->
-        <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">⛽ Fuel Tank</span>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;" id="fuelReadout"><span id="fuelCurrent" style="color:#22c55e;">75</span><span style="color:var(--text-dim);" id="fuelMaxLabel"> / 75 units</span></span>
-          </div>
-          <div style="height:10px;background:rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
-            <div id="fuelBar" style="height:100%;width:100%;background:linear-gradient(90deg,#166534,#22c55e);transition:width .4s ease;"></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
-            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);">
-              Trip: <span style="color:var(--text-main);" id="fuelTripCost">—</span>
+        <!-- Hull + Fuel gauges — side by side, equal height -->
+        <div style="display:flex;gap:8px;align-items:stretch;">
+
+          <!-- Hull Integrity gauge -->
+          <div style="flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">🛡 Hull</span>
+              <span style="font-family:'DM Mono',monospace;font-size:12px;"><span id="hullCurrent" style="color:#4aaef2;">100</span><span style="color:var(--text-dim);" id="hullMaxLabel"> / 100</span></span>
             </div>
-            <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);">Cost: <span style="color:#22c55e;" id="fuelRefuelCost">—</span></span>
+            <div style="height:10px;background:rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
+              <div id="hullBar" style="height:100%;width:100%;background:linear-gradient(90deg,#1e3a5f,#4aaef2);transition:width .4s ease;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:6px;min-height:30px;">
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Status: <span style="color:var(--cyan);" id="hullStatus">Nominal</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Cost: <span style="color:#4aaef2;" id="hullRepairCost">—</span></div>
+            </div>
+            <button id="repairBtn" onclick="repairHull()"
+              style="width:100%;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:transparent;border:1px solid #4aaef2;color:#4aaef2;padding:7px 12px;cursor:pointer;transition:all .2s;margin-top:auto;"
+              onmouseover="this.style.background='rgba(74,174,242,.1)'" onmouseout="this.style.background='transparent'">
+              Hull Intact
+            </button>
+            <div id="hullWarning" style="display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-top:8px;">⚠ Hull critically damaged</div>
           </div>
-          <button id="refuelBtn" onclick="refuelMiner()"
-            style="width:100%;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:transparent;border:1px solid #22c55e;color:#22c55e;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:all .2s;"
-            onmouseover="this.style.background='rgba(34,197,94,.1)'" onmouseout="this.style.background='transparent'">
-            Refuel to Max
-          </button>
-          <div id="fuelWarning" style="display:none;font-family:'DM Mono',monospace;font-size:11px;color:var(--red);margin-top:8px;">⚠ Insufficient fuel for round trip</div>
+
+          <!-- Fuel gauge -->
+          <div style="flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">⛽ Fuel</span>
+              <span style="font-family:'DM Mono',monospace;font-size:12px;"><span id="fuelCurrent" style="color:#22c55e;">75</span><span style="color:var(--text-dim);" id="fuelMaxLabel"> / 75</span></span>
+            </div>
+            <div style="height:10px;background:rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
+              <div id="fuelBar" style="height:100%;width:100%;background:linear-gradient(90deg,#166534,#22c55e);transition:width .4s ease;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:6px;min-height:30px;">
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Trip: <span style="color:var(--text-main);" id="fuelTripCost">—</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">Cost: <span style="color:#22c55e;" id="fuelRefuelCost">—</span></div>
+            </div>
+            <button id="refuelBtn" onclick="refuelMiner()"
+              style="width:100%;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:transparent;border:1px solid #22c55e;color:#22c55e;padding:7px 12px;cursor:pointer;transition:all .2s;margin-top:auto;"
+              onmouseover="this.style.background='rgba(34,197,94,.1)'" onmouseout="this.style.background='transparent'">
+              Refuel to Max
+            </button>
+            <div id="fuelWarning" style="display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-top:8px;">⚠ Insufficient fuel</div>
+          </div>
+
         </div>
 
         <!-- Dispatch button + fuel status -->
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:4px;">
-          <button class="btn-confirm" id="dispatchBtn" onclick="openStarMap()" style="padding:16px 28px;font-size:13px;white-space:nowrap;">
+          <button class="btn-confirm" id="dispatchBtn" onclick="_calliDispatchScene()" style="padding:16px 28px;font-size:13px;white-space:nowrap;">
             ⬡ Locate & Extract
           </button>
           <button class="btn-confirm" id="contractsBtn" onclick="openContractBoard()" disabled style="padding:10px 28px;font-size:11px;white-space:nowrap;letter-spacing:.1em;">
@@ -755,9 +721,9 @@
 
         <!-- Fee estimate -->
         <div class="fee-box">
-          <div class="fee-row"><span class="fee-label">Processing fee / unit</span><span style="font-family:'DM Mono',monospace;" id="feePerUnit">aUEC 0</span></div>
-          <div class="fee-row"><span class="fee-label">Loading fee (optional)</span><span style="font-family:'DM Mono',monospace;" id="loadingFeeEst">aUEC 0</span></div>
-          <div class="fee-row"><span class="fee-total-label">Est. work order total</span><span style="font-family:'DM Mono',monospace;color:var(--orange);" id="estTotal">aUEC 0</span></div>
+          <div class="fee-row"><span class="fee-label">Processing fee / unit</span><span style="font-family:'DM Mono',monospace;" id="feePerUnit">GC 0</span></div>
+          <div class="fee-row"><span class="fee-label">Loading fee</span><span style="font-family:'DM Mono',monospace;" id="loadingFeeEst">GC 0</span></div>
+          <div class="fee-row"><span class="fee-total-label">Est. work order total</span><span style="font-family:'DM Mono',monospace;color:var(--orange);" id="estTotal">GC 0</span></div>
         </div>
         <div id="fundsWarning">⚠ Insufficient Credits</div>
 
@@ -816,7 +782,7 @@
       <!-- Background image — fades in during active processing -->
       <div id="refineryBg" style="
         position:absolute;inset:0;
-        background-image:url('https://morb1ddonk.github.io/spaceorepra/img/Refinery_Deck.webp');
+        background-image:url('img/Refinery_Deck.webp');
         background-size:cover;background-position:center;background-repeat:no-repeat;
         opacity:0;
         transition:opacity 1.5s ease;
@@ -1114,7 +1080,7 @@
 
 <audio id="storyMusic"    src="audio/Starwalk Drift.mp3" loop preload="auto"></audio>
 <audio id="sfxExtracting" src="audio/extracting.mp3"   loop preload="auto"></audio>
-<audio id="sfxFlight"     src="audio/flight.mp3"        loop preload="auto"></audio>
+<audio id="sfxFlight"     src="audio/music_flight.ogg"  loop preload="auto"></audio>
 
 <style>
 @keyframes storyFadeIn {
@@ -1307,7 +1273,7 @@
   </div>
 </div>
 <!-- SELL MODAL — Trade Manifest -->
-<div class="modal-overlay" id="sellModal">
+<div class="modal-overlay" id="sellModal" style="z-index:1400;">
   <div style="
     width:660px;max-width:96vw;background:var(--bg-card);
     border:1px solid rgba(255,255,255,.08);
@@ -1365,25 +1331,14 @@
             </div>
           </div>
 
-          <!-- Loading fee toggle -->
+          <!-- Loading fee (mandatory — waived when player owns a loader) -->
           <div style="padding-top:8px;border-top:1px dashed rgba(255,255,255,.06);">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-                <div style="position:relative;width:36px;height:20px;flex-shrink:0;">
-                  <input type="checkbox" id="loadingCheck" onchange="calcSaleTotal()" checked style="display:none;">
-                  <div id="loadingTrack" style="position:absolute;inset:0;background:rgba(0,212,255,.18);border:1px solid var(--cyan);border-radius:10px;cursor:pointer;" onclick="document.getElementById('loadingCheck').click()"></div>
-                  <div id="loadingThumb" style="position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 4px rgba(0,212,255,.6);transition:left .2s;" ></div>
-                </div>
-                <div>
-                  <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-bright);" id="loadingFeeLabel">Loading Fee (Optional)</div>
-                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);" id="loadingDesc">10% of gross — station crane operators</div>
-                </div>
-              </label>
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-bright);" id="loadingFeeLabel">Ryker Loading Fee</div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);" id="loadingDesc">10% of gross — Ryker crane operators</div>
+              </div>
               <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--red);" id="tmLoading">—</span>
-            </div>
-            <!-- No-loading warning -->
-            <div id="crewWarning" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(232,141,45,.08);border:1px solid rgba(232,141,45,.3);font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);line-height:1.6;">
-              ⚠ Without loading, your crew handles it manually — expect a delay.
             </div>
           </div>
 
@@ -1394,7 +1349,7 @@
                 <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-bright);">Barry Swissler — RPM Service Fee</span>
                 <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:1px;">Per-load consultation — Refinery Project Manager</div>
               </div>
-              <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--red);" id="tmBarryFee">−2,500 aUEC</span>
+              <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--red);" id="tmBarryFee">−2,500 GC</span>
             </div>
           </div>
         </div>
@@ -1431,7 +1386,7 @@
     </div>
     <div style="text-align:right;">
       <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.12em;">Missed Cargo</div>
-      <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--red);" id="lgLostLabel">−0 aUEC</div>
+      <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--red);" id="lgLostLabel">−0 GC</div>
     </div>
   </div>
 
@@ -1459,8 +1414,8 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;">
           <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Loaded</div><div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--cyan);" id="lgEndSaved">0 SCU</div></div>
           <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Missed</div><div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--red);" id="lgEndLost">0 SCU</div></div>
-          <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Deducted</div><div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--red);" id="lgEndPenalty">−0 aUEC</div></div>
-          <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Net Credit</div><div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--green);" id="lgEndNet">0 aUEC</div></div>
+          <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Deducted</div><div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--red);" id="lgEndPenalty">−0 GC</div></div>
+          <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Net Credit</div><div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--green);" id="lgEndNet">0 GC</div></div>
         </div>
       </div>
       <button onclick="lgFinish()" style="padding:12px 36px;background:var(--green);border:none;color:#000;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;border-radius:10px;">
@@ -1472,7 +1427,7 @@
 </div>
 
 <!-- CREW SUCCESS POPUP -->
-<div class="modal-overlay" id="crewSuccessModal" style="z-index:1200;">
+<div class="modal-overlay" id="crewSuccessModal" style="z-index:1400;">
   <div class="modal-hud" style="width:500px;border-color:var(--cyan);">
     <div class="modal-hdr" style="border-bottom-color:var(--border);">
       <div class="card-title" style="color:var(--cyan);text-shadow:0 0 10px rgba(0,212,255,0.6);">Transfer Complete</div>
@@ -1480,13 +1435,13 @@
     </div>
     <div class="modal-body" style="text-align:center;padding:28px 24px;">
       <div style="font-size:36px;margin-bottom:16px;color:var(--cyan);text-shadow:0 0 16px rgba(0,212,255,0.7);">✓</div>
-      <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--cyan);margin-bottom:6px;text-shadow:0 0 12px rgba(0,212,255,0.5);" id="successAmount">+0 aUEC</div>
+      <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--cyan);margin-bottom:6px;text-shadow:0 0 12px rgba(0,212,255,0.5);" id="successAmount">+0 GC</div>
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:20px;">credited to your account</div>
       <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-left:3px solid var(--cyan);padding:14px 16px;text-align:left;margin-bottom:20px;">
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Crew Dispatch Report</div>
         <div style="font-size:12px;color:var(--text-main);line-height:1.7;" id="crewReport">—</div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);" id="successWalletLine">New balance: — aUEC</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);" id="successWalletLine">New balance: — GC</div>
     </div>
     <div class="modal-footer">
       <button class="btn-modal-ok" style="background:var(--green);" onclick="closeSuccessModal()">Acknowledged</button>
@@ -1564,7 +1519,8 @@ let PURITY_RANGES = [
 ];
 
 let LOGISTICS = { loadingPerSCU:100, packagingPerSCU:85, conveniencePerSCU:40 };
-let playerOwnsShip = false; // Act 1: false = Ryker 40% cut active; Act 2+: true = cut removed
+let playerOwnsShip   = false; // Act 1: false = Ryker 40% cut active; Act 2+: true = cut removed
+let playerOwnsLoader = false; // false = Ryker loading fee applies; true = eliminated
 let BASE_FEE_PER_UNIT = 25;
 
 // Presets use 1–5 scale: speed / quality / yield
@@ -1623,8 +1579,10 @@ let rawScu = 12, orePurity = 650;
 let allocation = { speed:0, quality:0, cost:0 }; // pips (0 = level 1, 4 = level 5)
 let activePreset = null;
 let sessionLog = [];
-let userWallet = 50000;
+let userWallet = 25000;
 let pendingRevenue = 0, currentWorkOrderFee = 0, liveAccumulatedValue = 0;
+let tripsCompleted = 0;   // lifetime trips — persisted to Supabase
+let lifetimeEarned = 0;   // lifetime net GC — persisted to Supabase
 
 let refineryUnits = [], refineryIdx = 0, refineryRunning = false, refineryAborted = false;
 let _refineryHaul = []; // full toRefine array passed from commitManifest
@@ -1652,7 +1610,7 @@ function getSpeedNorm(){ return allocation.speed/(SLIDER_MAX-1); }
 function getTotalMs(){ return Math.round(MS_TOTAL_SLOW+getSpeedNorm()*(MS_TOTAL_FAST-MS_TOTAL_SLOW)); }
 function getFailRate(){ return 0; } // speed no longer contributes to fail rate
 function fmtTime(ms){ const s=Math.ceil(ms/1000),m=Math.floor(s/60); return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
-function updateWallet(){ document.getElementById('userWallet').textContent=userWallet.toLocaleString()+' aUEC'; }
+function updateWallet(){ document.getElementById('userWallet').textContent=userWallet.toLocaleString(); }
 
 // ═══════════════════════════════════════════
 // PURITY UPDATE
@@ -1698,6 +1656,11 @@ let   _fuelTankUpgrades  = 0;    // 0–5 upgrades, each adds 5 capacity
 let   _fuelTankMax       = 75;   // effective tank size: 75 + (_fuelTankUpgrades * 5)
 let   minerFuel          = 75;   // starts at base tank size
 
+// ── HULL INTEGRITY SYSTEM ──
+const HULL_MAX               = 100;  // max hull integrity points
+const HULL_REPAIR_COST_PER_PT = 150; // GC per hull point repaired
+let   hullIntegrity          = HULL_MAX;
+
 // Roll random fuel cost for this trip (called at dispatch time)
 function rollTripFuel() {
   return Math.round(FUEL_TRIP_MIN + Math.random() * (FUEL_TRIP_MAX - FUEL_TRIP_MIN));
@@ -1733,15 +1696,15 @@ function updateFuelUI() {
   document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
   document.getElementById('fuelMaxLabel').textContent = ` / ${_fuelTankMax} units`;
   document.getElementById('fuelRefuelCost').textContent =
-    isFull ? 'Tank full' : refuelCost.toLocaleString() + ' aUEC';
+    isFull ? 'Tank full' : refuelCost.toLocaleString() + ' GC';
   if (_dispatchTarget) {
-    const _dtFuel = Math.round(15 * _dispatchTarget.distance / DISTANCE_BASE_MM) * 2;
+    const _dtFuel = Math.round(15 * _dispatchTarget.distance / DISTANCE_BASE_MM);
     const _dtCost = Math.round(_dtFuel * pricePerUnit);
     document.getElementById('fuelTripCost').textContent =
-      `${_dispatchTarget.id} · ${_dispatchTarget.distance} Mm · ${_dtFuel} units · ${_dtCost.toLocaleString()} aUEC`;
+      `${_dispatchTarget.id} · ${_dispatchTarget.distance} Mm · ${_dtFuel} units · ${_dtCost.toLocaleString()} GC`;
   } else {
     document.getElementById('fuelTripCost').textContent =
-      `${minTrip}–${maxTrip} units · ${tripCostMin.toLocaleString()}–${tripCostMax.toLocaleString()} aUEC`;
+      `${minTrip}–${maxTrip} units · ${tripCostMin.toLocaleString()}–${tripCostMax.toLocaleString()} GC`;
   }
 
   // Refuel button
@@ -1752,7 +1715,7 @@ function updateFuelUI() {
   refuelBtn.style.opacity = (isFull || !canAfford || isFlight) ? '0.35' : '1';
   refuelBtn.textContent = isFull
     ? 'Tank Full'
-    : `Refuel +${neededUnits} units — ${refuelCost.toLocaleString()} aUEC`;
+    : `Refuel +${neededUnits} units — ${refuelCost.toLocaleString()} GC`;
 
   // Status text in header
   const statusEl = document.getElementById('dispatchStatus');
@@ -1782,13 +1745,95 @@ function updateFuelUI() {
     warn.style.display = 'none';
   }
 
-  document.getElementById('dispatchBtn').disabled = minerFuel <= 0;
+  document.getElementById('dispatchBtn').disabled = minerFuel <= 0 || hullIntegrity <= 0;
 
   const statusColor = minerFuel <= 0 ? 'var(--red)' : isPartial ? 'var(--orange)' : 'var(--cyan)';
   const statusLabel = minerFuel <= 0 ? 'Empty' : isPartial ? 'Low — partial trip' : 'Ready';
   document.getElementById('dispatchFuelBlock').innerHTML =
     `<span style="color:var(--text-dim)">Trip cost:</span> <span style="color:var(--orange)">${minTrip}–${maxTrip} units</span><br>` +
     `<span style="color:var(--text-dim)">Status:</span> <span style="color:${statusColor}">${statusLabel}</span>`;
+}
+
+function updateHullUI() {
+  const pct        = (hullIntegrity / HULL_MAX) * 100;
+  const isFull     = hullIntegrity >= HULL_MAX;
+  const dmg        = HULL_MAX - Math.round(hullIntegrity);
+  const repairCost = dmg * HULL_REPAIR_COST_PER_PT;
+  const canAfford  = userWallet >= repairCost || repairCost === 0;
+  const isFlight   = !!dispatchInterval || !!fuelDrainInterval;
+
+  const hullBar      = document.getElementById('hullBar');
+  if (!hullBar) return;
+  const hullCurrent  = document.getElementById('hullCurrent');
+  const hullStatus   = document.getElementById('hullStatus');
+  const hullRepCost  = document.getElementById('hullRepairCost');
+  const repairBtn    = document.getElementById('repairBtn');
+  const hullWarn     = document.getElementById('hullWarning');
+
+  hullBar.style.width = pct + '%';
+  hullBar.style.background =
+    pct > 60 ? 'linear-gradient(90deg,#1e3a5f,#4aaef2)'
+    : pct > 30 ? 'linear-gradient(90deg,#854d0e,#d97706)'
+    : 'linear-gradient(90deg,#7f1d1d,#dc2626)';
+
+  hullCurrent.textContent = Math.round(hullIntegrity);
+  hullCurrent.style.color = pct > 60 ? '#4aaef2' : pct > 30 ? 'var(--orange)' : 'var(--red)';
+
+  hullStatus.textContent =
+    hullIntegrity <= 0 ? 'CRITICAL' : pct < 30 ? 'Damaged' : pct < 60 ? 'Degraded' : 'Nominal';
+  hullStatus.style.color =
+    hullIntegrity <= 0 ? 'var(--red)' : pct < 30 ? 'var(--red)' : pct < 60 ? 'var(--orange)' : 'var(--cyan)';
+
+  hullRepCost.textContent = isFull ? 'Hull intact' : repairCost.toLocaleString() + ' GC';
+
+  repairBtn.disabled = isFull || !canAfford || isFlight;
+  repairBtn.style.opacity = (isFull || !canAfford || isFlight) ? '0.35' : '1';
+  repairBtn.textContent = isFull
+    ? 'Hull Intact'
+    : `Repair +${dmg} pts — ${repairCost.toLocaleString()} GC`;
+
+  if (hullWarn) {
+    if (hullIntegrity <= 0) {
+      hullWarn.style.display = 'block'; hullWarn.style.color = 'var(--red)';
+      hullWarn.textContent = '⚠ Hull destroyed — cannot depart';
+    } else if (pct < 30) {
+      hullWarn.style.display = 'block'; hullWarn.style.color = 'var(--orange)';
+      hullWarn.textContent = `⚠ Hull damaged — structural integrity at ${Math.round(pct)}%`;
+    } else {
+      hullWarn.style.display = 'none';
+    }
+  }
+
+  // Block dispatch if hull is destroyed
+  const dispatchBtn = document.getElementById('dispatchBtn');
+  if (dispatchBtn && hullIntegrity <= 0) dispatchBtn.disabled = true;
+}
+
+function repairHull() {
+  if (hullIntegrity >= HULL_MAX) return;
+  const dmg        = HULL_MAX - Math.round(hullIntegrity);
+  const repairCost = dmg * HULL_REPAIR_COST_PER_PT;
+  if (userWallet < HULL_REPAIR_COST_PER_PT) {
+    const warn = document.getElementById('hullWarning');
+    if (warn) {
+      warn.style.display = 'block'; warn.style.color = 'var(--red)';
+      warn.textContent = '⚠ Insufficient GC — repairs cost ' + HULL_REPAIR_COST_PER_PT.toLocaleString() + ' GC/pt';
+    }
+    return;
+  }
+  const statusEl = document.getElementById('dispatchStatus');
+  if (statusEl) { statusEl.textContent = 'Repairing...'; statusEl.style.color = '#4aaef2'; }
+
+  if (userWallet < repairCost) {
+    const canFix = Math.floor(userWallet / HULL_REPAIR_COST_PER_PT);
+    userWallet    -= canFix * HULL_REPAIR_COST_PER_PT;
+    hullIntegrity  = Math.min(HULL_MAX, hullIntegrity + canFix);
+  } else {
+    userWallet    -= repairCost;
+    hullIntegrity  = HULL_MAX;
+  }
+  updateWallet();
+  setTimeout(() => { updateHullUI(); }, 600);
 }
 
 function refuelMiner() {
@@ -1799,7 +1844,7 @@ function refuelMiner() {
     document.getElementById('fuelWarning').style.display = 'block';
     document.getElementById('fuelWarning').style.color   = 'var(--red)';
     document.getElementById('fuelWarning').textContent   =
-      '⚠ Insufficient aUEC — fuel costs ' + pricePerUnit.toLocaleString() + ' aUEC/unit';
+      '⚠ Insufficient GC — fuel costs ' + pricePerUnit.toLocaleString() + ' GC/unit';
     return;
   }
 
@@ -1864,8 +1909,7 @@ async function maybeFireEncounter(phase, resumeFn) {
 
   const eligible = encounterPool.filter(e =>
     e.trigger_phase === 'either' ||
-    e.trigger_phase === phase ||
-    (e.trigger_phase === 'mining' && phase === 'outbound')
+    e.trigger_phase === phase
   );
   if (!eligible.length) { resumeFn(); return; }
 
@@ -1926,7 +1970,7 @@ function getTradeoffHint(outcome, isPirate, choice) {
   if (!outcome) return '';
   if (outcome === 'no_effect') {
     // If it's a pirate and no_effect — running still costs hull damage
-    if (isPirate) return `<span style="color:var(--red);">⚠ Hull damage likely — ${randomDamageRange()} aUEC repair</span>`;
+    if (isPirate) return `<span style="color:var(--red);">⚠ Hull damage likely — 10–30 integrity pts</span>`;
     return `<span style="color:var(--text-dim);">Safe — no expected losses</span>`;
   }
   if (outcome.startsWith('fight:')) {
@@ -1948,7 +1992,8 @@ function getTradeoffHint(outcome, isPirate, choice) {
   }
   if (outcome.startsWith('ship_damage:')) {
     const amt = parseInt(outcome.split(':')[1]);
-    return `<span style="color:var(--red);">Guaranteed: −${amt.toLocaleString()} aUEC repairs</span>`;
+    const pts = Math.max(5, Math.round(amt / 100));
+    return `<span style="color:var(--red);">Guaranteed: −${pts} hull integrity pts</span>`;
   }
   if (outcome.startsWith('lose_fuel:')) {
     const u = outcome.split(':')[1];
@@ -1970,7 +2015,7 @@ function getOutcomeShortLabel(outcome) {
   if (!outcome || outcome === 'no_effect') return 'no loss';
   if (outcome.startsWith('lose_ore_pct:')) return `−${outcome.split(':')[1]}% cargo`;
   if (outcome === 'lose_all_ore') return 'all cargo';
-  if (outcome.startsWith('ship_damage:')) return `−${parseInt(outcome.split(':')[1]).toLocaleString()} aUEC`;
+  if (outcome.startsWith('ship_damage:')) return `−${Math.max(5, Math.round(parseInt(outcome.split(':')[1])/100))} hull pts`;
   if (outcome.startsWith('lose_fuel:')) return `−${outcome.split(':')[1]} fuel`;
   if (outcome === 'lose_time') return 'time lost';
   return outcome;
@@ -1994,12 +2039,12 @@ function resolveEncounter(choice) {
 
   if (outcome === 'no_effect') {
     if (isPirate) {
-      // Running from pirates always costs hull damage — random amount
-      const damage = Math.round((800 + Math.random() * 1400) / 100) * 100;
-      userWallet = Math.max(0, userWallet - damage);
-      updateWallet();
-      effectLines.push(`✗ They opened fire as you ran. Hull damage sustained.`);
-      effectLines.push(`Repair cost: −${damage.toLocaleString()} aUEC deducted.`);
+      // Running from pirates always costs hull integrity — random points
+      const damage = Math.round(10 + Math.random() * 20);
+      hullIntegrity = Math.max(0, hullIntegrity - damage);
+      updateHullUI();
+      effectLines.push(`✗ They opened fire as you ran. Hull integrity −${damage} pts.`);
+      if (hullIntegrity <= 0) effectLines.push('⚠ Hull destroyed — repairs required before next trip!');
       effectColor = 'var(--red)';
     } else {
       effectLines.push('✓ No effect on your mission.');
@@ -2014,12 +2059,13 @@ function resolveEncounter(choice) {
       effectColor = 'var(--cyan)';
     } else {
       effectLines.push('✗ FAILURE — ' + resolveOutcome(losePart));
-      // Pirate fight loss = cargo AND damage
+      // Pirate fight loss = cargo AND hull damage
       if (isPirate) {
-        const damage = Math.round((600 + Math.random() * 1200) / 100) * 100;
-        userWallet = Math.max(0, userWallet - damage);
-        updateWallet();
-        effectLines.push(`Hull damage from engagement: −${damage.toLocaleString()} aUEC.`);
+        const damage = Math.round(15 + Math.random() * 25);
+        hullIntegrity = Math.max(0, hullIntegrity - damage);
+        updateHullUI();
+        effectLines.push(`Hull damage from engagement: −${damage} pts.`);
+        if (hullIntegrity <= 0) effectLines.push('⚠ Hull destroyed — repairs required!');
       }
       effectColor = 'var(--red)';
     }
@@ -2093,11 +2139,13 @@ function applyOutcome(outcome) {
     return { text: 'All cargo lost. The hold is empty.' };
   }
   if (outcome.startsWith('ship_damage:')) {
-    const cost = parseInt(outcome.split(':')[1]);
-    encounterHaulMods.shipDamage = cost;
-    userWallet = Math.max(0, userWallet - cost);
-    updateWallet();
-    return { text: `Ship damage: −${cost.toLocaleString()} aUEC repair cost deducted.` };
+    const raw = parseInt(outcome.split(':')[1]);
+    // DB values may be GC-based (e.g. 1200); scale to hull points (÷100, min 5)
+    const pts = Math.max(5, Math.round(raw / 100));
+    encounterHaulMods.shipDamage = pts;
+    hullIntegrity = Math.max(0, hullIntegrity - pts);
+    updateHullUI();
+    return { text: `Ship damage: −${pts} hull integrity points.` };
   }
   if (outcome.startsWith('lose_fuel:')) {
     const units = parseInt(outcome.split(':')[1]);
@@ -2155,6 +2203,7 @@ function applyHaulMods(haulArr) {
 // DISPATCH MINER — full system
 // ═══════════════════════════════════════════
 let fuelDrainInterval = null;
+let _dispatchMsgTimer = null;
 
 // ── ASTEROID NAME SYSTEM ──
 const ASTEROID_PREFIXES = ['KL','VX','OB','TR','NX','QZ','YM','WR','ΔP','ΩK','ΣN','ΛR'];
@@ -2293,112 +2342,188 @@ const TOW_COST = 30000;
 function triggerTowBack(btn, refuelBtn) {
   const ship    = document.getElementById('minerShip');
   const overlay = document.getElementById('mineStatusOverlay');
+  const canvas  = document.getElementById('spaceCanvas');
 
-  // Stop ship animation
+  // Stop all dispatch animations and timers
+  clearInterval(_dispatchMsgTimer); _dispatchMsgTimer = null;
+  clearScheduledPhase();
+  deactivateBoost();
+  _sfxFadeOut('flight', 600);
+
+  // Stars stop — ship is dead in the water
+  setStarSpeed(0, 600);
+
+  // Ship drifts aimlessly — tumble animation, engine off, dimmed
   if (ship) {
-    ship.style.transition = 'none';
-    ship.style.opacity    = '0.4';
-    ship.style.filter     = 'grayscale(1) opacity(0.4)';
-    setShipImage(SHIP_OFF); // engine off — stranded
-    { const _f = document.getElementById('sfxFlight'); if (_f) { _f.pause(); _f.currentTime = 0; } }
+    ship.style.transition = 'opacity 1s, filter 1s';
+    ship.style.opacity    = '0.55';
+    ship.style.filter     = 'grayscale(0.8) brightness(0.7)';
+    setShipImage(SHIP_OFF);
+  }
+  if (canvas) {
+    canvas.classList.remove('scene-flying', 'scene-boosting');
+    canvas.classList.add('scene-drifting');
   }
 
-  // Update status
+  // Status
   document.getElementById('dispatchStatus').textContent = 'Stranded';
   document.getElementById('dispatchStatus').style.color = 'var(--red)';
   if (overlay) {
-    overlay.textContent   = '⚠ Out of fuel — requesting tow...';
+    overlay.textContent   = '⚠ Out of fuel — drifting...';
     overlay.style.color   = 'var(--red)';
     overlay.style.opacity = '1';
   }
 
-  // Show tow modal after brief pause
+  // Block unload/dispatch until towed home
+  btn.disabled = true;
+  btn.style.opacity = '0.35';
+  refuelBtn.disabled = true;
+  refuelBtn.style.opacity = '0.35';
+  const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = true; _sb.style.opacity = '0.35'; }
+
+  // Show Calli's tow modal after brief pause
   setTimeout(() => {
     stopAsteroidGlitch();
-    clearScheduledPhase();
-    clearInterval(dispatchInterval);
-    clearInterval(fuelDrainInterval);
-    dispatchInterval  = null;
-    fuelDrainInterval = null;
 
-    // Show tow notification overlay on the scene
     const scene = document.getElementById('spaceCanvas');
     const towDiv = document.createElement('div');
     towDiv.id = 'towOverlay';
     towDiv.style.cssText = `
       position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;
-      align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50;
+      align-items:center;justify-content:center;z-index:50;
     `;
     towDiv.innerHTML = `
-      <div style="font-size:32px;">🚨</div>
-      <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:.1em;text-shadow:0 0 10px rgba(255,64,96,.7);">Miner Stranded</div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;max-width:260px;line-height:1.7;">Fuel reserves depleted mid-flight.<br>A rescue tow has been dispatched.</div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);padding:8px 16px;border:1px solid var(--red);background:rgba(255,64,96,.08);">
-        Tow cost: <strong style="color:var(--text-bright);">${TOW_COST.toLocaleString()} aUEC</strong>
+      <div style="width:480px;max-width:92vw;background:linear-gradient(135deg,#080d18 0%,#0c1220 100%);border:1px solid rgba(255,100,80,.4);border-top:3px solid rgba(255,100,80,.8);box-shadow:0 0 60px rgba(255,64,96,.15),0 20px 56px rgba(0,0,0,.9);overflow:hidden;">
+        <div style="display:flex;align-items:stretch;min-height:200px;">
+          <div style="position:relative;width:160px;flex-shrink:0;background:#05080f;">
+            <img src="img/actor_calli_norm.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;">
+            <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 55%,#080d18 100%);"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;padding:5px 0 4px;text-align:center;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-family:'DM Mono',monospace;font-size:8px;color:rgba(0,212,255,.9);text-transform:uppercase;letter-spacing:.12em;font-weight:600;">Calli</div>
+          </div>
+          <div style="flex:1;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:8px;">
+            <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,100,80,.8);text-transform:uppercase;letter-spacing:.18em;">⚠ Tow Dispatch — Inbound</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:rgba(0,212,255,.95);">Calli</div>
+            <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#e8f4ff;line-height:1.6;">*sigh* Ran dry out there, didn't you? Sit tight — I've got eyes on your beacon. Once you authorize the charge I'll hook up and drag you home. You're not going anywhere until I get there.</div>
+          </div>
+        </div>
+        <div style="padding:14px 18px;border-top:1px solid rgba(255,100,80,.15);display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,.3);">
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,100,80,.9);text-align:center;">
+            Tow charge: <strong style="color:#e8f4ff;">${TOW_COST.toLocaleString()} GC</strong>
+          </div>
+          <button onclick="payTowBack()"
+            style="width:100%;padding:11px 16px;background:rgba(255,100,80,.08);border:1px solid rgba(255,100,80,.5);color:rgba(255,140,120,.9);
+              font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;
+              letter-spacing:.1em;cursor:pointer;border-radius:4px;transition:background .15s;"
+            onmouseover="this.style.background='rgba(255,100,80,.18)'" onmouseout="this.style.background='rgba(255,100,80,.08)'">
+            Authorize Tow — ${TOW_COST.toLocaleString()} GC
+          </button>
+          ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,64,96,.9);text-align:center;">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} GC</div>` : ''}
+        </div>
       </div>
-      <button onclick="payTowBack()"
-        style="padding:12px 28px;background:transparent;border:1px solid var(--orange);color:var(--orange);
-          font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase;
-          letter-spacing:.1em;cursor:pointer;border-radius:10px;transition:all .2s;"
-        onmouseover="this.style.background='rgba(232,141,45,.1)'" onmouseout="this.style.background='transparent'">
-        Pay Tow — ${TOW_COST.toLocaleString()} aUEC
-      </button>
-      ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} aUEC</div>` : ''}
     `;
     if (scene) scene.appendChild(towDiv);
 
-    // Store refs for payTowBack
     window._towBtn      = btn;
     window._towRefuel   = refuelBtn;
-  }, 800);
+  }, 1200);
 }
 
 function payTowBack() {
   const towDiv = document.getElementById('towOverlay');
   if (towDiv) towDiv.remove();
 
-  const cost = Math.min(TOW_COST, userWallet); // take what they have if broke
+  const cost = Math.min(TOW_COST, userWallet);
   userWallet = Math.max(0, userWallet - cost);
   updateWallet();
 
   const ship    = document.getElementById('minerShip');
   const overlay = document.getElementById('mineStatusOverlay');
+  const canvas  = document.getElementById('spaceCanvas');
+  const ctx     = window._towContext || { fuelRatio: 0.5, isPartial: false, miningComplete: false };
 
-  if (ship) {
-    ship.style.transition = 'none';
-    ship.style.opacity    = '0';
-    ship.style.left       = '10%';
-    ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
-    ship.style.filter     = '';
-    setShipImage(SHIP_OFF); // engine off — towed back
+  // Calli hooks on — status update
+  document.getElementById('dispatchStatus').textContent = 'On Tow';
+  document.getElementById('dispatchStatus').style.color = 'var(--orange)';
+  if (overlay) {
+    overlay.textContent   = 'Calli has the hook — towing to station...';
+    overlay.style.color   = 'var(--orange)';
+    overlay.style.opacity = '1';
   }
-  if (overlay) { overlay.textContent = '✓ Miner towed back'; overlay.style.color = 'var(--orange)'; }
-  setStarSpeed(0, 600);
-  deactivateBoost();
-  document.getElementById('spaceCanvas').classList.remove('scene-flying','scene-boosting','scene-drifting');
-  const _tso = document.getElementById('stationObj');
-  const _tao = document.getElementById('asteroidObj');
-  if (_tso) { _tso.style.transition = 'left 2s ease-out'; _tso.style.left = '0px'; }
-  if (_tao) { _tao.style.transition = 'right 1.5s ease-out'; _tao.style.right = '-260px'; }
+
+  // Ship recovers from tumble, faces home (flipped), dim since engine is still dead
+  if (ship) {
+    canvas.classList.remove('scene-drifting');
+    canvas.classList.add('scene-flying');
+    ship.style.transition = 'opacity 1s, filter 1s';
+    ship.style.opacity    = '0.6';
+    ship.style.filter     = 'grayscale(0.5) brightness(0.8)';
+    ship.style.transform  = 'translate(-50%,-50%) scaleX(-1)'; // facing station
+    setShipImage(SHIP_OFF); // still engine-off — Calli is doing the pulling
+  }
+
+  // Stars drift — slow tow speed, not full flight
+  setStarSpeed(0.35, 1200);
   cancelAnimationFrame(_sceneZoomTimer);
   sceneZoomOut();
 
-  document.getElementById('dispatchStatus').textContent  = 'Towed Back';
-  document.getElementById('dispatchStatus').style.color  = 'var(--orange)';
-  document.getElementById('dispatchCountdownWrap').style.display = 'none';
-  document.getElementById('dispatchIdleText').style.display = 'none';
-  document.getElementById('miningBarLabel').textContent = '';
-  const _towIo = document.getElementById('sceneIdleOverlay');
-  if (_towIo) _towIo.style.opacity = '1';
+  // Asteroid slides off right, station slides back in from left
+  const _tso = document.getElementById('stationObj');
+  const _tao = document.getElementById('asteroidObj');
+  const _tsl = document.getElementById('stationLabel');
+  const TOW_TRANSIT = 5000; // 5s tow home
+  if (_tao) { _tao.style.transition = `right ${TOW_TRANSIT * 0.6}ms ease-out`; _tao.style.right = '-260px'; }
+  setTimeout(() => {
+    if (_tso) { _tso.style.transition = `left ${TOW_TRANSIT * 0.7}ms cubic-bezier(0,0,0.3,1)`; _tso.style.left = '0px'; }
+    if (_tsl) { _tsl.style.transition = 'opacity 1.5s 0.5s'; _tsl.style.opacity = '1'; }
+  }, TOW_TRANSIT * 0.3);
 
-  minerFuel = 0;
-  updateFuelUI();
+  // Arrival — complete offload just like a normal return
+  setTimeout(() => {
+    setStarSpeed(0, 600);
+    deactivateBoost();
+    canvas.classList.remove('scene-flying', 'scene-boosting', 'scene-drifting');
+    if (_tso) { _tso.style.transition = 'none'; _tso.style.left = '0px'; }
+    if (_tao) { _tao.style.transition = 'none'; _tao.style.right = '-260px'; }
 
-  if (window._towBtn)    { window._towBtn.disabled   = false; window._towBtn.textContent = '⬡ Send Again'; }
-  if (window._towRefuel) { window._towRefuel.disabled = false; window._towRefuel.style.opacity = '1'; }
-  const _sb4 = document.getElementById('shopHeaderBtn'); if (_sb4) { _sb4.disabled = false; _sb4.style.opacity = '1'; }
+    if (ship) {
+      ship.style.transition = 'none';
+      ship.style.opacity    = '0';
+      ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
+      ship.style.filter     = '';
+    }
 
-  showContractToast(`Tow cost: −${cost.toLocaleString()} aUEC. Refuel before next dispatch.`, 'var(--red)');
+    document.getElementById('dispatchCountdownWrap').style.display = 'none';
+    document.getElementById('dispatchIdleText').style.display = 'none';
+    document.getElementById('miningBarLabel').textContent = '';
+
+    minerFuel = 0;
+    updateFuelUI();
+    stopAsteroidGlitch();
+
+    // Generate haul: full if mining was complete before stranding, empty if never reached asteroid
+    const haulFuelRatio = ctx.miningComplete ? ctx.fuelRatio : 0;
+    let rawHaul = generateHaul(haulFuelRatio);
+    rawHaul     = applyHaulMods(rawHaul);
+    rawHaul     = applyAsteroidBiasToHaul(rawHaul);
+    haul        = rawHaul;
+
+    startOffloadSequence(haul, () => {
+      renderManifest();
+      if (overlay) { overlay.textContent = '✓ Manifest ready'; overlay.style.opacity = '1'; }
+      document.getElementById('dispatchStatus').textContent = 'Docked';
+      document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
+      document.getElementById('dispatchIdleText').style.display = 'none';
+      const _io = document.getElementById('sceneIdleOverlay'); if (_io) _io.style.opacity = '1';
+
+      if (window._towBtn)    { window._towBtn.disabled = false; window._towBtn.textContent = '⬡ Send Again'; }
+      if (window._towRefuel) { window._towRefuel.disabled = false; window._towRefuel.style.opacity = '1'; }
+      const _sb4 = document.getElementById('shopHeaderBtn'); if (_sb4) { _sb4.disabled = false; _sb4.style.opacity = '1'; }
+      updateFuelUI();
+
+      const lostMsg = ctx.miningComplete ? '' : ' No ore recovered — ship never reached the asteroid.';
+      showContractToast(`Tow cost: −${cost.toLocaleString()} GC. Refuel before next dispatch.${lostMsg}`, 'var(--red)');
+    });
+  }, TOW_TRANSIT);
 }
 
 // ── BARREL GAUGES ──
@@ -2516,11 +2641,6 @@ let _sceneZoomRaf  = null;
 // Legacy stubs so old call sites don't crash
 let _sceneZoomTimer = null;
 let _sceneZoomActive = false;
-let _sceneTargetScale = 1;
-let _sceneCurrentScale = 1;
-let _sceneCurrentOriginX = 50;
-let _sceneLocked = false;
-let _sceneLockedOriginX = 50;
 
 function startSceneZoomIn() {
   _sceneTargetSc = 1.5;
@@ -2569,9 +2689,9 @@ function dispatchMiner() {
     || STAR_MAP_ASTEROIDS[Math.floor(Math.random() * STAR_MAP_ASTEROIDS.length)];
   const distRatio      = _dispatchTarget.distance / DISTANCE_BASE_MM;  // 1.0 at 300 Mm, 3.0 at 900 Mm
   const tripFuelOneWay = Math.round(15 * distRatio);  // 15 at 300 Mm → 45 at 900 Mm
-  const fuelRatio  = Math.min(1, minerFuel / (tripFuelOneWay * 2));
+  const fuelRatio  = Math.min(1, minerFuel / tripFuelOneWay);
   const isPartial  = fuelRatio < 1;
-  const fuelToUse  = Math.min(minerFuel, tripFuelOneWay * 2);
+  const fuelToUse  = Math.min(minerFuel, tripFuelOneWay);
   const fuelStart  = minerFuel;
 
   // Fixed phase durations — FLIGHT_MS: 300 Mm=12s, 600 Mm=24s, 900 Mm=36s
@@ -2628,8 +2748,7 @@ function dispatchMiner() {
   ship.style.left       = '10%';
   ship.style.opacity    = '1';
   setShipImage(SHIP_ON); // engine on — departing
-  const _flightAudio = document.getElementById('sfxFlight');
-  if (_flightAudio) { _flightAudio.volume = 0.4; _flightAudio.currentTime = 0; _flightAudio.play().catch(()=>{}); }
+  _sfx('flight', 'audio/music_flight.ogg', { loop:true, volume:0.15 });
 
   // Station docked at left, asteroid hidden off-screen right
   if (stationObj) { stationObj.style.transition = 'none'; stationObj.style.left = '0px'; }
@@ -2702,13 +2821,13 @@ function dispatchMiner() {
     // 'undocking' — bars hold at 0%, no update needed
   }, 100);
 
-  // ── Real-time fuel drain ──
-  const totalTransit = outboundMs + returnMs;
-  const fuelPerTick = (fuelToUse / (totalTransit / 200));
+  // ── Real-time fuel drain — outbound only ──
+  // Rate based on full trip cost so under-fueled ships run dry before arrival fires.
+  const fuelPerTick = (tripFuelOneWay / (outboundMs / 200));
   fuelDrainInterval = setInterval(() => {
     if (encounterResumeFn) return;
     const status = document.getElementById('dispatchStatus').textContent;
-    if (status === 'Mining') return;
+    if (status === 'Mining' || status === 'Returning') return;
     minerFuel = Math.max(0, minerFuel - fuelPerTick);
     document.getElementById('fuelBar').style.width = (minerFuel / _fuelTankMax * 100) + '%';
     document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
@@ -2717,12 +2836,18 @@ function dispatchMiner() {
       clearInterval(fuelDrainInterval);
       dispatchInterval  = null;
       fuelDrainInterval = null;
+      const _towStatus = document.getElementById('dispatchStatus').textContent;
+      window._towContext = {
+        fuelRatio,
+        isPartial,
+        miningComplete: _towStatus === 'Returning'
+      };
       triggerTowBack(btn, refuelBtn);
     }
   }, 200);
 
   let phaseIdx = 0;
-  const msgTimer = setInterval(() => {
+  _dispatchMsgTimer = setInterval(() => {
     phaseIdx = Math.min(phaseIdx + 1, MINE_PHASES.length - 1);
     overlay.textContent = MINE_PHASES[phaseIdx];
   }, outboundMs / MINE_PHASES.length);
@@ -2737,7 +2862,8 @@ function dispatchMiner() {
       // ── Outbound flight complete → Asteroid approach (APPROACH_MS, fixed) ──
       _inFlightPhase = false;
       updateBoostBtn();
-      clearInterval(msgTimer);
+      clearInterval(_dispatchMsgTimer);
+      _dispatchMsgTimer = null;
       if (asteroidObj) {
         asteroidObj.style.transition = `right ${APPROACH_MS}ms cubic-bezier(0.2,0,0.4,1)`;
         asteroidObj.style.right = 'calc(50% - 252px)';
@@ -2764,10 +2890,7 @@ function dispatchMiner() {
               `Partial haul (~${Math.round(fuelRatio * 100)}% capacity)`;
           }
 
-          const _extAudio = document.getElementById('sfxExtracting');
-          const _flAudio  = document.getElementById('sfxFlight');
-          if (_flAudio)  { _flAudio.pause(); _flAudio.currentTime = 0; }
-          if (_extAudio) { _extAudio.volume = 0.5; _extAudio.currentTime = 0; _extAudio.play().catch(()=>{}); }
+          // extraction audio temporarily removed
 
           const miningStart = Date.now();
           let labelIdx = 0;
@@ -2806,10 +2929,7 @@ function dispatchMiner() {
               ship.style.setProperty('--sx', '-1');
               ship.style.transform = 'translate(-50%,-50%) scaleX(-1)';
               setShipImage(SHIP_ON);
-              const _extA = document.getElementById('sfxExtracting');
-              const _flA  = document.getElementById('sfxFlight');
-              if (_extA) { _extA.pause(); _extA.currentTime = 0; }
-              if (_flA)  { _flA.volume = 0.4; _flA.currentTime = 0; _flA.play().catch(()=>{}); }
+              // flight music already looping — no restart needed
               setStarSpeed(0.8, 1000);
               sceneZoomOut();
 
@@ -2869,7 +2989,7 @@ function dispatchMiner() {
                         ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
                         ship.style.setProperty('--sx', '1');
                         setShipImage(SHIP_OFF);
-                        { const _f = document.getElementById('sfxFlight'); if (_f) { _f.pause(); _f.currentTime = 0; } }
+                        _sfxFadeOut('flight', 800);
                         document.getElementById('dispatchCountdownWrap').style.display = 'none';
                         document.getElementById('dispatchIdleText').style.display = 'none';
 
@@ -3097,7 +3217,7 @@ function rebuildManifestList() {
         <div>
           <div style="display:flex;align-items:center;gap:8px;">
             <div class="tog-mat" style="color:${mat.color}">${mat.name}</div>
-            <span id="mpbadge-${i}" style="font-family:'DM Mono',monospace;font-size:10px;color:${priceColor};background:${priceColor === 'var(--text-dim)' ? 'rgba(255,255,255,.04)' : (pricePct > 0 ? 'rgba(0,212,255,.08)' : 'rgba(255,64,96,.08)')};padding:1px 6px;border:1px solid ${priceColor};">${livePrice.toLocaleString()} aUEC · ${priceSign}${pricePct}%</span>
+            <span id="mpbadge-${i}" style="font-family:'DM Mono',monospace;font-size:10px;color:${priceColor};background:${priceColor === 'var(--text-dim)' ? 'rgba(255,255,255,.04)' : (pricePct > 0 ? 'rgba(0,212,255,.08)' : 'rgba(255,64,96,.08)')};padding:1px 6px;border:1px solid ${priceColor};">${livePrice.toLocaleString()} GC · ${priceSign}${pricePct}%</span>
           </div>
           <div class="tog-meta">
             ${h.scu} SCU &nbsp;·&nbsp;
@@ -3108,8 +3228,8 @@ function rebuildManifestList() {
       <div class="tog-right">
         <div class="tog-val" id="togval-${i}">
           ${h.refine
-            ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} aUEC</span><div style="font-size:11px;color:var(--text-dim)">refinery est.</div>`
-            : `<span style="color:var(--orange)">${quickVal.toLocaleString()} aUEC</span><div style="font-size:11px;color:var(--text-dim)">recycle 30%</div>`
+            ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">refinery est.</div>`
+            : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">recycle 30%</div>`
           }
         </div>
         <label class="toggle-sw">
@@ -3134,8 +3254,8 @@ function toggleHaulItem(i, on) {
   const row = document.getElementById('togrow-'+i);
   row.classList.toggle('active', on);
   document.getElementById('togval-'+i).innerHTML = on
-    ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} aUEC</span><div style="font-size:8px;color:var(--text-dim)">refinery est.</div>`
-    : `<span style="color:var(--orange)">${quickVal.toLocaleString()} aUEC</span><div style="font-size:8px;color:var(--text-dim)">recycle 30%</div>`;
+    ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} GC</span><div style="font-size:8px;color:var(--text-dim)">refinery est.</div>`
+    : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:8px;color:var(--text-dim)">recycle 30%</div>`;
   updateManifestTotals();
 }
 
@@ -3151,8 +3271,8 @@ function updateManifestTotals() {
       sellVal += Math.round(h.scu * livePrice * mat.rawMult * 0.30);
     }
   });
-  document.getElementById('mvRefineTotal').textContent = refineVal > 0 ? '~' + refineVal.toLocaleString() + ' aUEC est.' : '—';
-  document.getElementById('mvSellTotal').textContent   = sellVal > 0   ? '+' + sellVal.toLocaleString() + ' aUEC'         : '—';
+  document.getElementById('mvRefineTotal').textContent = refineVal > 0 ? '~' + refineVal.toLocaleString() + ' GC est.' : '—';
+  document.getElementById('mvSellTotal').textContent   = sellVal > 0   ? '+' + sellVal.toLocaleString() + ' GC'         : '—';
   document.getElementById('mvScuToRefine').textContent = refineScu > 0 ? refineScu + ' SCU' : '0 SCU (nothing to refine)';
   document.getElementById('commitBtn').disabled = refineScu === 0;
 }
@@ -3174,7 +3294,7 @@ function commitManifest() {
     // Brief flash notification
     const notif = document.createElement('div');
     notif.style.cssText = 'position:fixed;top:80px;right:24px;background:rgba(232,141,45,.15);border:1px solid var(--orange);color:var(--orange);font-family:DM Mono,monospace;font-size:11px;padding:10px 16px;z-index:2000;letter-spacing:.06em;transition:opacity .5s;';
-    notif.textContent = '+ ' + quickSellTotal.toLocaleString() + ' aUEC — Recycled';
+    notif.textContent = '+ ' + quickSellTotal.toLocaleString() + ' GC — Recycled';
     document.body.appendChild(notif);
     setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 500); }, 2500);
   }
@@ -3229,7 +3349,7 @@ function recycleAll() {
   // Flash notification
   const notif = document.createElement('div');
   notif.style.cssText = 'position:fixed;top:80px;right:24px;background:rgba(232,141,45,.15);border:1px solid var(--orange);color:var(--orange);font-family:DM Mono,monospace;font-size:11px;padding:10px 16px;z-index:2000;letter-spacing:.06em;transition:opacity .5s;';
-  notif.textContent = '♻ +' + total.toLocaleString() + ' aUEC — Full haul recycled';
+  notif.textContent = '♻ +' + total.toLocaleString() + ' GC — Full haul recycled';
   document.body.appendChild(notif);
   setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 500); }, 2500);
 
@@ -3253,11 +3373,11 @@ function updateAll() {
   const totalFee = unitCount * feePerUnit;
   const loadingFee = rawScu * LOGISTICS.loadingPerSCU;
   const feeEl = document.getElementById('feePerUnit');
-  if (feeEl) feeEl.textContent = 'aUEC ' + feePerUnit;
+  if (feeEl) feeEl.textContent = 'GC ' + feePerUnit;
   const loadEl = document.getElementById('loadingFeeEst');
-  if (loadEl) loadEl.textContent = 'aUEC ' + loadingFee.toLocaleString();
+  if (loadEl) loadEl.textContent = 'GC ' + loadingFee.toLocaleString();
   const totEl = document.getElementById('estTotal');
-  if (totEl) totEl.textContent = 'aUEC ' + totalFee.toLocaleString();
+  if (totEl) totEl.textContent = 'GC ' + totalFee.toLocaleString();
 
   // Funds check — disable confirm button if can't afford
   const btn = document.getElementById('confirmWorkBtn');
@@ -3610,7 +3730,7 @@ function startRefinement() {
   document.getElementById('sumRefinedBreakdown').style.display='none';
   document.getElementById('sumInertBreakdown').style.display='none';
   document.getElementById('resultsBody').innerHTML='';
-  document.getElementById('liveFee').textContent=totalFee.toLocaleString()+' aUEC';
+  document.getElementById('liveFee').textContent=totalFee.toLocaleString()+' GC';
   document.getElementById('liveVal').textContent='0';
   document.getElementById('liveRoi').textContent='CALCULATING...';
   document.getElementById('rsProgressFill').style.width='0%';
@@ -3734,7 +3854,7 @@ function processNext(msPerUnit) {
     const net=liveAccumulatedValue-currentWorkOrderFee;
     const roiEl=document.getElementById('liveRoi');
     if(liveAccumulatedValue>0){
-      roiEl.textContent=net>=0?('PROFITING: +'+net.toLocaleString()+' aUEC'):('RECOVERING: '+net.toLocaleString()+' aUEC');
+      roiEl.textContent=net>=0?('PROFITING: +'+net.toLocaleString()+' GC'):('RECOVERING: '+net.toLocaleString()+' GC');
       roiEl.style.color=net>=0?'var(--green)':'var(--red)';
     }
 
@@ -3814,7 +3934,7 @@ function finishRefining() {
 
   // Populate summary
   document.getElementById('sumScuHero').textContent=totalScu+' SCU';
-  document.getElementById('sumEscuSub').textContent=rev.toLocaleString()+' aUEC';
+  document.getElementById('sumEscuSub').textContent=rev.toLocaleString()+' GC';
   document.getElementById('sumInertScu').textContent=inertScu+' SCU';
   document.getElementById('sumInertEscu').textContent=inert.length+' units lost';
   if(avgGrade){
@@ -3859,7 +3979,7 @@ function finishRefining() {
   } else {
     inertBd.style.display = 'none';
   }
-  document.getElementById('sumNet').textContent=(net>=0?'+':'')+net.toLocaleString()+' aUEC';
+  document.getElementById('sumNet').textContent=(net>=0?'+':'')+net.toLocaleString()+' GC';
   document.getElementById('sumNet').style.color=net>=0?'var(--green)':'var(--red)';
   document.getElementById('sumRoi').textContent=roi+'% ROI';
   document.getElementById('sumRoi').style.color=roi>=0?'var(--green)':'var(--red)';
@@ -3942,7 +4062,7 @@ function logRun({profileName,rev,totalScu,inertScu,succeeded,inert,rate,avgPurit
       <div style="text-align:right">
         <span class="log-col-label">Yield / P&L</span>
         <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green)">${e.totalScu} SCU</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:${e.net>=0?'var(--green)':'var(--red)'}">${e.net>=0?'+':''}${e.net.toLocaleString()} aUEC</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:${e.net>=0?'var(--green)':'var(--red)'}">${e.net>=0?'+':''}${e.net.toLocaleString()} GC</div>
       </div>
       ${sourceHtml ? `<div style="grid-column:1/-1;">${sourceHtml}</div>` : ''}
     </div>`;
@@ -3983,13 +4103,13 @@ function openSellModal(){
         <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-main);">${mat.name}</span>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);">${h.scu} SCU</span>
       </div>
-      <span style="font-family:'DM Mono',monospace;font-size:11px;color:${mat.color};">${matValue.toLocaleString()} aUEC</span>`;
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:${mat.color};">${matValue.toLocaleString()} GC</span>`;
     lines.appendChild(row);
   });
 
   // Use actual pendingRevenue as gross (already calculated from refinery run)
   gross = pendingRevenue;
-  document.getElementById('tmGross').textContent = gross.toLocaleString() + ' aUEC';
+  document.getElementById('tmGross').textContent = gross.toLocaleString() + ' GC';
 
   // Ryker row: Act 1 (leased ship) = 40%, Act 2+ (own ship) = greyed out
   const rykerRow   = document.getElementById('rykerRow');
@@ -4007,22 +4127,25 @@ function openSellModal(){
     rykerLabel.style.color = 'var(--text-bright)';
   }
 
-  // Loading fee label changes by ownership
-  const loadingPct = playerOwnsShip ? 15 : 10;
-  document.getElementById('loadingDesc').textContent =
-    `${loadingPct}% of gross — ${playerOwnsShip ? 'Ryker owns station loaders' : 'station crane operators'}`;
-  document.getElementById('loadingFeeLabel').textContent =
-    `Loading Fee (Optional) — ${loadingPct}%`;
+  // Loading fee row — Ryker's fee until player owns a loader
+  if (playerOwnsLoader) {
+    document.getElementById('loadingFeeLabel').textContent = 'Loading Fee — Eliminated';
+    document.getElementById('loadingFeeLabel').style.color = 'var(--text-dim)';
+    document.getElementById('loadingDesc').textContent     = 'You operate your own loader — no Ryker cut';
+  } else {
+    const loadingPct = playerOwnsShip ? 15 : 10;
+    document.getElementById('loadingFeeLabel').textContent = `Ryker Loading Fee — ${loadingPct}%`;
+    document.getElementById('loadingFeeLabel').style.color = 'var(--text-bright)';
+    document.getElementById('loadingDesc').textContent     = `${loadingPct}% of gross — Ryker crane operators`;
+  }
 
   // Barry per-load fee row
   const barryHired = hiredCrew.includes('crew_barry');
   document.getElementById('barryFeeRow').style.display = barryHired ? 'block' : 'none';
 
-  // Reset toggle state
-  document.getElementById('loadingCheck').checked = true;
-  updateLoadingToggleUI(true);
-
   calcSaleTotal();
+  // Hide hint bar while sell modal is open — it re-appears as 'complete' after acknowledgement
+  skipCurrentHint();
   document.getElementById('sellModal').style.display = 'flex';
 }
 
@@ -4044,30 +4167,23 @@ function updateLoadingToggleUI(checked) {
 }
 
 function calcSaleTotal(){
-  const gross       = pendingRevenue;
-  const loadingPct  = playerOwnsShip ? 0.15 : 0.10;
-  const rykerPct    = playerOwnsShip ? 0    : 0.40;
-  const hasLoading  = document.getElementById('loadingCheck').checked;
-  const barryHired  = hiredCrew.includes('crew_barry');
-  const barryCut    = barryHired ? 2500 : 0;
+  const gross      = pendingRevenue;
+  const loadingPct = playerOwnsShip ? 0.15 : 0.10;
+  const rykerPct   = playerOwnsShip ? 0    : 0.40;
+  const barryHired = hiredCrew.includes('crew_barry');
+  const barryCut   = barryHired ? 2500 : 0;
 
-  const rykerCut    = Math.round(gross * rykerPct);
-  const loadingCut  = hasLoading ? Math.round(gross * loadingPct) : 0;
-  const final       = gross - rykerCut - loadingCut - barryCut;
+  const rykerCut   = Math.round(gross * rykerPct);
+  const loadingCut = playerOwnsLoader ? 0 : Math.round(gross * loadingPct);
+  const final      = gross - rykerCut - loadingCut - barryCut;
 
-  document.getElementById('tmRyker').textContent   = rykerPct > 0 ? '−' + rykerCut.toLocaleString() + ' aUEC' : '—';
-  document.getElementById('tmLoading').textContent  = hasLoading ? '−' + loadingCut.toLocaleString() + ' aUEC' : '—';
-  document.getElementById('modalFinal').textContent = final.toLocaleString() + ' aUEC';
-  document.getElementById('tmNewBalance').textContent = 'New balance: ' + (userWallet + final).toLocaleString() + ' aUEC';
-
-  // Crew warning if no loading
-  document.getElementById('crewWarning').style.display = hasLoading ? 'none' : 'block';
-
-  const noLoading = !hasLoading;
-  document.getElementById('authTransferBtn').textContent = noLoading ? 'Authorize (Crew Dispatch)' : 'Authorize Transfer';
-
-  // Update toggle thumb position
-  updateLoadingToggleUI(hasLoading);
+  document.getElementById('tmRyker').textContent  = rykerPct > 0 ? '−' + rykerCut.toLocaleString() + ' GC' : '—';
+  document.getElementById('tmLoading').textContent = playerOwnsLoader ? '✓ Eliminated' : '−' + loadingCut.toLocaleString() + ' GC';
+  if (document.getElementById('tmLoading')) {
+    document.getElementById('tmLoading').style.color = playerOwnsLoader ? 'var(--text-dim)' : 'var(--red)';
+  }
+  document.getElementById('modalFinal').textContent      = final.toLocaleString() + ' GC';
+  document.getElementById('tmNewBalance').textContent    = 'New balance: ' + (userWallet + final).toLocaleString() + ' GC';
 
   window._transferCredits = final;
 }
@@ -4075,22 +4191,42 @@ function closeSellModal(){document.getElementById('sellModal').style.display='no
 
 async function confirmSale(){
   const credits = window._transferCredits;
-  const noLoading = !document.getElementById('loadingCheck').checked;
-  const matKey = document.getElementById('materialType').value;
+  const matKey  = document.getElementById('materialType').value;
   closeSellModal();
 
-  if (noLoading) {
-    startCrewDelivery(credits, matKey);
-  } else {
-    userWallet += credits;
-    pendingRevenue = 0;
-    updateWallet();
-    // transfer button cleared by resetProcessingSection
-    const scuSold = parseFloat(document.getElementById('sumScuHero')?.textContent) || rawScu;
-    await creditContractDelivery(scuSold, matKey);
-    showSuccessModal(credits, true);
-    updateAll();
-  }
+  userWallet    += credits;
+  pendingRevenue = 0;
+
+  // ── Update lifetime stats ──
+  tripsCompleted++;
+  lifetimeEarned += credits;
+
+  updateWallet();
+  const scuSold = parseFloat(document.getElementById('sumScuHero')?.textContent) || rawScu;
+  await creditContractDelivery(scuSold, matKey);
+
+  // ── Persist everything + log the trip ──
+  await persistProgress();
+  logTrip(credits);
+
+  showSuccessModal(credits, true);
+  updateAll();
+}
+
+async function logTrip(netGc) {
+  if (!currentUser) return;
+  const oreSummary = (haul || []).map(h => ({
+    mat:  h.matKey,
+    scu:  h.scu,
+    grade: h.purity,
+  }));
+  await sbFetch('trip_log', 'POST', {
+    user_id:     currentUser.id,
+    asteroid:    _dispatchTarget?.id || null,
+    ore_summary: oreSummary,
+    gross_gc:    Math.round(pendingRevenue) || netGc,
+    net_gc:      netGc,
+  }, true);
 }
 
 // ── LOADING MINI-GAME ──
@@ -4132,7 +4268,7 @@ Each missed crate is permanently lost — value deducted from final payment.`;
 
   document.getElementById('lgTotal').textContent  = _lgTotal;
   document.getElementById('lgSaved').textContent  = 0;
-  document.getElementById('lgLostLabel').textContent = '−0 aUEC';
+  document.getElementById('lgLostLabel').textContent = '−0 GC';
 
   document.getElementById('lgIntro').style.display = 'flex';
   document.getElementById('lgEnd').style.display   = 'none';
@@ -4362,7 +4498,7 @@ function lgRecordLoss(c, ctx, H) {
   _lgLost++;
   const penalty = _lgValuePerCrate;
   document.getElementById('lgLostLabel').textContent =
-    '−' + (_lgLost * penalty).toLocaleString() + ' aUEC';
+    '−' + (_lgLost * penalty).toLocaleString() + ' GC';
 
   // Explosion particles
   for (let i = 0; i < 18; i++) {
@@ -4381,8 +4517,8 @@ function lgShowEnd() {
 
   document.getElementById('lgEndSaved').textContent   = _lgSaved + ' SCU';
   document.getElementById('lgEndLost').textContent    = _lgLost  + ' SCU';
-  document.getElementById('lgEndPenalty').textContent = '−' + penalty.toLocaleString() + ' aUEC';
-  document.getElementById('lgEndNet').textContent     = net.toLocaleString() + ' aUEC';
+  document.getElementById('lgEndPenalty').textContent = '−' + penalty.toLocaleString() + ' GC';
+  document.getElementById('lgEndNet').textContent     = net.toLocaleString() + ' GC';
 
   const title = document.getElementById('lgEndTitle');
   if (_lgLost === 0) {
@@ -4429,8 +4565,8 @@ function showSuccessModal(credits, instant) {
   // Fire a random news event after every sale
   fireNextNewsEvent();
 
-  document.getElementById('successAmount').textContent = '+' + credits.toLocaleString() + ' aUEC';
-  document.getElementById('successWalletLine').textContent = 'New balance: ' + userWallet.toLocaleString() + ' aUEC';
+  document.getElementById('successAmount').textContent = '+' + credits.toLocaleString() + ' GC';
+  document.getElementById('successWalletLine').textContent = 'New balance: ' + userWallet.toLocaleString() + ' GC';
 
   let report;
   if (instant) {
@@ -4835,10 +4971,40 @@ async function loadOrCreateProfile(user) {
 
   if (profiles && profiles.length > 0) {
     currentProfile = profiles[0];
-    userWallet = currentProfile.wallet;
-    document.getElementById('pilotName').value = currentProfile.pilot_name;
-    document.getElementById('pilotNameDisplay').textContent = currentProfile.pilot_name;
+    const p = currentProfile;
+
+    // ── Wallet & identity ──
+    userWallet = p.wallet ?? 25000;
+    document.getElementById('pilotName').value          = p.pilot_name;
+    document.getElementById('pilotNameDisplay').textContent = p.pilot_name;
+
+    // ── Ship state ──
+    _fuelTankUpgrades = p.fuel_tank_upgrades ?? 0;
+    _fuelTankMax      = 75 + _fuelTankUpgrades * 5;
+    minerFuel         = Math.min(p.fuel ?? _fuelTankMax, _fuelTankMax);
+    hullIntegrity     = Math.min(p.hull_integrity ?? HULL_MAX, HULL_MAX);
+
+    // ── Shop & crew ──
+    _boostCount      = p.boost_charges    ?? 0;
+    playerOwnsLoader = p.owns_loader      ?? false;
+    playerOwnsShip   = p.owns_ship        ?? false;
+    hiredCrew        = Array.isArray(p.hired_crew)  ? p.hired_crew  : [];
+    playerInventory  = Array.isArray(p.inventory)   ? p.inventory   : [];
+
+    // ── Refinery allocation ──
+    if (p.refinery_allocation && typeof p.refinery_allocation === 'object') {
+      allocation = { ...allocation, ...p.refinery_allocation };
+    }
+
+    // ── Lifetime stats ──
+    tripsCompleted = p.trips_completed ?? 0;
+    lifetimeEarned = p.lifetime_earned ?? 0;
+
+    // ── Refresh all UI ──
     updateWallet();
+    updateFuelUI();
+    updateHullUI();
+    updateBoostBtn();
   }
 }
 
@@ -4854,21 +5020,38 @@ function unlockGame() {
   document.getElementById('authUserBox').style.display = 'flex';
 }
 
-// ── SAVE WALLET TO SUPABASE ──
-async function persistWallet() {
+// ── SAVE ALL PLAYER PROGRESS TO SUPABASE ──
+async function persistProgress() {
   if (!currentUser) return;
   await sbFetch(
     `player_profiles?id=eq.${currentUser.id}`,
     'PATCH',
-    { wallet: userWallet, last_seen: new Date().toISOString() },
+    {
+      wallet:               userWallet,
+      last_seen:            new Date().toISOString(),
+      fuel:                 Math.round(minerFuel),
+      hull_integrity:       Math.round(hullIntegrity),
+      fuel_tank_upgrades:   _fuelTankUpgrades,
+      boost_charges:        _boostCount,
+      owns_loader:          playerOwnsLoader,
+      owns_ship:            playerOwnsShip,
+      hired_crew:           hiredCrew,
+      inventory:            playerInventory,
+      refinery_allocation:  allocation,
+      trips_completed:      tripsCompleted,
+      lifetime_earned:      lifetimeEarned,
+    },
     true
   );
 }
+// Keep old name as alias so any missed call sites still work
+const persistWallet = persistProgress;
 // ═══════════════════════════════════════════
 // MARKET + NEWS (unchanged, uses anon key for reads, auth for writes)
 // ═══════════════════════════════════════════
 function getPilotName() {
-  return currentProfile?.pilot_name || localStorage.getItem('soms_pilot') || 'Pilot';
+  const raw = currentProfile?.pilot_name || localStorage.getItem('soms_pilot') || 'Pilot';
+  return raw.replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function savePilotName(name) {
@@ -4932,7 +5115,7 @@ function updateMarketDisplay(matId, current, base) {
       const badge = document.getElementById('mpbadge-' + i);
       if (badge) {
         const bg = isUp ? 'rgba(34,197,94,.08)' : pctNum < 0 ? 'rgba(255,64,96,.08)' : 'rgba(255,255,255,.04)';
-        badge.textContent       = current.toLocaleString() + ' aUEC · ' + sign + pct + '%';
+        badge.textContent       = current.toLocaleString() + ' GC · ' + sign + pct + '%';
         badge.style.color       = color;
         badge.style.borderColor = color;
         badge.style.background  = bg;
@@ -4942,8 +5125,8 @@ function updateMarketDisplay(matId, current, base) {
       const quickVal   = Math.round(h.scu * current * mat.rawMult * 0.30);
       const valDiv = document.getElementById('togval-' + i);
       if (valDiv) valDiv.innerHTML = h.refine
-        ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} aUEC</span><div style="font-size:11px;color:var(--text-dim)">refinery est.</div>`
-        : `<span style="color:var(--orange)">${quickVal.toLocaleString()} aUEC</span><div style="font-size:11px;color:var(--text-dim)">recycle 30%</div>`;
+        ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">refinery est.</div>`
+        : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">recycle 30%</div>`;
     });
   }
 }
@@ -5011,52 +5194,7 @@ async function fireNextNewsEvent() {
   renderNewsLog();
 }
 
-function showNewsBanner(event, affectedMats) {
-  const severityColors = { minor:'#e88d2d', moderate:'#ff8c00', major:'#ff4060' };
-  const color    = severityColors[event.severity] || '#e88d2d';
-  const pct      = parseFloat(event.impact_pct);
-  const sign     = pct >= 0 ? '+' : '';
-  const matLabel = event.material_id ? (materials[event.material_id]?.name || event.material_id) : 'All Materials';
-  const SHOW_MS  = 10000;
-
-  // ── In-scene panel ──
-  const panel    = document.getElementById('sceneNewsPanel');
-  const timerBar = document.getElementById('sceneNewsTimer');
-  const bg       = document.getElementById('sceneNewsBg');
-
-  const impactColor = pct >= 0 ? 'var(--cyan)' : 'var(--red)';
-
-  document.getElementById('sceneNewsSeverity').textContent       = event.severity.toUpperCase();
-  document.getElementById('sceneNewsSeverity').style.color       = color;
-  document.getElementById('sceneNewsSeverity').style.borderColor = color;
-  document.getElementById('sceneNewsHeadline').textContent       = event.headline;
-  document.getElementById('sceneNewsBody').textContent           = event.body;
-  document.getElementById('sceneNewsBody').style.borderColor     = color;
-  document.getElementById('sceneNewsImpact').textContent         = sign + pct + '%';
-  document.getElementById('sceneNewsImpact').style.color         = impactColor;
-  document.getElementById('sceneNewsMat').textContent            = matLabel;
-
-  // Background image — use event image if available, otherwise coloured left-panel glow
-  bg.style.opacity = '0';
-  if (event.image_url) {
-    bg.src    = event.image_url;
-    bg.onload = () => { bg.style.opacity = '1'; };
-    bg.onerror = () => { bg.style.opacity = '0'; };
-  } else {
-    bg.src = '';
-  }
-
-  timerBar.style.background = color;
-  timerBar.style.transition = 'none';
-  timerBar.style.width      = '100%';
-  panel.style.display       = 'block';
-
-  setTimeout(() => { timerBar.style.transition = `width ${SHOW_MS}ms linear`; timerBar.style.width = '0%'; }, 50);
-  setTimeout(() => {
-    panel.style.display = 'none';
-    bg.src = '';
-  }, SHOW_MS);
-}
+function showNewsBanner(event, affectedMats) { /* removed — events go to archive only */ }
 
 function renderNewsLog() {
   if (!newsArchive.length) return;
@@ -5121,7 +5259,7 @@ async function adminLoadPlayers() {
   el.innerHTML = rows.map(p => `
     <div class="admin-row" style="justify-content:space-between;">
       <span style="color:var(--text-main);width:auto;flex:1;">${p.pilot_name}</span>
-      <span style="color:var(--text-dim);width:80px;text-align:right;">${p.wallet.toLocaleString()} aUEC</span>
+      <span style="color:var(--text-dim);width:80px;text-align:right;">${p.wallet.toLocaleString()} GC</span>
       <button onclick="adminResetWallet('${p.id}','${p.pilot_name}')"
         style="font-family:'DM Mono',monospace;font-size:9px;background:transparent;border:1px solid var(--red);color:var(--red);padding:2px 8px;cursor:pointer;margin-left:8px;">
         RESET
@@ -5130,11 +5268,11 @@ async function adminLoadPlayers() {
 }
 
 async function adminResetWallet(userId, pilotName) {
-  if (!confirm(`Reset ${pilotName}'s wallet to 50,000 aUEC?`)) return;
+  if (!confirm(`Reset ${pilotName}'s wallet to 50,000 GC?`)) return;
   await sbFetch(`player_profiles?id=eq.${userId}`, 'PATCH', { wallet: 50000 }, true);
   // If it's the current user, update locally too
   if (currentUser && currentUser.id === userId) {
-    userWallet = 50000;
+    userWallet = 25000;
     updateWallet();
   }
   adminLoadPlayers();
@@ -5241,6 +5379,19 @@ insert into shop_items (name,description,effect_summary,item_type,price,sort_ord
         portrait: 'img/actor_barryswissler.webp',
       });
     }
+    // Inject cargo loader — eliminates Ryker loading fee
+    if (!shopItems.find(i => i.effect_key === 'cargo_loader')) {
+      shopItems.push({
+        id: 'local_cargo_loader',
+        name: 'Cargo Loader',
+        description: 'A station-grade mechanical loader you operate yourself. No more Ryker crane operators taking their cut every time you offload.',
+        effect_summary: 'Eliminates the Ryker loading fee on all transfers.',
+        item_type: 'upgrade',
+        effect_key: 'cargo_loader',
+        price: 25000,
+        sort_order: 3,
+      });
+    }
     // Inject fuel tank upgrade (always local — multi-buy, ship required)
     if (!shopItems.find(i => i.effect_key === 'fuel_tank_upgrade')) {
       shopItems.push({
@@ -5326,7 +5477,7 @@ function renderShopItems() {
     const isHired     = isCrew && hiredCrew.includes(item.effect_key);
     const fuelMaxed   = isFuelTank && _fuelTankUpgrades >= 5;
     const fuelLocked  = isFuelTank && !playerOwnsShip;
-    const owned       = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip));
+    const owned       = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip) || (item.effect_key === 'cargo_loader' && playerOwnsLoader));
     const canAfford   = userWallet >= item.price;
     const isOneTime   = !isFuelTank && !isCrew && (item.item_type === 'ship' || item.item_type === 'upgrade');
     const showOwned   = isOneTime && owned;
@@ -5343,7 +5494,7 @@ function renderShopItems() {
 
     const subLabel = isCrew
       ? (item.role || 'Crew')
-      : `${item.price.toLocaleString()} aUEC${fuelLocked ? ' · <span style="color:var(--red);">requires ship</span>' : ''}`;
+      : `${item.price.toLocaleString()} GC${fuelLocked ? ' · <span style="color:var(--red);">requires ship</span>' : ''}`;
 
     return `<div
       onclick="showShopItem('${item.id}')"
@@ -5379,7 +5530,7 @@ function showShopItem(itemId) {
   const isHired    = isCrew && hiredCrew.includes(item.effect_key);
   const fuelMaxed  = isFuelTank && _fuelTankUpgrades >= 5;
   const fuelLocked = isFuelTank && !playerOwnsShip;
-  const owned      = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip));
+  const owned      = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip) || (item.effect_key === 'cargo_loader' && playerOwnsLoader));
   const canAfford  = userWallet >= item.price;
   const isOneTime  = !isFuelTank && !isCrew && (item.item_type === 'ship' || item.item_type === 'upgrade');
   const showOwned  = isOneTime && owned;
@@ -5402,12 +5553,12 @@ function showShopItem(itemId) {
       : fuelLocked
         ? '🔒 Requires Ship Ownership'
         : isFuelTank
-          ? `Install (+5 capacity) — ${item.price.toLocaleString()} aUEC`
+          ? `Install (+5 capacity) — ${item.price.toLocaleString()} GC`
           : isCrew
-            ? (canAfford ? `Hire — ${item.price.toLocaleString()} aUEC` : `Cannot Afford — ${item.price.toLocaleString()} aUEC`)
+            ? (canAfford ? `Hire — ${item.price.toLocaleString()} GC` : `Cannot Afford — ${item.price.toLocaleString()} GC`)
             : isBoost
-              ? `⚡ Buy 1 Charge — ${item.price.toLocaleString()} aUEC`
-              : `Purchase — ${item.price.toLocaleString()} aUEC`;
+              ? `⚡ Buy 1 Charge — ${item.price.toLocaleString()} GC`
+              : `Purchase — ${item.price.toLocaleString()} GC`;
 
   detail.style.justifyContent = 'flex-start';
   detail.style.alignItems     = 'stretch';
@@ -5447,15 +5598,15 @@ function showShopItem(itemId) {
         <div style="border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;padding:7px 10px;${isHired ? '' : 'border-bottom:1px solid var(--border);'}">
             <span style="color:var(--text-dim);">Signing fee (one-time)</span>
-            <span style="color:${isHired ? 'var(--text-dim)' : 'var(--orange)'};font-weight:700;${isHired ? 'text-decoration:line-through;' : ''}">${item.price.toLocaleString()} aUEC</span>
+            <span style="color:${isHired ? 'var(--text-dim)' : 'var(--orange)'};font-weight:700;${isHired ? 'text-decoration:line-through;' : ''}">${item.price.toLocaleString()} GC</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;padding:7px 10px;background:rgba(255,255,255,.03);">
             <span style="color:var(--text-dim);">Per-load fee (Trade Manifest)</span>
-            <span style="color:var(--red);">${(item.load_fee||0).toLocaleString()} aUEC / load</span>
+            <span style="color:var(--red);">${(item.load_fee||0).toLocaleString()} GC / load</span>
           </div>
         </div>` : `<div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;margin-bottom:10px;">
         <span style="color:var(--text-dim);">Price</span>
-        <span style="color:var(--orange);font-weight:700;">${item.price.toLocaleString()} aUEC</span>
+        <span style="color:var(--orange);font-weight:700;">${item.price.toLocaleString()} GC</span>
       </div>`}
       <button
         onclick="${isHired ? `releaseCrew('${item.id}')` : (blocked ? '' : `openShopConfirm('${item.id}')`)}"
@@ -5479,11 +5630,11 @@ function openShopConfirm(itemId) {
     ${item.effect_summary ? `<div style="font-family:'DM Mono',monospace;font-size:11px;color:${tagColor};padding:10px 12px;background:rgba(0,0,0,.3);border-left:2px solid ${tagColor};line-height:1.6;margin-bottom:14px;">${item.effect_summary}</div>` : ''}
     <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:13px;padding:10px 0;border-top:1px solid var(--border);">
       <span style="color:var(--text-dim);">Cost</span>
-      <span style="color:var(--orange);font-weight:700;">${item.price.toLocaleString()} aUEC</span>
+      <span style="color:var(--orange);font-weight:700;">${item.price.toLocaleString()} GC</span>
     </div>
     <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:13px;padding:6px 0;">
       <span style="color:var(--text-dim);">Balance after</span>
-      <span style="color:${userWallet - item.price < 0 ? 'var(--red)' : 'var(--cyan)'};">${(userWallet - item.price).toLocaleString()} aUEC</span>
+      <span style="color:${userWallet - item.price < 0 ? 'var(--red)' : 'var(--cyan)'};">${(userWallet - item.price).toLocaleString()} GC</span>
     </div>
   `;
 
@@ -5534,6 +5685,9 @@ function applyShopItemEffects(item) {
         _fuelTankMax = 75 + _fuelTankUpgrades * 5;
         updateFuelUI();
         showShopPurchaseToast(`⛽ Fuel tank expanded — capacity now ${_fuelTankMax} units (${_fuelTankUpgrades}/5).`, 'var(--orange)');
+      } else if (item.effect_key === 'cargo_loader') {
+        playerOwnsLoader = true;
+        showShopPurchaseToast(`⬡ Cargo Loader installed — Ryker loading fee eliminated.`, 'var(--cyan)');
       } else {
         showShopPurchaseToast(`⬡ ${item.name} installed.`, 'var(--orange)');
       }
@@ -5600,7 +5754,7 @@ function logShopPurchase(item) {
       <div style="color:var(--text-bright);">🛒 Purchased: ${item.name}</div>
       <div style="font-size:9px;color:var(--text-dim);margin-top:2px;text-transform:uppercase;letter-spacing:.06em;">Equipment — ${new Date().toLocaleTimeString()}</div>
     </div>
-    <div style="color:var(--red);font-weight:500;">−${item.price.toLocaleString()} aUEC</div>
+    <div style="color:var(--red);font-weight:500;">−${item.price.toLocaleString()} GC</div>
   `;
   logBody.prepend(row);
 }
@@ -5693,7 +5847,7 @@ function renderContractCards() {
       : c.duration_mins + ' min';
     const isLast = i === offeredContracts.length - 1;
     const penHtml = c.penalty > 0
-      ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);padding:8px 10px;border:1px solid rgba(255,64,96,.25);background:rgba(255,64,96,.06);margin-top:2px;">⚠ Failure penalty: ${c.penalty.toLocaleString()} aUEC</div>`
+      ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);padding:8px 10px;border:1px solid rgba(255,64,96,.25);background:rgba(255,64,96,.06);margin-top:2px;">⚠ Failure penalty: ${c.penalty.toLocaleString()} GC</div>`
       : '';
 
     const card = document.createElement('div');
@@ -5720,7 +5874,7 @@ function renderContractCards() {
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding-top:7px;border-top:1px solid var(--border);margin-top:2px;">
             <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);">Completion Bonus</span>
-            <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--cyan);text-shadow:0 0 8px rgba(0,212,255,.4);">+${(c.bonus_payout ?? 0).toLocaleString()} aUEC</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--cyan);text-shadow:0 0 8px rgba(0,212,255,.4);">+${(c.bonus_payout ?? 0).toLocaleString()} GC</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);">Time Window</span>
@@ -5794,7 +5948,7 @@ function updateActiveContractStrip() {
   document.getElementById('acStripMat').textContent         = mat?.name || activeContract.material_id;
   document.getElementById('acStripMat').style.color         = mat?.color || 'var(--text-bright)';
   document.getElementById('acStripProgress').textContent    = activeContract.scu_delivered + ' / ' + activeContract.scu_required + ' SCU';
-  document.getElementById('acStripBonus').textContent       = '+' + activeContract.bonus_payout.toLocaleString() + ' aUEC';
+  document.getElementById('acStripBonus').textContent       = '+' + activeContract.bonus_payout.toLocaleString() + ' GC';
   document.getElementById('acStripTime').textContent        = timeStr;
   document.getElementById('acStripTime').style.color        = timeColor;
 
@@ -5822,7 +5976,7 @@ async function failContract() {
   if (activeContract.penalty > 0) {
     userWallet = Math.max(0, userWallet - activeContract.penalty);
     updateWallet();
-    showContractToast(`Contract FAILED — ${activeContract.penalty.toLocaleString()} aUEC penalty deducted`, 'var(--red)');
+    showContractToast(`Contract FAILED — ${activeContract.penalty.toLocaleString()} GC penalty deducted`, 'var(--red)');
   } else {
     showContractToast('Contract expired — no delivery made', 'var(--orange)');
   }
@@ -5843,7 +5997,7 @@ async function abandonContract() {
     _abandonArmed = true;
     const pen = activeContract.penalty;
     if (btn) {
-      btn.textContent = pen > 0 ? `Confirm? (−${pen.toLocaleString()} aUEC)` : 'Confirm Abandon';
+      btn.textContent = pen > 0 ? `Confirm? (−${pen.toLocaleString()} GC)` : 'Confirm Abandon';
       btn.style.borderColor = 'var(--red)';
       btn.style.color = '#fff';
       btn.style.background = 'rgba(255,64,96,.18)';
@@ -5876,7 +6030,7 @@ async function abandonContract() {
   } catch(e) { /* network error — local state already cleared */ }
 
   if (pen > 0) { userWallet = Math.max(0, userWallet - pen); updateWallet(); await persistWallet(); }
-  showContractToast('Contract abandoned' + (pen > 0 ? ` — ${pen.toLocaleString()} aUEC penalty` : ''), 'var(--orange)');
+  showContractToast('Contract abandoned' + (pen > 0 ? ` — ${pen.toLocaleString()} GC penalty` : ''), 'var(--orange)');
   setTimeout(() => offerRandomContract(), 1500);
 }
 
@@ -5954,8 +6108,8 @@ function showContractCompleteModal({ bonus, matId, scuReq, deadline, contId }) {
   document.getElementById('ccModalMat').textContent    = mat?.name || matId;
   document.getElementById('ccModalMat').style.color    = mat?.color || 'var(--text-bright)';
   document.getElementById('ccModalTime').textContent   = timeLeft;
-  document.getElementById('ccModalBonus').textContent  = '+' + bonus.toLocaleString() + ' aUEC';
-  document.getElementById('ccModalBalance').textContent = userWallet.toLocaleString() + ' aUEC';
+  document.getElementById('ccModalBonus').textContent  = '+' + bonus.toLocaleString() + ' GC';
+  document.getElementById('ccModalBalance').textContent = userWallet.toLocaleString() + ' GC';
 
   // Fetch title + issuer from template
   if (contId) {
@@ -6152,8 +6306,9 @@ function maybeShowIntro() {
 }
 
 // ── HINT SYSTEM ──
-let _hintDismissed = false;
-let _hintTargetId  = null;
+let _hintDismissed       = false; // true only after full loop complete
+let _hintTargetId        = null;
+let _calliFirstDispatch  = true;  // fires the trembling-hands scene once
 
 const HINTS = {
   dispatch: {
@@ -6161,7 +6316,7 @@ const HINTS = {
     main:'Dispatch your miner to an asteroid',
     sub: 'Click "Locate & Extract" → pick an asteroid from the Star Map → confirm.',
     target: 'dispatchBtn',
-    calliLine: (name) => `Hey ${name}! I'm Calli — I've been running this belt for three years and I'll show you how it's done. First thing: hit that "Locate & Extract" button, pick yourself an asteroid on the Star Map, and send your ship out. Easy as that!`,
+    calliLine: (name) => `Hey ${name}! I'm Calli — station's official tow ship pilot. When someone runs dry out in the belt, I'm the one they call. Three years of hauling stranded miners back to dock, so trust me, I know every rock and shortcut in this system. I'll show you how to fly smart and stay off my tow cable. First thing: hit that "Locate & Extract" button, pick an asteroid on the Star Map, and send your ship out. Easy as that!`,
   },
   transit: {
     icon:'img/Ship_2.png', step:'Step 01 — In Transit',
@@ -6189,7 +6344,7 @@ const HINTS = {
     main:'Monitor your active processing run',
     sub: 'Each unit is processed in real time. Watch purity grades and value accumulate.',
     target: null,
-    calliLine: () => `The refinery's running! Watch those blocks light up — green means good ore, grey means it came out inert. The higher the purity grade, the more it's worth. Pristine ore is rare but it pays beautifully. Just sit tight!`,
+    calliLine: (name) => `Okay ${name}, watch those little blocks carefully — each one is a unit of your ore being processed right now. See how some light up bright? That's the good stuff. The brighter and more vivid the colour, the higher the grade — that's more credits in your pocket. Now the dark ones, almost black? That's what we call "inert." Worthless. Rock that came back as nothing. Don't panic, every run has some — it's just part of mining. Your job is to keep that inert count low by tuning your refinery settings right. You'll get the hang of it!`,
   },
   transfer: {
     icon:'img/transfer.webp', step:'Step 05 — Collect Credits',
@@ -6328,14 +6483,146 @@ function _positionHintBar(targetId) {
 window.addEventListener('scroll', () => { if (_hintTargetId) _positionHintBar(_hintTargetId); }, { passive: true });
 window.addEventListener('resize', () => { if (_hintTargetId) _positionHintBar(_hintTargetId); }, { passive: true });
 
-function dismissHint() {
-  _hintDismissed = true;
+// ── CALLI FIRST DISPATCH SCENE ──────────────────────────────
+function _calliDispatchScene() {
+  if (!_calliFirstDispatch) { openStarMap(); return; }
+  _calliFirstDispatch = false;
+
+  const name = getPilotName();
+  const modal   = document.getElementById('calliChoiceModal');
+  const textEl  = document.getElementById('calliChoiceText');
+  const btnsEl  = document.getElementById('calliChoiceButtons');
+
+  // Hide the hint bar so it doesn't show behind the modal
+  document.getElementById('hintBar').style.display = 'none';
+  // Switch to empathy portrait for the concerned question
+  document.getElementById('calliModalPortrait').src = 'img/actor_calli_empathy.webp';
+  document.getElementById('calliModalTitle').textContent = 'Calli';
+  document.getElementById('calliModalTitle').style.color = 'rgba(0,212,255,.95)';
+  textEl.textContent = `Hey — ${name}. Before you hit that button... I noticed your hand is trembling. You okay?`;
+
+  btnsEl.innerHTML = `
+    <button onclick="_calliChoiceReply('dad')" style="
+      width:100%;padding:12px 16px;background:rgba(0,212,255,.05);
+      border:1px solid rgba(0,212,255,.3);color:#e8f4ff;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;
+      text-align:left;cursor:pointer;border-radius:4px;transition:background .15s;line-height:1.5;
+    " onmouseover="this.style.background='rgba(0,212,255,.12)'"
+       onmouseout="this.style.background='rgba(0,212,255,.05)'">
+      "I wish my dad could see this."
+    </button>
+    <button onclick="_calliChoiceReply('nothing')" style="
+      width:100%;padding:12px 16px;background:rgba(0,212,255,.05);
+      border:1px solid rgba(0,212,255,.3);color:#e8f4ff;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;
+      text-align:left;cursor:pointer;border-radius:4px;transition:background .15s;line-height:1.5;
+    " onmouseover="this.style.background='rgba(0,212,255,.12)'"
+       onmouseout="this.style.background='rgba(0,212,255,.05)'">
+      "It's nothing. Let's do this."
+    </button>`;
+
+  modal.style.display = 'flex';
+}
+
+function _calliChoiceReply(choice) {
+  const textEl = document.getElementById('calliChoiceText');
+  const btnsEl = document.getElementById('calliChoiceButtons');
+
+  // Switch back to normal portrait for the response
+  document.getElementById('calliModalPortrait').src = 'img/actor_calli_norm.webp';
+  document.getElementById('calliModalTitle').textContent = 'Calli';
+  document.getElementById('calliModalTitle').style.color = 'rgba(0,212,255,.95)';
+
+  if (choice === 'dad') {
+    textEl.textContent = `Well, I don't know where he is right now — out there somewhere watching the stars, maybe. But I'll tell you this: anyone who raises someone brave enough to strap into a mining rig for the first time? He'd be proud. I have no doubt. Now let's go make him proud together. Hit that button.`;
+  } else {
+    textEl.textContent = `Ha! That's the spirit. No hesitation, no looking back — just you and the belt. I like you already. Go on then, hit that Locate & Extract button!`;
+  }
+
+  btnsEl.innerHTML = `
+    <button onclick="_darousInterrupt()" style="
+      width:100%;padding:11px 16px;background:rgba(0,212,255,.08);
+      border:1px solid rgba(0,212,255,.5);color:var(--cyan);
+      font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+      text-transform:uppercase;letter-spacing:.1em;cursor:pointer;
+      border-radius:4px;transition:background .15s;
+    " onmouseover="this.style.background='rgba(0,212,255,.18)'"
+       onmouseout="this.style.background='rgba(0,212,255,.08)'">
+      Continue →
+    </button>`;
+}
+
+function _darousInterrupt() {
+  const textEl = document.getElementById('calliChoiceText');
+  const btnsEl = document.getElementById('calliChoiceButtons');
+
+  document.getElementById('calliModalPortrait').src = 'img/actor_darious.webp';
+  document.getElementById('calliModalName').textContent = 'Captain Darious';
+  document.getElementById('calliModalName').style.color = 'rgba(255,160,50,.95)';
+  document.getElementById('calliModalTitle').textContent = 'Captain Darious';
+  document.getElementById('calliModalTitle').style.color = 'rgba(255,160,50,.95)';
+  document.getElementById('calliModalComm').textContent = '— Darious Interjects —';
+
+  textEl.textContent = `*shoves past without looking at you* Out of my way, newbie. Some of us have actual work to do out here. Go play with your training wheels somewhere else.`;
+
+  btnsEl.innerHTML = `
+    <button onclick="_calliDariousComment()" style="
+      width:100%;padding:11px 16px;background:rgba(255,160,50,.06);
+      border:1px solid rgba(255,160,50,.4);color:rgba(255,200,100,.9);
+      font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+      text-transform:uppercase;letter-spacing:.1em;cursor:pointer;
+      border-radius:4px;transition:background .15s;
+    " onmouseover="this.style.background='rgba(255,160,50,.14)'"
+       onmouseout="this.style.background='rgba(255,160,50,.06)'">
+      Continue →
+    </button>`;
+}
+
+function _calliDariousComment() {
+  const textEl = document.getElementById('calliChoiceText');
+  const btnsEl = document.getElementById('calliChoiceButtons');
+
+  document.getElementById('calliModalPortrait').src = 'img/actor_calli_norm.webp';
+  document.getElementById('calliModalName').textContent = 'Calli';
+  document.getElementById('calliModalName').style.color = 'rgba(0,212,255,.9)';
+  document.getElementById('calliModalTitle').textContent = 'Calli';
+  document.getElementById('calliModalTitle').style.color = 'rgba(0,212,255,.95)';
+  document.getElementById('calliModalComm').textContent = 'Comm Channel Open';
+
+  textEl.textContent = `*rolls her eyes with a quiet smile* Don't take it personally. That's Captain Darious — he's been running this belt longer than most stations have been standing. He doesn't trust easily, but when he decides you're worth knowing? There's nobody better to have watching your six. And between you and me... he's a total softy once you get past the armor. Now — let's get you out there.`;
+
+  btnsEl.innerHTML = `
+    <button onclick="_calliChoiceClose()" style="
+      width:100%;padding:11px 16px;background:rgba(0,212,255,.08);
+      border:1px solid rgba(0,212,255,.5);color:var(--cyan);
+      font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+      text-transform:uppercase;letter-spacing:.1em;cursor:pointer;
+      border-radius:4px;transition:background .15s;
+    " onmouseover="this.style.background='rgba(0,212,255,.18)'"
+       onmouseout="this.style.background='rgba(0,212,255,.08)'">
+      ◈ Open Star Map
+    </button>`;
+}
+
+function _calliChoiceClose() {
+  document.getElementById('calliChoiceModal').style.display = 'none';
+  openStarMap();
+}
+
+// Hides the current tip but lets future steps still show (used by "Got it" button)
+function skipCurrentHint() {
   document.getElementById('hintBar').style.display = 'none';
   if (_hintTargetId) {
     const el = document.getElementById(_hintTargetId);
     if (el) el.classList.remove('hint-pulse');
     _hintTargetId = null;
   }
+}
+
+// Permanently retires the hint system — called only after the full loop completes
+function dismissHint() {
+  _hintDismissed = true;
+  skipCurrentHint();
 }
 
 // ── KEYPAD LOGIN ──
@@ -6388,7 +6675,7 @@ function keypadSubmit() {
 
 function _completeLogin(pilotName) {
   localStorage.setItem('soms_pilot', pilotName);
-  userWallet = 50000;
+  userWallet = 25000;
   updateWallet();
   document.getElementById('pilotNameDisplay').textContent = pilotName;
   document.getElementById('authUserBox').style.display = 'flex';
@@ -6420,6 +6707,7 @@ updateWallet();
 seedStars();
 applyPreset('rush');
 updateFuelUI();
+updateHullUI();
 
 // Wire patches after all functions defined, then init Supabase
 window.addEventListener('DOMContentLoaded', () => {
@@ -6499,16 +6787,6 @@ window.addEventListener('DOMContentLoaded', () => {
         <div style="flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
           <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--cyan);text-transform:uppercase;letter-spacing:.18em;opacity:.7;">Star Map Tip</span>
           <div style="font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;color:#e8f4ff;line-height:1.55;" id="calliMapTipText"></div>
-        </div>
-        <!-- Dismiss -->
-        <div style="display:flex;align-items:center;padding:0 12px;flex-shrink:0;">
-          <button onclick="document.getElementById('calliMapTip').style.display='none'" style="
-            background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.25);
-            color:var(--cyan);font-family:'DM Mono',monospace;font-size:8px;
-            padding:6px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.08em;
-            border-radius:3px;white-space:nowrap;transition:background .15s;
-          " onmouseover="this.style.background='rgba(0,212,255,.14)'"
-             onmouseout="this.style.background='rgba(0,212,255,.06)'">✕ Got it</button>
         </div>
       </div>
     </div>
@@ -6602,7 +6880,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const valEl = document.getElementById('otValue');
     const val   = parseInt(d.value) || 0;
-    valEl.textContent = val > 0 ? val.toLocaleString() + ' aUEC' : '—';
+    valEl.textContent = val > 0 ? val.toLocaleString() + ' GC' : '—';
     valEl.style.color = val > 0 ? 'var(--text-bright)' : 'var(--text-dim)';
 
     const statusEl = document.getElementById('otStatus');
@@ -6640,6 +6918,29 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <!-- ── HINT BAR ── -->
+<!-- ── CALLI FIRST DISPATCH DIALOGUE ── -->
+<div id="calliChoiceModal" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.82);align-items:center;justify-content:center;">
+  <div style="width:580px;max-width:95vw;background:linear-gradient(135deg,#080d18 0%,#0c1220 100%);border:1px solid rgba(0,212,255,.35);border-top:3px solid rgba(0,212,255,.8);box-shadow:0 0 80px rgba(0,212,255,.12),0 24px 64px rgba(0,0,0,.9);overflow:hidden;">
+
+    <!-- Calli header with portrait -->
+    <div style="display:flex;align-items:stretch;min-height:240px;">
+      <div style="position:relative;width:220px;flex-shrink:0;background:#05080f;">
+        <img id="calliModalPortrait" src="img/actor_calli_norm.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;">
+        <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 55%,#080d18 100%);"></div>
+        <div id="calliModalName" style="position:absolute;bottom:0;left:0;right:0;padding:5px 0 4px;text-align:center;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-family:'DM Mono',monospace;font-size:8px;color:rgba(0,212,255,.9);text-transform:uppercase;letter-spacing:.12em;font-weight:600;">Calli</div>
+      </div>
+      <div style="flex:1;padding:18px 20px;display:flex;flex-direction:column;justify-content:center;gap:8px;">
+        <div id="calliModalComm" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--cyan);text-transform:uppercase;letter-spacing:.18em;opacity:.7;">Comm Channel Open</div>
+        <div id="calliModalTitle" style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:rgba(0,212,255,.95);letter-spacing:.08em;">Calli</div>
+        <div id="calliChoiceText" style="font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:#e8f4ff;line-height:1.6;"></div>
+      </div>
+    </div>
+
+    <!-- Choice buttons or response -->
+    <div id="calliChoiceButtons" style="padding:14px 20px;border-top:1px solid rgba(0,212,255,.12);display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.3);"></div>
+  </div>
+</div>
+
 <div id="hintBar" style="
   display:none;
   position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
@@ -6684,17 +6985,6 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
     <!-- hidden but kept for JS compat -->
     <div id="hintMain" style="display:none;"></div>
-  </div>
-  <!-- Dismiss -->
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 16px;border-left:1px solid rgba(0,212,255,.12);flex-shrink:0;">
-    <button onclick="dismissHint()" style="
-      background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.3);
-      color:var(--cyan);font-family:'DM Mono',monospace;font-size:9px;
-      padding:7px 12px;cursor:pointer;letter-spacing:.1em;white-space:nowrap;
-      text-transform:uppercase;transition:all .2s;border-radius:4px;
-    " onmouseover="this.style.background='rgba(0,212,255,.14)'"
-       onmouseout="this.style.background='rgba(0,212,255,.06)'"
-       title="Dismiss">✕ Got it</button>
   </div>
 </div>
 
@@ -6850,6 +7140,7 @@ function _smPos(ast, W, H) {
       ctx.setLineDash([4, 8]);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
       ctx.font = '9px DM Mono, monospace';
       ctx.fillStyle = 'rgba(0,212,255,0.65)';
       ctx.textAlign = 'left';
@@ -6874,20 +7165,18 @@ function _smPos(ast, W, H) {
     if (_smStationImg.complete && _smStationImg.naturalWidth) {
       ctx.drawImage(_smStationImg, sx - STN_SIZE/2, sy - STN_SIZE/2, STN_SIZE, STN_SIZE);
     } else {
-      // Fallback diamond while image loads
       ctx.fillStyle = 'rgba(0,212,255,1)';
       ctx.beginPath();
       ctx.moveTo(sx, sy-9); ctx.lineTo(sx+6,sy); ctx.lineTo(sx,sy+9); ctx.lineTo(sx-6,sy); ctx.closePath();
       ctx.fill();
     }
     ctx.restore();
+    // Station label — no glow on text
+    ctx.shadowBlur  = 0;
     ctx.font = 'bold 9px DM Mono, monospace';
     ctx.fillStyle = 'rgba(0,212,255,1)';
     ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0,212,255,0.6)';
-    ctx.shadowBlur  = 6;
     ctx.fillText('REFINERY STN', sx, sy + STN_SIZE/2 + 12);
-    ctx.shadowBlur  = 0;
 
     // Course line — station to selected asteroid
     if (_smSelected) {
@@ -6950,26 +7239,32 @@ function _smPos(ast, W, H) {
         ctx.fillText('⚠', ax, ay + sz * 0.25);
       }
 
-      // Label
+      // Label — no shadow blur on any text
+      ctx.shadowBlur = 0;
       ctx.font = 'bold 10px DM Mono, monospace';
       ctx.textAlign = 'center';
+      const labelY = ay - sz/2 - 14;
       if (isLocked) {
-        ctx.shadowColor = isSel ? 'rgba(255,80,80,0.8)' : 'rgba(200,60,60,0.5)';
-        ctx.shadowBlur  = 5;
         ctx.fillStyle = isSel ? 'rgba(255,80,80,1)' : 'rgba(220,80,80,.85)';
-        ctx.fillText(ast.discovered ? ast.id : '???', ax, ay - sz/2 - 5);
+        ctx.fillText(ast.discovered ? ast.id : '???', ax, labelY);
       } else if (ast.discovered) {
-        ctx.shadowColor = isSel ? 'rgba(245,200,66,0.9)' : 'rgba(245,200,66,0.5)';
-        ctx.shadowBlur  = 6;
         ctx.fillStyle = isSel ? 'rgba(245,200,66,1)' : 'rgba(245,200,66,.95)';
-        ctx.fillText(ast.id, ax, ay - sz/2 - 5);
+        ctx.fillText(ast.id, ax, labelY);
       } else {
-        ctx.shadowColor = isSel ? 'rgba(160,180,230,0.8)' : 'rgba(140,160,220,0.5)';
-        ctx.shadowBlur  = 5;
         ctx.fillStyle = isSel ? 'rgba(200,215,255,1)' : 'rgba(180,195,245,.92)';
-        ctx.fillText('???', ax, ay - sz/2 - 5);
+        ctx.fillText('???', ax, labelY);
       }
-      ctx.shadowBlur = 0;
+
+      // Fuel cost line — always shown on every asteroid
+      const fuelRt = Math.round(15 * ast.distance / DISTANCE_BASE_MM);
+      const canReach = minerFuel >= fuelRt;
+      ctx.font = '8px DM Mono, monospace';
+      ctx.fillStyle = isLocked
+        ? 'rgba(255,80,80,.7)'
+        : canReach
+          ? 'rgba(100,200,120,.85)'
+          : 'rgba(220,120,60,.9)';
+      ctx.fillText(`${fuelRt}u`, ax, labelY + 11);
 
       // Radar sweep ring on undiscovered+selected
       if (isSel && !ast.discovered) {
@@ -7056,15 +7351,13 @@ function _smPos(ast, W, H) {
         ctx.beginPath(); ctx.moveTo(bx, by + 10); ctx.lineTo(bx, by); ctx.lineTo(bx + 10, by); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(bx + BOX_W - 10, by); ctx.lineTo(bx + BOX_W, by); ctx.lineTo(bx + BOX_W, by + 10); ctx.stroke();
 
-        // Header line
+        // Header line — no glow
         const headerY = by + PAD + 10;
+        ctx.shadowBlur = 0;
         ctx.font = 'bold 9px DM Mono, monospace';
         ctx.fillStyle = accentCol;
         ctx.textAlign = 'left';
-        ctx.shadowColor = accentGlow;
-        ctx.shadowBlur  = 5;
         ctx.fillText('◈ ASTEROID SCAN', bx + PAD, headerY);
-        ctx.shadowBlur = 0;
 
         // Divider
         ctx.strokeStyle = 'rgba(255,255,255,0.12)';
@@ -7157,7 +7450,7 @@ function _smUpdateFooter() {
 
   const isLocked = ast.distance >= 900 && !_hasEngineUpgrade;
   const flightS  = Math.round(12 * ast.distance / 300); // 12s per 300 Mm
-  const fuelRt   = Math.round(2 * 15 * ast.distance / 300); // 15 units/one-way per 300 Mm
+  const fuelRt   = Math.round(15 * ast.distance / 300); // 15 units per 300 Mm outbound
   const sep      = `<span style="color:var(--border-bright);">|</span>`;
 
   if (isLocked) {
@@ -7190,7 +7483,7 @@ function _smUpdateFooter() {
     ${sep}
     <span style="color:var(--orange);font-size:9px;">~${flightS}s flight</span>
     ${sep}
-    <span style="color:#22c55e;font-size:9px;">${fuelRt} units r/t</span>
+    <span style="color:#22c55e;font-size:9px;">${fuelRt} units</span>
     ${sep}
     ${statusHtml}
   `;

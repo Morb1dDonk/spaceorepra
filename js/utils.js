@@ -10,7 +10,7 @@ function getSpeedNorm(){ return allocation.speed/(SLIDER_MAX-1); }
 function getTotalMs(){ return Math.round(MS_TOTAL_SLOW+getSpeedNorm()*(MS_TOTAL_FAST-MS_TOTAL_SLOW)); }
 function getFailRate(){ return getWeightVal('speedFail', allocation.speed)/100; }
 function fmtTime(ms){ const s=Math.ceil(ms/1000),m=Math.floor(s/60); return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
-function updateWallet(){ document.getElementById('userWallet').textContent=userWallet.toLocaleString()+' aUEC'; }
+function updateWallet(){ document.getElementById('userWallet').textContent=userWallet.toLocaleString()+' GC'; }
 
 function hexToRgb(hex) {
   const r = parseInt(hex.slice(1,3),16);
