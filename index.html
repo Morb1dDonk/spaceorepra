@@ -213,7 +213,6 @@
           <div class="wallet-label">Galactic Credits</div>
           <div class="wallet-val" id="userWallet">—</div>
         </div>
-        <button class="btn-sys" onclick="openShop()" id="shopHeaderBtn" style="color:var(--orange);border-color:rgba(232,141,45,.45);white-space:nowrap;flex-shrink:0;">🛒 Shop</button>
       </div>
       <div class="stripe-accent"></div>
     </div>
@@ -499,17 +498,29 @@
         <div style="display:flex;flex-direction:column;justify-content:center;">
 
           <!-- FLIGHT TERMINAL — compact nav readout above ore hold -->
-          <div style="background:rgba(0,0,0,.5);border:1px solid var(--border);padding:7px 9px;margin-bottom:8px;min-width:190px;">
-            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.14em;border-bottom:1px solid var(--border);padding-bottom:3px;margin-bottom:5px;">◈ Nav Terminal</div>
+          <div style="background:rgba(0,0,0,.5);border:1px solid #7c3a00;box-shadow:0 0 8px rgba(232,141,45,.2);margin-bottom:8px;min-width:190px;overflow:hidden;">
+            <!-- Nav Terminal header -->
+            <div style="background:#7c3a00;padding:6px 9px;">
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:#ffb347;text-transform:uppercase;letter-spacing:.18em;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);">◈ Nav Terminal</div>
+            </div>
+            <div style="padding:7px 9px;">
+            <!-- Location + Shop (two columns) -->
+            <div style="display:flex;gap:8px;align-items:stretch;padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:6px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.14em;margin-bottom:3px;">Location</div>
+                <div id="navLocation" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--cyan);text-shadow:0 0 10px rgba(0,212,255,.6);letter-spacing:.06em;white-space:nowrap;">Space Station</div>
+              </div>
+              <button id="shopHeaderBtn" onclick="openShop()" style="flex-shrink:0;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;background:rgba(232,141,45,.06);border:1px solid rgba(232,141,45,.4);color:var(--orange);padding:10px 30px;cursor:pointer;transition:all .2s;align-self:flex-end;"
+                onmouseover="this.style.background='rgba(232,141,45,.14)'" onmouseout="this.style.background='rgba(232,141,45,.06)'">
+                🛒 Shop Open
+              </button>
+            </div>
             <!-- Status -->
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
               <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">Status</span>
               <span id="dispatchStatus" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--cyan);">Ready</span>
             </div>
-            <!-- Idle objective (fades out during flight) -->
-            <div id="sceneIdleOverlay" style="transition:opacity .8s ease;">
-              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.6;">OBJ // Dispatch the Miner<br><span style="color:rgba(255,255,255,.25);">Belt: Aaron · Max <span style="color:var(--orange);">48 SCU</span></span></div>
-            </div>
+            <div id="sceneIdleOverlay" style="display:none;"></div>
             <!-- Phase status (shown during flight) -->
             <div id="mineStatusOverlay" style="opacity:0;font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);letter-spacing:.05em;transition:opacity .4s;line-height:1.4;"></div>
             <!-- ETAs (shown during flight) -->
@@ -531,6 +542,12 @@
             </div>
             <!-- Asteroid name/purity elements kept off-screen for script compat -->
             <div style="display:none;"><div id="asteroidName"></div><div id="asteroidPurity"></div></div>
+            <!-- Ship upgrades list -->
+            <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;">
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px;">Installed Upgrades</div>
+              <div id="navUpgradesList" style="display:flex;flex-direction:column;gap:3px;"></div>
+            </div>
+            </div><!-- /padding wrapper -->
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -1931,6 +1948,29 @@ function getFuelRefuelCost() {
   return Math.round((_fuelTankMax - minerFuel) * getFuelPrice());
 }
 
+function _updateNavLocation(loc) {
+  const el = document.getElementById('navLocation');
+  if (!el) return;
+  if (loc === 'station') {
+    el.textContent = 'Space Station';
+    el.style.color = 'var(--cyan)';
+  } else if (loc === 'asteroid') {
+    el.textContent = 'Asteroid Field';
+    el.style.color = 'var(--orange)';
+  } else if (loc === 'transit') {
+    el.textContent = 'In Transit';
+    el.style.color = 'rgba(255,255,255,.4)';
+  }
+}
+
+function _updateObjective(text, color) {
+  const el = document.getElementById('currentObjectiveText');
+  const block = document.getElementById('currentObjectiveBlock');
+  if (!el) return;
+  el.textContent = text;
+  if (block) block.style.borderLeftColor = color || 'var(--cyan)';
+}
+
 function updateFuelUI() {
   const pct        = (minerFuel / _fuelTankMax) * 100;
   const isFull     = minerFuel >= _fuelTankMax;
@@ -2739,7 +2779,7 @@ function triggerTowBack(btn, refuelBtn) {
   btn.style.opacity = '0.35';
   refuelBtn.disabled = true;
   refuelBtn.style.opacity = '0.35';
-  const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = true; _sb.style.opacity = '0.35'; }
+  const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = true; _sb.style.opacity = '0.35'; _sb.textContent = '🔒 Shop Closed'; }
 
   // Tow card fades in first, then Calli's ship slowly drifts in
   stopAsteroidGlitch();
@@ -2843,7 +2883,7 @@ function triggerHullRescue() {
   if (btn)      { btn.disabled = true;      btn.style.opacity = '0.35'; }
   if (refuelBtn){ refuelBtn.disabled = true; refuelBtn.style.opacity = '0.35'; }
   const shopBtn = document.getElementById('shopHeaderBtn');
-  if (shopBtn)  { shopBtn.disabled = true;  shopBtn.style.opacity = '0.35'; }
+  if (shopBtn)  { shopBtn.disabled = true;  shopBtn.style.opacity = '0.35'; shopBtn.textContent = '🔒 Shop Closed'; }
 
   stopAsteroidGlitch();
 
@@ -2999,10 +3039,12 @@ function payTowBack() {
       document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
       document.getElementById('dispatchIdleText').style.display = 'none';
       const _io = document.getElementById('sceneIdleOverlay'); if (_io) _io.style.opacity = '1';
+      _updateNavLocation('station');
+      _updateObjective('Review manifest and process ore', 'var(--cyan)');
 
       if (window._towBtn)    { window._towBtn.disabled = false; window._towBtn.textContent = '⬡ Send Again'; }
       if (window._towRefuel) { window._towRefuel.disabled = false; window._towRefuel.style.opacity = '1'; }
-      const _sb4 = document.getElementById('shopHeaderBtn'); if (_sb4) { _sb4.disabled = false; _sb4.style.opacity = '1'; }
+      const _sb4 = document.getElementById('shopHeaderBtn'); if (_sb4) { _sb4.disabled = false; _sb4.style.opacity = '1'; _sb4.textContent = '🛒 Shop Open'; }
       updateFuelUI();
       updateHullUI();
 
@@ -3195,10 +3237,12 @@ function dispatchMiner() {
   refuelBtn.disabled = true;
   refuelBtn.style.opacity = '0.35';
   const shopBtn = document.getElementById('shopHeaderBtn');
-  if (shopBtn) { shopBtn.disabled = true; shopBtn.style.opacity = '0.35'; }
+  if (shopBtn) { shopBtn.disabled = true; shopBtn.style.opacity = '0.35'; shopBtn.textContent = '🔒 Shop Closed'; }
 
   document.getElementById('dispatchStatus').textContent = isPartial ? `Partial Trip · ${Math.round(fuelToUse)} units` : `In Transit · ${Math.round(fuelToUse)} units`;
   document.getElementById('dispatchStatus').style.color = '';
+  _updateNavLocation('transit');
+  _updateObjective('En route to asteroid field...', 'var(--text-dim)');
   document.getElementById('dispatchCountdownWrap').style.display = 'flex';
   document.getElementById('miningBarLabel').textContent = '';
   document.getElementById('miningBarPct').textContent = '0%';
@@ -3410,9 +3454,11 @@ function dispatchMiner() {
           document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
           document.getElementById('dispatchIdleText').style.display = 'none';
           const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
+          _updateNavLocation('station');
+          _updateObjective('Review manifest and process ore', 'var(--cyan)');
           btn.disabled = false; btn.textContent = '⬡ Send Again';
           refuelBtn.disabled = false; refuelBtn.style.opacity = '1';
-          const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; }
+          const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; _sb2.textContent = '🛒 Shop Open'; }
           updateFuelUI();
         });
       } else {
@@ -3425,9 +3471,11 @@ function dispatchMiner() {
         document.getElementById('dispatchStatus').textContent = 'Docked';
         document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
         const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
+        _updateNavLocation('station');
+        _updateObjective('Dispatch the miner to an asteroid', 'var(--cyan)');
         btn.disabled = false; btn.textContent = '⬡ Send Again';
         refuelBtn.disabled = false; refuelBtn.style.opacity = '1';
-        const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; }
+        const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; _sb2.textContent = '🛒 Shop Open'; }
       }
     }, UNDOCK_MS);
   };
@@ -3443,6 +3491,8 @@ function dispatchMiner() {
     }
     document.getElementById('dispatchStatus').textContent = 'Mining';
     _timerPhase = 'mining';
+    _updateNavLocation('asteroid');
+    _updateObjective('Extracting ore from asteroid', 'var(--orange)');
     revealAsteroidName();
     overlay.textContent = MINING_LABELS[0];
     if (isPartial) {
@@ -3482,6 +3532,8 @@ function dispatchMiner() {
         // ── Mining complete → Asteroid departs, start return leg ──
         document.getElementById('dispatchStatus').textContent = 'Returning';
         overlay.textContent = 'Hold secured — returning to station...';
+        _updateNavLocation('transit');
+        _updateObjective('Returning to Space Station', 'var(--cyan)');
         _starDir = 1;
         if (asteroidObj) {
           asteroidObj.style.transition = `right ${APPROACH_MS}ms cubic-bezier(0.4,0,1,1)`;
@@ -3545,6 +3597,8 @@ function dispatchMiner() {
       document.getElementById('dispatchStatus').textContent = 'Returning';
       document.getElementById('dispatchStatus').style.color = 'var(--orange)';
       overlay.textContent = 'Mission aborted — returning to station...';
+      _updateNavLocation('transit');
+      _updateObjective('Returning to Space Station', 'var(--cyan)');
       overlay.style.color = 'var(--red)';
       stopAsteroidGlitch();
       // Fly home — only second half remains since we were at midpoint
@@ -6518,11 +6572,13 @@ function applyShopItemEffects(item) {
   switch (item.item_type) {
     case 'ship':
       playerOwnsShip = true;
+      _updateNavUpgrades();
       showShopPurchaseToast(`🚀 ${item.name} acquired! Ryker lease removed.`, 'var(--cyan)');
       if (!_storySeen.act2) _pendingAct2Story = true;
       break;
     case 'boost':
       addBoostCharge(1);
+      _updateNavUpgrades();
       showShopPurchaseToast(`⚡ Boost charge loaded — fire when ready.`, '#fff');
       break;
     case 'upgrade':
@@ -6533,13 +6589,16 @@ function applyShopItemEffects(item) {
         _fuelTankUpgrades++;
         _fuelTankMax = 75 + _fuelTankUpgrades * 5;
         updateFuelUI();
+        _updateNavUpgrades();
         showShopPurchaseToast(`⛽ Fuel tank expanded — capacity now ${_fuelTankMax} units (${_fuelTankUpgrades}/5).`, 'var(--orange)');
       } else if (item.effect_key === 'cargo_loader') {
         playerOwnsLoader = true;
+        _updateNavUpgrades();
         showShopPurchaseToast(`⬡ Cargo Loader installed — Ryker loading fee eliminated.`, 'var(--cyan)');
       } else if (item.effect_key === 'own_ship') {
         playerOwnsShip = true;
         updateFuelUI(); // unlocks fuel tank upgrades
+        _updateNavUpgrades();
         showShopPurchaseToast(`⬡ Class-C Mining Vessel purchased — Ryker's 40% cut eliminated. She's yours now.`, 'var(--orange)');
         // Trigger Act 2 story — station is now for sale
         setTimeout(() => {
@@ -6552,7 +6611,7 @@ function applyShopItemEffects(item) {
         }, 1800);
       } else if (item.effect_key === 'own_station') {
         playerOwnsStation = true;
-        applyCrewEffects(); // recalculate pips
+        applyCrewEffects(); // recalculates pips + _updateNavUpgrades
         renderShopItems();  // refresh all prices
         showShopPurchaseToast(`⬡ Ryker Station acquired — +2 pips, 50% store discount active.`, '#22c55e');
         // Trigger Act 2 station story
@@ -6580,6 +6639,7 @@ function applyShopItemEffects(item) {
       // Check for boost sub-type via effect_key field
       if (item.effect_key === 'boost') {
         addBoostCharge(1);
+        _updateNavUpgrades();
         showShopPurchaseToast(`⚡ Boost charge loaded — fire when ready.`, '#fff');
       } else {
         showShopPurchaseToast(`🧪 ${item.name} added to inventory.`, '#a855f7');
@@ -6592,6 +6652,35 @@ function applyShopItemEffects(item) {
 
 // Re-derives all crew-driven state from the current hiredCrew array.
 // Call on profile load, hire, and fire so state is always consistent.
+function _updateNavUpgrades() {
+  const el = document.getElementById('navUpgradesList');
+  if (!el) return;
+
+  const rows = [];
+  const add = (label, color) => rows.push({ label, color });
+
+  if (playerOwnsShip)    add('⬡ Owned Ship', 'var(--cyan)');
+  if (playerOwnsStation) add('⌂ Ryker Station', 'var(--cyan)');
+  if (playerOwnsLoader)  add('◈ Cargo Loader', 'var(--text-bright)');
+
+  const barryCount = hiredCrew.filter(k => k === 'crew_barry').length;
+  for (let i = 0; i < barryCount; i++) add('★ Barry Swissler', 'var(--orange)');
+  if (hiredCrew.includes('crew_susan')) add('★ Susan Moon', 'var(--orange)');
+
+  if (_fuelTankUpgrades > 0) add(`⛽ Fuel Tank +${_fuelTankUpgrades * 5}`, '#22c55e');
+  if (_boostCount > 0)       add(`⚡ Boost ×${_boostCount}`, '#a855f7');
+
+  if (rows.length === 0) {
+    el.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.2);font-style:italic;">No upgrades installed</div>`;
+  } else {
+    el.innerHTML = rows.map(r => `
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="width:4px;height:4px;border-radius:50%;background:${r.color};flex-shrink:0;"></div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:${r.color};">${r.label}</span>
+      </div>`).join('');
+  }
+}
+
 function applyCrewEffects() {
   // Reset to base then add one pip per barry hire, +2 if station owned
   const barryCount = hiredCrew.filter(k => k === 'crew_barry').length;
@@ -6616,6 +6705,8 @@ function applyCrewEffects() {
   // Susan's fee row in the transfer modal
   const susanFeeRow = document.getElementById('susanFeeRow');
   if (susanFeeRow) susanFeeRow.style.display = susanHired ? 'block' : 'none';
+
+  _updateNavUpgrades();
 }
 
 function releaseCrew(itemId) {
