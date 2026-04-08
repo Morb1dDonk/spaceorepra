@@ -244,7 +244,7 @@
         <img src="img/unloading.webp" style="width:32px;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(232,141,45,.3));object-fit:contain;">
         <div>
           <div style="font-size:10px;color:var(--orange);letter-spacing:.16em;text-transform:uppercase;margin-bottom:3px;">Step 2 — Manifest</div>
-          <div style="font-size:11px;color:var(--text-bright);line-height:1.5;">When ore arrives, toggle items <b>ON</b> to refine or leave <b>OFF</b> to recycle at 30%. Confirm to proceed.</div>
+          <div style="font-size:11px;color:var(--text-bright);line-height:1.5;">When ore arrives, toggle items <b>ON</b> to refine or leave <b>OFF</b> to recycle at 40%. Confirm to proceed.</div>
         </div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start;">
@@ -653,9 +653,33 @@
 
         <!-- Dispatch button + fuel status -->
         <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
-          <button class="btn-confirm" id="dispatchBtn" onclick="_calliDispatchScene()" style="width:100%;padding:16px 28px;font-size:13px;white-space:nowrap;">
-            ⬡ Locate & Extract
-          </button>
+          <!-- Industrial Locate & Extract Button -->
+          <div style="position:relative;background:#111;border:2px solid #1a1a1a;overflow:hidden;">
+            <button id="dispatchBtn" onclick="_calliDispatchScene()"
+              style="position:relative;width:100%;padding:18px 20px 18px 28px;display:flex;align-items:center;gap:16px;background:#141414;border:none;cursor:pointer;border-top:4px solid #000;border-bottom:4px solid #000;box-shadow:0 8px 0 0 rgba(0,0,0,.9);transition:box-shadow .07s,transform .07s;font-family:'DM Mono',monospace;text-align:left;"
+              onmousedown="this.style.boxShadow='none';this.style.transform='translateY(8px)';"
+              onmouseup="this.style.boxShadow='0 8px 0 0 rgba(0,0,0,.9)';this.style.transform='';"
+              onmouseleave="this.style.boxShadow='0 8px 0 0 rgba(0,0,0,.9)';this.style.transform='';">
+              <!-- Hazard stripe — left -->
+              <div style="position:absolute;left:0;top:0;bottom:0;width:14px;background:repeating-linear-gradient(45deg,#000,#000 8px,#b45309 8px,#b45309 16px);opacity:.7;pointer-events:none;transition:opacity .15s;"></div>
+              <!-- Hazard stripe — right -->
+              <div style="position:absolute;right:0;top:0;bottom:0;width:14px;background:repeating-linear-gradient(45deg,#000,#000 8px,#b45309 8px,#b45309 16px);opacity:.7;pointer-events:none;transition:opacity .15s;"></div>
+              <!-- Corner bolts -->
+              <div style="position:absolute;top:6px;left:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+              <div style="position:absolute;bottom:6px;left:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+              <div style="position:absolute;top:6px;right:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+              <div style="position:absolute;bottom:6px;right:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+              <!-- Label block -->
+              <div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1;z-index:1;flex:1;margin-left:6px;">
+                <span style="font-size:9px;font-weight:900;color:#5a4a2a;letter-spacing:.22em;font-style:italic;margin-bottom:4px;text-transform:uppercase;">SCAN_SYS_ACTIVE</span>
+                <span class="dispatch-label-main" style="font-size:26px;font-weight:900;color:#f59e0b;letter-spacing:-.02em;text-transform:uppercase;line-height:1;transition:color .15s,text-shadow .15s;">LOCATE &amp; EXTRACT</span>
+              </div>
+              <!-- Icon box -->
+              <div class="dispatch-icon-box" style="border:2px solid #78350f;background:rgba(120,53,15,.15);padding:8px;flex-shrink:0;z-index:1;margin-right:6px;transition:border-color .15s,background .15s,box-shadow .15s;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              </div>
+            </button>
+          </div>
           <div style="display:flex;gap:8px;">
             <button class="btn-confirm" id="contractsBtn" onclick="openContractBoard()" disabled style="flex:1;padding:10px 12px;font-size:11px;white-space:nowrap;letter-spacing:.1em;">
               📋 View Contracts
@@ -687,7 +711,7 @@
         </div>
         <div id="manifestContents" style="display:none;">
           <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;border-left:2px solid var(--orange);padding-left:8px;">
-            Toggle items ON to send to refinery. Items left OFF are recycled at 30% value.
+            Toggle items ON to send to refinery. Items left OFF are recycled at 40% value.
           </div>
           <div id="manifestList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;"></div>
           <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;">
@@ -696,7 +720,7 @@
               <span style="color:var(--cyan);" id="mvRefineTotal">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;margin-bottom:10px;">
-              <span style="color:var(--text-dim);">→ Recycle (30%)</span>
+              <span style="color:var(--text-dim);">→ Recycle (40%)</span>
               <span style="color:var(--orange);" id="mvSellTotal">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;padding-top:8px;border-top:1px solid var(--border);">
@@ -842,7 +866,7 @@
           <button id="recycleAllBtn" onclick="recycleAll()"
             style="display:none;width:100%;margin-top:10px;padding:12px;background:transparent;border:1px solid var(--orange);color:var(--orange);font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:all .2s;"
             onmouseover="this.style.background='rgba(232,141,45,.08)'" onmouseout="this.style.background='transparent'">
-            ♻ Recycle All at 30% — Emergency Salvage
+            ♻ Recycle All at 40% — Emergency Salvage
           </button>
         </div>
 
@@ -2189,7 +2213,7 @@ const MINING_LABELS = [
 let encounterPool      = [];   // loaded from Supabase
 let activeEncounter    = null; // current encounter object
 let encounterResumeFn  = null; // callback to continue mission after encounter
-let encounterHaulMods  = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false, bonusOre:null };
+let encounterHaulMods  = { orePctLoss:0, oreBonus:0, shipDamage:0, fuelLoss:0, lostAll:false, bonusOre:null };
 let _encounterLeg      = null; // 'outbound' or 'return' — which leg the encounter fired on
 let _encounterAbortFn  = null; // callback to turn back to station (outbound only)
 
@@ -2478,10 +2502,6 @@ function applyOutcome(outcome) {
     encounterHaulMods.oreBonus = pct / 100;
     return { text: `Cargo bonus: +${pct}% additional ore added to haul.` };
   }
-  if (outcome === 'ore_quality_boost') {
-    encounterHaulMods.qualityBoost = true;
-    return { text: 'Ore quality boosted — expect higher grade material.' };
-  }
   if (outcome.startsWith('lose_ore_pct:')) {
     const pct = parseInt(outcome.split(':')[1]);
     encounterHaulMods.orePctLoss = pct / 100;
@@ -2516,7 +2536,7 @@ function applyOutcome(outcome) {
     const matKey  = parts[1];
     const scu     = parseInt(parts[2]);
     const matName = (typeof materials !== 'undefined' && materials[matKey]) ? materials[matKey].name : matKey;
-    encounterHaulMods.bonusOre = { matKey, scu, purity: 500, refine: false };
+    encounterHaulMods.bonusOre = { matKey, scu, refine: false };
     return { text: `Claimed ${scu} SCU of ${matName} from the abandoned drill site.` };
   }
   return { text: outcome };
@@ -2569,19 +2589,12 @@ function applyHaulMods(haulArr) {
     }));
   }
 
-  if (encounterHaulMods.qualityBoost) {
-    result = result.map(h => ({
-      ...h,
-      purity: Math.min(1000, h.purity + 150 + Math.floor(Math.random() * 100))
-    }));
-  }
-
   if (encounterHaulMods.bonusOre) {
     result.push({ ...encounterHaulMods.bonusOre });
   }
 
   // Reset mods
-  encounterHaulMods = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false, bonusOre:null };
+  encounterHaulMods = { orePctLoss:0, oreBonus:0, shipDamage:0, fuelLoss:0, lostAll:false, bonusOre:null };
   return result;
 }
 
@@ -2720,22 +2733,7 @@ function stopAsteroidGlitch() {
   asteroidPurityBias = null;
 }
 
-function applyAsteroidBiasToHaul(haulArr) {
-  if (!asteroidPurityBias || !haulArr.length) return haulArr;
-  // Bias the haul purity by nudging each item's purity toward the revealed range
-  const biasBumps = {
-    inert:    -120,
-    fine:        0,
-    pristine:  +80,
-    artifact: +200,
-  };
-  const bump = biasBumps[asteroidPurityBias] || 0;
-  if (bump === 0) return haulArr;
-  return haulArr.map(h => ({
-    ...h,
-    purity: Math.max(100, Math.min(1000, h.purity + Math.round(bump * (0.5 + Math.random() * 0.5))))
-  }));
-}
+function applyAsteroidBiasToHaul(haulArr) { return haulArr; }
 
 // ── TOW-BACK — fires when miner runs out of fuel mid-flight ──
 const TOW_COST = 5000;
@@ -2818,6 +2816,14 @@ function triggerTowBack(btn, refuelBtn) {
             onmouseover="this.style.background='rgba(255,100,80,.18)'" onmouseout="this.style.background='rgba(255,100,80,.08)'">
             Authorize Tow — ${TOW_COST.toLocaleString()} GC
           </button>
+          ${_fuelCellCount > 0 ? `
+          <button onclick="useFuelCell()"
+            style="width:100%;padding:9px 14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.5);color:#22c55e;
+              font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;
+              letter-spacing:.1em;cursor:pointer;border-radius:4px;transition:background .15s;"
+            onmouseover="this.style.background='rgba(34,197,94,.18)'" onmouseout="this.style.background='rgba(34,197,94,.08)'">
+            ⛽ Use Fuel Cell (${_fuelCellCount} left) — Free
+          </button>` : ''}
           ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,64,96,.9);text-align:center;">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} GC</div>` : ''}
         </div>
       </div>
@@ -2832,7 +2838,7 @@ function triggerTowBack(btn, refuelBtn) {
     window._towBtn    = btn;
     window._towRefuel = refuelBtn;
     // If player can't afford the tow and has no haul, it's game over
-    if (userWallet < TOW_COST) setTimeout(() => checkGameOver(), 600);
+    if (userWallet < TOW_COST && _fuelCellCount <= 0) setTimeout(() => checkGameOver(), 600);
   }, 1200);
 
   // ── Step 2: Calli's ship drifts in slowly after the card is visible ──
@@ -2918,6 +2924,14 @@ function triggerHullRescue() {
             onmouseover="this.style.background='rgba(255,100,80,.18)'" onmouseout="this.style.background='rgba(255,100,80,.08)'">
             Authorize Rescue — ${TOW_COST.toLocaleString()} GC
           </button>
+          ${_fuelCellCount > 0 ? `
+          <button onclick="useFuelCell()"
+            style="width:100%;padding:9px 14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.5);color:#22c55e;
+              font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;
+              letter-spacing:.1em;cursor:pointer;border-radius:4px;transition:background .15s;"
+            onmouseover="this.style.background='rgba(34,197,94,.18)'" onmouseout="this.style.background='rgba(34,197,94,.08)'">
+            ⛽ Use Fuel Cell (${_fuelCellCount} left) — Free
+          </button>` : ''}
           ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,64,96,.9);text-align:center;">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} GC</div>` : ''}
         </div>
       </div>
@@ -2931,7 +2945,7 @@ function triggerHullRescue() {
     }
     window._towBtn    = btn;
     window._towRefuel = refuelBtn;
-    if (userWallet < TOW_COST) setTimeout(() => checkGameOver(), 600);
+    if (userWallet < TOW_COST && _fuelCellCount <= 0) setTimeout(() => checkGameOver(), 600);
   }, 1200);
 
   setTimeout(() => {
@@ -2949,6 +2963,92 @@ function triggerHullRescue() {
 function clearCalliRescue() {
   const s = document.getElementById('calliRescueShip');
   if (s) { s.style.transition = 'opacity .5s'; s.style.opacity = '0'; setTimeout(() => s.remove(), 500); }
+}
+
+function useFuelCell() {
+  if (_fuelCellCount <= 0) return;
+  _fuelCellCount--;
+  _updateNavUpgrades();
+  persistProgress();
+
+  const towDiv = document.getElementById('towOverlay');
+  if (towDiv) towDiv.remove();
+  _sfxFadeOut('alarm', 500);
+  clearCalliRescue();
+
+  const ship    = document.getElementById('minerShip');
+  const overlay = document.getElementById('mineStatusOverlay');
+  const canvas  = document.getElementById('spaceCanvas');
+  const ctx     = window._towContext || { fuelRatio: 0.5, isPartial: false, miningComplete: false };
+
+  document.getElementById('dispatchStatus').textContent = 'Returning';
+  document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
+  if (overlay) {
+    overlay.textContent = '⛽ Emergency fuel cell activated — returning to station...';
+    overlay.style.color = 'var(--cyan)';
+    overlay.style.opacity = '1';
+  }
+
+  if (ship) {
+    canvas.classList.remove('scene-drifting');
+    canvas.classList.add('scene-flying');
+    ship.style.transition = 'opacity .5s, filter .5s';
+    ship.style.opacity    = '1';
+    ship.style.filter     = '';
+    ship.style.transform  = 'translate(-50%,-50%) scaleX(-1)';
+    setShipImage(SHIP_ON);
+  }
+
+  setStarSpeed(0.8, 1000);
+  _starDir = 1;
+  _updateNavLocation('transit');
+  _updateObjective('Returning to Space Station', 'var(--cyan)');
+
+  const TOW_TRANSIT = 5000;
+  setTimeout(() => {
+    setStarSpeed(0, 800);
+    if (ship) { ship.style.transition = ''; ship.style.opacity = '0'; ship.style.transform = 'translate(-50%,-50%)'; }
+    if (canvas) { canvas.classList.remove('scene-flying', 'scene-drifting'); }
+    minerFuel = Math.round(_fuelTankMax * 0.25); // arrives with 25% tank from emergency cell
+    updateFuelUI();
+
+    clearInterval(dispatchInterval);  dispatchInterval  = null;
+    clearInterval(fuelDrainInterval); fuelDrainInterval = null;
+
+    const btn       = window._towBtn;
+    const refuelBtn = window._towRefuel;
+    const _io = document.getElementById('sceneIdleOverlay'); if (_io) _io.style.opacity = '1';
+
+    if (ctx.miningComplete) {
+      let rawHaul = generateHaul(ctx.fuelRatio);
+      rawHaul = applyHaulMods(rawHaul);
+      rawHaul = applyAsteroidBiasToHaul(rawHaul);
+      haul = rawHaul;
+      startOffloadSequence(haul, () => {
+        renderManifest();
+        if (overlay) { overlay.textContent = '✓ Manifest ready'; overlay.style.opacity = '1'; }
+        document.getElementById('dispatchStatus').textContent = 'Docked';
+        document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
+        _updateNavLocation('station');
+        _updateObjective('Review manifest and process ore', 'var(--cyan)');
+        if (btn)      { btn.disabled = false; btn.textContent = '⬡ Send Again'; }
+        if (refuelBtn){ refuelBtn.disabled = false; refuelBtn.style.opacity = '1'; }
+        const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = false; _sb.style.opacity = '1'; _sb.textContent = '🛒 Shop Open'; }
+        updateFuelUI(); updateHullUI();
+      });
+    } else {
+      haul = [];
+      document.getElementById('dispatchStatus').textContent = 'Docked';
+      document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
+      _updateNavLocation('station');
+      _updateObjective('Dispatch the miner to an asteroid', 'var(--cyan)');
+      if (btn)      { btn.disabled = false; btn.textContent = '⬡ Send Again'; }
+      if (refuelBtn){ refuelBtn.disabled = false; refuelBtn.style.opacity = '1'; }
+      const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = false; _sb.style.opacity = '1'; _sb.textContent = '🛒 Shop Open'; }
+      updateFuelUI(); updateHullUI();
+    }
+    showShopPurchaseToast(`⛽ Fuel cell used — ${_fuelCellCount} remaining.`, '#22c55e');
+  }, TOW_TRANSIT);
 }
 
 function payTowBack() {
@@ -3659,8 +3759,10 @@ function startOffloadSequence(haulData, onComplete) {
   // Disable dispatch button during offload
   if (dispatchBtn) {
     dispatchBtn.disabled    = true;
-    dispatchBtn.textContent = '⬡ Offloading...';
-    dispatchBtn.style.opacity = '0.5';
+    dispatchBtn.style.opacity = '0.35';
+    dispatchBtn.style.pointerEvents = 'none';
+    const subLabel = dispatchBtn.querySelector('span:first-child');
+    if (subLabel) subLabel.textContent = 'OFFLOADING...';
   }
 
   // Build animated cargo dots — one per SCU type, coloured by material
@@ -3715,8 +3817,10 @@ function startOffloadSequence(haulData, onComplete) {
         dots.innerHTML = '';
         // Restore dispatch button
         if (dispatchBtn) {
-          dispatchBtn.textContent = '⬡ Locate & Extract';
           dispatchBtn.style.opacity = '1';
+          dispatchBtn.style.pointerEvents = '';
+          const subLabel = dispatchBtn.querySelector('span:first-child');
+          if (subLabel) subLabel.textContent = 'SCAN_SYS_ACTIVE';
           // enabled state set by onComplete → updateFuelUI
         }
         onComplete();
@@ -3764,8 +3868,7 @@ function generateHaul(fuelRatio = 1) {
     // Rarer ores get proportionally less volume
     const share    = isLast ? remaining : Math.round(maxScu * weight * (0.6 + Math.random() * 0.8));
     const scu      = Math.max(1, Math.min(remaining, share));
-    const purity   = Math.round((200 + Math.random() * 800) / 10) * 10;
-    chosen.push({ matKey: key, scu, purity, refine: true });
+    chosen.push({ matKey: key, scu, refine: true });
     remaining -= scu;
     if (remaining <= 0) return;
   });
@@ -3793,14 +3896,13 @@ function rebuildManifestList() {
   const list = document.getElementById('manifestList');
   list.innerHTML = haul.map((h, i) => {
     const mat = materials[h.matKey];
-    const g = getGrade(h.purity);
     const livePrice  = mat.currentVal || mat.baseVal;
     const basePrice  = mat.baseVal;
     const pricePct   = ((livePrice - basePrice) / basePrice * 100).toFixed(1);
     const priceSign  = pricePct >= 0 ? '+' : '';
     const priceColor = pricePct > 0 ? 'var(--cyan)' : pricePct < 0 ? 'var(--red)' : 'var(--text-dim)';
     const refinedEst = Math.round(h.scu * livePrice * 0.8);
-    const quickVal   = Math.round(h.scu * livePrice * mat.rawMult * 0.30);
+    const quickVal   = Math.round(h.scu * livePrice * 0.40);
     const oreImg     = ORE_IMAGES[h.matKey];
     return `
     <div class="tog-wrap ${h.refine ? 'active' : ''}" id="togrow-${i}">
@@ -3813,17 +3915,14 @@ function rebuildManifestList() {
             <div class="tog-mat" style="color:${mat.color}">${mat.name}</div>
             <span id="mpbadge-${i}" style="font-family:'DM Mono',monospace;font-size:10px;color:${priceColor};background:${priceColor === 'var(--text-dim)' ? 'rgba(255,255,255,.04)' : (pricePct > 0 ? 'rgba(0,212,255,.08)' : 'rgba(255,64,96,.08)')};padding:1px 6px;border:1px solid ${priceColor};">${livePrice.toLocaleString()} GC · ${priceSign}${pricePct}%</span>
           </div>
-          <div class="tog-meta">
-            ${h.scu} SCU &nbsp;·&nbsp;
-            <span style="color:${g.color}">${g.label} ${h.purity}</span>
-          </div>
+          <div class="tog-meta">${h.scu} SCU</div>
         </div>
       </div>
       <div class="tog-right">
         <div class="tog-val" id="togval-${i}">
           ${h.refine
             ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">refinery est.</div>`
-            : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">recycle 30%</div>`
+            : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">recycle 40%</div>`
           }
         </div>
         <label class="toggle-sw">
@@ -3841,7 +3940,6 @@ function rebuildManifestList() {
 function toggleHaulItem(i, on) {
   haul[i].refine = on;
   const mat = materials[haul[i].matKey];
-  const g = getGrade(haul[i].purity);
   const livePrice  = mat.currentVal || mat.baseVal;
   const refinedEst = Math.round(haul[i].scu * livePrice * 0.8);
   const quickVal   = Math.round(haul[i].scu * livePrice * mat.rawMult * 0.30);
@@ -3849,7 +3947,7 @@ function toggleHaulItem(i, on) {
   row.classList.toggle('active', on);
   document.getElementById('togval-'+i).innerHTML = on
     ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} GC</span><div style="font-size:10px;color:var(--text-dim)">refinery est.</div>`
-    : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:10px;color:var(--text-dim)">recycle 30%</div>`;
+    : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:10px;color:var(--text-dim)">recycle 40%</div>`;
   updateManifestTotals();
 }
 
@@ -3862,7 +3960,7 @@ function updateManifestTotals() {
       refineScu += h.scu;
       refineVal += Math.round(h.scu * livePrice * 0.8);
     } else {
-      sellVal += Math.round(h.scu * livePrice * mat.rawMult * 0.30);
+      sellVal += Math.round(h.scu * livePrice * 0.40);
     }
   });
   document.getElementById('mvRefineTotal').textContent = refineVal > 0 ? '~' + refineVal.toLocaleString() + ' GC est.' : '—';
@@ -3878,8 +3976,8 @@ function _showRecycleConfirm(toSellCount, toRefineCount, onRefineAll, onProceed)
 
   const allRecycled = toRefineCount === 0;
   const msg = allRecycled
-    ? `All ${toSellCount} item${toSellCount > 1 ? 's' : ''} will be recycled at 30% value. Send to the refinery instead?`
-    : `${toSellCount} item${toSellCount > 1 ? 's' : ''} will be recycled at 30% value. The rest will be refined.`;
+    ? `All ${toSellCount} item${toSellCount > 1 ? 's' : ''} will be recycled at 40% value. Send to the refinery instead?`
+    : `${toSellCount} item${toSellCount > 1 ? 's' : ''} will be recycled at 40% value. The rest will be refined.`;
 
   const overlay = document.createElement('div');
   overlay.id = 'recycleConfirmOverlay';
@@ -3946,7 +4044,7 @@ function _doCommitManifest() {
   let quickSellTotal = 0;
   toSell.forEach(h => {
     const mat = materials[h.matKey];
-    quickSellTotal += Math.round(h.scu * mat.baseVal * mat.rawMult * 0.30);
+    quickSellTotal += Math.round(h.scu * mat.baseVal * 0.40);
   });
   if (quickSellTotal > 0) {
     userWallet += quickSellTotal;
@@ -3990,7 +4088,7 @@ function _doCommitManifest() {
 
 }
 
-// Recycle the entire haul at 30% — no refinery needed
+// Recycle the entire haul at 40% of market price — no refinery needed
 function recycleAll() {
   if (!haul.length) return;
 
@@ -4004,7 +4102,7 @@ function recycleAll() {
   haul.forEach(h => {
     const mat = materials[h.matKey];
     const livePrice = mat.currentVal || mat.baseVal;
-    total += Math.round(h.scu * livePrice * mat.rawMult * 0.30);
+    total += Math.round(h.scu * livePrice * 0.40);
   });
 
   if (total <= 0) return;
@@ -4960,9 +5058,8 @@ async function confirmSale(){
 async function logTrip(netGc) {
   if (!currentUser) return;
   const oreSummary = (haul || []).map(h => ({
-    mat:  h.matKey,
-    scu:  h.scu,
-    grade: h.purity,
+    mat: h.matKey,
+    scu: h.scu,
   }));
   await sbFetch('trip_log', 'POST', {
     user_id:     currentUser.id,
@@ -5635,6 +5732,7 @@ async function loadOrCreateProfile(user) {
 
     // ── Shop & crew ──
     _boostCount      = p.boost_charges    ?? 0;
+    _fuelCellCount   = p.fuel_cells       ?? 0;
     playerOwnsLoader  = p.owns_loader      ?? false;
     playerOwnsShip    = p.owns_ship        ?? false;
     playerOwnsStation = p.owns_station     ?? false;
@@ -5732,6 +5830,7 @@ async function persistProgress() {
       hull_integrity:       Math.round(hullIntegrity),
       fuel_tank_upgrades:   _fuelTankUpgrades,
       boost_charges:        _boostCount,
+      fuel_cells:           _fuelCellCount,
       owns_loader:          playerOwnsLoader,
       owns_ship:            playerOwnsShip,
       owns_station:         playerOwnsStation,
@@ -5832,7 +5931,7 @@ function updateMarketDisplay(matId, current, base) {
       const valDiv = document.getElementById('togval-' + i);
       if (valDiv) valDiv.innerHTML = h.refine
         ? `<span style="color:var(--cyan)">~${refinedEst.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">refinery est.</div>`
-        : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">recycle 30%</div>`;
+        : `<span style="color:var(--orange)">${quickVal.toLocaleString()} GC</span><div style="font-size:11px;color:var(--text-dim)">recycle 40%</div>`;
     });
   }
 }
@@ -6167,6 +6266,7 @@ async function adminResetPlayer() {
       minerFuel = 100;
       hullIntegrity = 100;
       _boostCount = 0;
+      _fuelCellCount = 0;
       _fuelTankUpgrades = 0;
       playerOwnsShip    = false;
       playerOwnsLoader  = false;
@@ -6280,6 +6380,18 @@ async function loadShop() {
         sort_order: 10,
       });
     }
+    if (!shopItems.find(i => i.effect_key === 'fuel_cell')) {
+      shopItems.push({
+        id: 'local_fuel_cell',
+        name: 'Emergency Fuel Cell',
+        description: 'A compact high-density fuel cell kept in the emergency locker. If you run dry out in the belt, pop this instead of calling Calli — one-shot return to station, no tow charge.',
+        effect_summary: 'Single use. When stranded, use it to return to the station instantly — free of charge. Consumed on use.',
+        item_type: 'consumable',
+        effect_key: 'fuel_cell',
+        price: 5000,
+        sort_order: 5,
+      });
+    }
     renderShopItems();
 
   } catch (err) {
@@ -6382,9 +6494,13 @@ function renderShopItems() {
         ? `<span style="text-decoration:line-through;opacity:.45;">${item.price.toLocaleString()}</span> <span style="color:#22c55e;">${effPrice.toLocaleString()} GC</span> <span style="color:#22c55e;font-size:9px;">−50%</span>${fuelLocked ? ' · <span style="color:var(--red);">requires ship</span>' : ''}`
         : `${item.price.toLocaleString()} GC${fuelLocked ? ' · <span style="color:var(--red);">requires ship</span>' : ''}`;
 
+    const ITEM_IMAGES = { boost:'img/item_boost.webp', fuel_cell:'img/item_emergencyfuelcell.webp' };
+    const itemImg = ITEM_IMAGES[item.effect_key];
     const listIcon = isCrew && item.portrait
       ? `<img src="${item.portrait}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:top;border:1px solid ${isHired ? '#22c55e' : tagColor};flex-shrink:0;opacity:${isHired ? '1' : '0.8'};">`
-      : `<span style="font-size:13px;flex-shrink:0;">${typeIcon}</span>`;
+      : itemImg
+        ? `<img src="${itemImg}" style="width:28px;height:28px;border-radius:4px;object-fit:cover;border:1px solid ${tagColor}55;flex-shrink:0;">`
+        : `<span style="font-size:13px;flex-shrink:0;">${typeIcon}</span>`;
 
     return `<div
       onclick="showShopItem('${item.id}')"
@@ -6472,7 +6588,9 @@ function showShopItem(itemId) {
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);">
       ${item.item_type === 'ship'
         ? `<img src="img/Ship_0.png" style="width:64px;height:64px;object-fit:contain;flex-shrink:0;opacity:${owned ? '1' : '0.75'};">`
-        : `<span style="font-size:22px;">${typeIcon}</span>`}
+        : ({'boost':'img/item_boost.webp','fuel_cell':'img/item_emergencyfuelcell.webp'}[item.effect_key])
+          ? `<img src="${{'boost':'img/item_boost.webp','fuel_cell':'img/item_emergencyfuelcell.webp'}[item.effect_key]}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid ${tagColor}55;flex-shrink:0;">`
+          : `<span style="font-size:22px;">${typeIcon}</span>`}
       <div>
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:${tagColor};text-transform:uppercase;letter-spacing:.14em;">${(item.item_type||'item').toUpperCase()}${item.item_type==='ship'?' · ⭐ Key Purchase':''}</div>
         <div style="font-family:'DM Sans',sans-serif;font-size:17px;font-weight:700;color:var(--text-bright);line-height:1.2;margin-top:3px;">${item.name}</div>
@@ -6636,11 +6754,15 @@ function applyShopItemEffects(item) {
       updateAll();
       break;
     case 'consumable':
-      // Check for boost sub-type via effect_key field
       if (item.effect_key === 'boost') {
         addBoostCharge(1);
         _updateNavUpgrades();
         showShopPurchaseToast(`⚡ Boost charge loaded — fire when ready.`, '#fff');
+      } else if (item.effect_key === 'fuel_cell') {
+        _fuelCellCount++;
+        _updateNavUpgrades();
+        persistProgress();
+        showShopPurchaseToast(`⛽ Emergency Fuel Cell stowed — ${_fuelCellCount} cell${_fuelCellCount > 1 ? 's' : ''} ready.`, '#22c55e');
       } else {
         showShopPurchaseToast(`🧪 ${item.name} added to inventory.`, '#a855f7');
       }
@@ -6669,6 +6791,7 @@ function _updateNavUpgrades() {
 
   if (_fuelTankUpgrades > 0) add(`⛽ Fuel Tank +${_fuelTankUpgrades * 5}`, '#22c55e');
   if (_boostCount > 0)       add(`⚡ Boost ×${_boostCount}`, '#a855f7');
+  if (_fuelCellCount > 0)    add(`🔋 Fuel Cell ×${_fuelCellCount}`, '#22c55e');
 
   if (rows.length === 0) {
     el.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.2);font-style:italic;">No upgrades installed</div>`;
@@ -6786,9 +6909,17 @@ async function loadContracts() {
     `player_contracts?session_id=eq.${SESSION}&status=eq.active&select=*&limit=1`
   );
   if (active && active.length > 0) {
-    activeContract = active[0];
-    startContractTimer();
-    updateActiveContractStrip();
+    const loaded = active[0];
+    const rem = new Date(loaded.deadline) - Date.now();
+    if (rem > 0) {
+      // Still valid — restore it
+      activeContract = loaded;
+      startContractTimer();
+      updateActiveContractStrip();
+    } else {
+      // Already expired while offline — silently mark failed, don't penalise
+      await sbFetch(`player_contracts?id=eq.${loaded.id}`, 'PATCH', { status: 'failed' }, true);
+    }
   }
   // Fire immediately if no active contract, then keep refreshing on the interval
   if (!activeContract) offerRandomContract();
@@ -6891,12 +7022,14 @@ async function acceptContract(idx) {
   const chosen = offeredContracts[idx];
   if (!chosen) return;
 
+  const durationMins = chosen.duration_mins > 0 ? chosen.duration_mins : 30;
+
   document.getElementById('contractOfferModal').style.display = 'none';
   offeredContracts = [];
   setContractsBtnReady(false);
 
   const SESSION  = (currentUser?.id) || 'guest';
-  const deadline = new Date(Date.now() + chosen.duration_mins * 60000).toISOString();
+  const deadline = new Date(Date.now() + durationMins * 60000).toISOString();
 
   await sbFetch('player_contracts', 'POST', {
     contract_id:   chosen.id,
@@ -7520,7 +7653,7 @@ const HINTS = {
   manifest: {
     icon:'img/unloading.webp', step:'Step 02 — Review Your Haul',
     main:'Toggle which ore goes to the refinery',
-    sub: 'Switch items ON to refine them for full value. OFF items are recycled at 30%. Then confirm.',
+    sub: 'Switch items ON to refine them for full value. OFF items are recycled at 40%. Then confirm.',
     target: 'manifestCard',
     calliLine: (name) => `Your haul's in, ${name}! This is the manifest — toggle each ore type ON if you want it refined for full value. Leave it OFF and it gets recycled at a fraction. I always refine everything I can. Hit Confirm when you're ready.`,
   },
@@ -7827,7 +7960,7 @@ function _calliRecycleIntercept() {
   document.getElementById('calliModalName').style.color   = 'rgba(0,212,255,.9)';
   document.getElementById('calliModalComm').textContent   = 'Comm Channel Open';
 
-  textEl.textContent = `Whoa — ${name}, wait! Recycle? You just dragged that ore halfway across the belt and you're going to dump it for thirty cents on the credit? The refinery is right there. Trust me, run it through. I'll walk you through it — just hit Confirm on the manifest.`;
+  textEl.textContent = `Whoa — ${name}, wait! Recycle? You just dragged that ore halfway across the belt and you're going to dump it for forty cents on the credit? The refinery is right there. Trust me, run it through. I'll walk you through it — just hit Confirm on the manifest.`;
 
   btnsEl.innerHTML = `
     <button onclick="_calliRecycleGoBack()" style="
@@ -7894,7 +8027,7 @@ function _calliRecycleConfirmAndLoop() {
     haul.forEach(h => {
       const mat = materials[h.matKey];
       const livePrice = mat.currentVal || mat.baseVal;
-      total += Math.round(h.scu * livePrice * mat.rawMult * 0.30);
+      total += Math.round(h.scu * livePrice * 0.40);
     });
     if (total > 0) {
       userWallet += total;

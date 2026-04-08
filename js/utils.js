@@ -64,6 +64,7 @@ let _parallaxRaf  = null;
 // Boost system
 let _boostActive    = false;
 let _boostCount     = 0;
+let _fuelCellCount  = 0;
 let _boostFuelMult  = 1;
 let _boostTimeoutId = null;
 

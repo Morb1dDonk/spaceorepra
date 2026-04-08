@@ -210,6 +210,14 @@ input.axis-range::-webkit-slider-runnable-track{height:8px;background:transparen
 }
 .btn-confirm:hover:not(:disabled){background:rgba(0,212,255,0.08);box-shadow:0 0 22px rgba(0,212,255,0.4),inset 0 0 16px rgba(0,212,255,0.08);text-shadow:0 0 8px rgba(0,212,255,0.8);}
 .btn-confirm:disabled{border-color:var(--text-dim);color:var(--text-dim);opacity:.35;cursor:not-allowed;box-shadow:none;}
+#dispatchBtn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none !important;transform:none !important;}
+#dispatchBtn:not(:disabled){transition:background .15s,box-shadow .07s,transform .07s;}
+#dispatchBtn:not(:disabled):hover{background:#1e1a12;}
+#dispatchBtn:not(:disabled):hover > div:nth-child(1),
+#dispatchBtn:not(:disabled):hover > div:nth-child(2){opacity:1;}
+#dispatchBtn:not(:disabled):hover .dispatch-label-main{color:#fbbf24;text-shadow:0 0 18px rgba(251,191,36,.55);}
+#dispatchBtn:not(:disabled):hover .dispatch-icon-box{border-color:#d97706;background:rgba(180,83,9,.3);box-shadow:0 0 10px rgba(245,158,11,.25);}
+#dispatchBtn:not(:disabled):hover .dispatch-icon-box svg{filter:drop-shadow(0 0 4px rgba(245,158,11,.7));}
 .btn-abort{
   background:transparent;color:var(--red);border:1px solid var(--red);
   padding:16px 28px;font-weight:700;font-size:14px;text-transform:uppercase;

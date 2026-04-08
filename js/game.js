@@ -41,6 +41,7 @@ let fuelDrainInterval = null;
 let encounterResumeFn = null;
 let activeEncounter = null;
 let encounterPool = [];
+let seenEncounters = new Set(JSON.parse(localStorage.getItem('seenEncounters') || '[]'));
 let encounterHaulMods = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false };
 
 // ── FUEL SYSTEM ──
@@ -1056,16 +1057,22 @@ async function maybeFireEncounter(phase, resumeFn) {
     resumeFn(); return;
   }
 
-  const eligible = encounterPool.filter(e =>
-    e.trigger_phase === 'either' ||
-    e.trigger_phase === phase ||
-    (e.trigger_phase === 'mining' && phase === 'outbound')
-  );
+  const eligible = encounterPool.filter(e => {
+    if (seenEncounters.has(e.id ?? e.title)) return false;
+    if (e.title.toLowerCase().includes('claim jumper') && userWallet < 50000) return false;
+    return e.trigger_phase === 'either' ||
+      e.trigger_phase === phase ||
+      (e.trigger_phase === 'mining' && phase === 'outbound');
+  });
   if (!eligible.length) { resumeFn(); return; }
 
   activeEncounter   = eligible[Math.floor(Math.random() * eligible.length)];
   encounterResumeFn = resumeFn;
   encounterHaulMods = { orePctLoss:0, oreBonus:0, qualityBoost:false, shipDamage:0, fuelLoss:0, lostAll:false };
+
+  const seenKey = activeEncounter.id ?? activeEncounter.title;
+  seenEncounters.add(seenKey);
+  localStorage.setItem('seenEncounters', JSON.stringify([...seenEncounters]));
 
   showEncounterModal(activeEncounter);
 }
