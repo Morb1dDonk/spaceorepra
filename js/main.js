@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!restored) {
     // Force auth modal if no session
     document.getElementById('gameLock').style.display = 'block';
+    document.body.style.overflow = 'hidden';
     document.getElementById('authModal').style.display = 'flex';
   } else {
     document.getElementById('authModal').style.display = 'none';

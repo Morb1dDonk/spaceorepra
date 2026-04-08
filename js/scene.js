@@ -36,11 +36,47 @@ let _starSpeed    = 0;       // 0 = stopped, ~0.8 = cruise, ~6 = boost
 let _starDir      = -1;      // -1 = outbound (stars move left), 1 = return
 let _parallaxRaf  = null;
 
+// Nebula blobs: [cx%, cy%, rx%, ry%, color, alpha]
+const _NEBULA_BLOBS = [
+  [0.18, 0.35, 0.38, 0.55, '60,20,140',   0.13],  // deep violet — upper left
+  [0.55, 0.20, 0.42, 0.40, '0,80,200',    0.10],  // cold blue — top centre
+  [0.78, 0.60, 0.35, 0.50, '160,30,80',   0.11],  // magenta — right
+  [0.35, 0.75, 0.50, 0.40, '0,130,160',   0.09],  // teal — lower centre
+  [0.62, 0.45, 0.30, 0.45, '120,40,180',  0.08],  // purple mid
+];
+
+function paintSceneNebula() {
+  const canvas = document.getElementById('nebulaCanvas');
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const W = parent.offsetWidth, H = parent.offsetHeight;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  _NEBULA_BLOBS.forEach(([cx, cy, rx, ry, rgb, alpha]) => {
+    const g = ctx.createRadialGradient(cx*W, cy*H, 0, cx*W, cy*H, Math.max(rx*W, ry*H));
+    g.addColorStop(0,   `rgba(${rgb},${alpha})`);
+    g.addColorStop(0.5, `rgba(${rgb},${alpha * 0.4})`);
+    g.addColorStop(1,   `rgba(${rgb},0)`);
+    ctx.save();
+    ctx.scale(1, (ry * H) / (rx * W)); // squash to ellipse
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx * W, (cy * H) / ((ry * H) / (rx * W)), rx * W, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
 function seedStars() {
   const sf = document.getElementById('starField');
   if (!sf) return;
   sf.innerHTML = '';
   _parallaxEls = [];
+  paintSceneNebula();
   for (let i = 0; i < 90; i++) {
     const s   = document.createElement('div');
     const sz  = Math.random() < 0.15 ? 2 : 1;
@@ -177,6 +213,16 @@ function toggleBoost() {
 
   _boostActive = true;
   _boostCount--;
+
+  // Remove one boost charge from the persistent inventory
+  if (typeof shopItems !== 'undefined' && typeof playerInventory !== 'undefined') {
+    const boostItem = shopItems.find(i => i.effect_key === 'boost' || i.item_type === 'boost');
+    if (boostItem) {
+      const idx = playerInventory.indexOf(boostItem.id);
+      if (idx !== -1) { playerInventory.splice(idx, 1); }
+    }
+  }
+  if (typeof persistProgress === 'function') persistProgress();
 
   const canvas  = document.getElementById('spaceCanvas');
   const overlay = document.getElementById('mineStatusOverlay');

@@ -102,7 +102,7 @@ const OFFLOAD_LABELS = [
 ];
 
 // Tow-back
-const TOW_COST = 30000;
+const TOW_COST = 5000;
 
 // Asteroid system
 const ASTEROID_PREFIXES = ['KL','VX','OB','TR','NX','QZ','YM','WR','ΔP','ΩK','ΣN','ΛR'];

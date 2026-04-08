@@ -32,7 +32,7 @@ const MAX_HAUL_SCU = 48;
 const FUEL_MAX = 100;
 const FUEL_TRIP_MIN = 15;   // lightest possible one-way leg
 const FUEL_TRIP_MAX = 35;   // heaviest possible one-way leg
-const TOW_COST = 30000;
+const TOW_COST = 5000;
 
 // ── STATE ──
 let haul = []; // [{ matKey, scu, purity, refine:true }]
@@ -195,6 +195,7 @@ function toggleBoost() {
   _boostActive = true;
   _boostCount--;
   _boostFuelMult = 1.25; // 25% faster fuel burn while boosting
+  _sfx('boost', 'audio/413312__tieswijnen__afterburner.mp3', { volume: 0.7 });
 
   const canvas  = document.getElementById('spaceCanvas');
   const overlay = document.getElementById('mineStatusOverlay');
@@ -372,14 +373,13 @@ function dispatchMiner() {
       Math.min(100, (elapsed / totalMs) * 100) + '%';
   }, 200);
 
-  // ── Real-time fuel drain — outbound only ──
-  // Rate is based on the full trip cost so under-fueled ships run dry
-  // before the arrival timeout fires, not in a race with it.
+  // ── Real-time fuel drain — outbound and return legs ──
+  // Total fuel cost = 2× one-way, spread evenly across both transit legs.
   const fuelPerTick = (tripFuelOneWay / (transitMs / 200));
   fuelDrainInterval = setInterval(() => {
     if (encounterResumeFn) return;
     const status = document.getElementById('dispatchStatus').textContent;
-    if (status === 'Mining' || status === 'Returning') return;
+    if (status === 'Mining') return;
     minerFuel = Math.max(0, minerFuel - fuelPerTick * _boostFuelMult);
     document.getElementById('fuelBar').style.width = (minerFuel / FUEL_MAX * 100) + '%';
     document.getElementById('fuelCurrent').textContent = Math.round(minerFuel);
@@ -875,6 +875,49 @@ function applyAsteroidBiasToHaul(haulArr) {
   return haulArr;
 }
 
+// ── CALLI RESCUE ANIMATION ──
+function triggerCalliRescue(onComplete) {
+  const scene = document.getElementById('spaceCanvas');
+  if (!scene) { onComplete?.(); return; }
+
+  // Remove any existing rescue elements
+  document.getElementById('calliRescueShip')?.remove();
+  document.getElementById('calliRescueBubble')?.remove();
+
+  // Calli's ship
+  const ship = document.createElement('img');
+  ship.id  = 'calliRescueShip';
+  ship.src = 'img/calli_ship.webp';
+  scene.appendChild(ship);
+
+  // After fly-in completes, switch to hover and show dialogue
+  setTimeout(() => {
+    ship.classList.add('hovering');
+    ship.style.transform = ''; // let CSS animation handle it
+
+    const bubble = document.createElement('div');
+    bubble.id = 'calliRescueBubble';
+    bubble.innerHTML = `
+      <img src="img/actor_calli_empathy.webp" alt="Calli">
+      <div>
+        <div class="calli-name">Calli — Rescue Pilot</div>
+        <div class="calli-text">Hey, I've got you. Tow line locked — we'll get you back to the station. Gonna cost you though.</div>
+      </div>`;
+    scene.appendChild(bubble);
+    requestAnimationFrame(() => bubble.classList.add('visible'));
+
+    // Give player time to read, then hand off to tow overlay
+    setTimeout(() => { onComplete?.(); }, 2800);
+  }, 2500);
+}
+
+function clearCalliRescue() {
+  const ship   = document.getElementById('calliRescueShip');
+  const bubble = document.getElementById('calliRescueBubble');
+  if (bubble) { bubble.classList.remove('visible'); setTimeout(() => bubble.remove(), 500); }
+  if (ship)   { ship.style.opacity = '0'; setTimeout(() => ship.remove(), 500); }
+}
+
 // ── TOW-BACK — fires when miner runs out of fuel mid-flight ──
 function triggerTowBack(btn, refuelBtn) {
   const ship    = document.getElementById('minerShip');
@@ -896,7 +939,7 @@ function triggerTowBack(btn, refuelBtn) {
     overlay.style.opacity = '1';
   }
 
-  // Show tow modal after brief pause
+  // Calli flies in, then show tow modal
   setTimeout(() => {
     stopAsteroidGlitch();
     clearInterval(dispatchInterval);
@@ -904,36 +947,46 @@ function triggerTowBack(btn, refuelBtn) {
     dispatchInterval  = null;
     fuelDrainInterval = null;
 
-    // Show tow notification overlay on the scene
+    triggerCalliRescue(() => {
+      clearCalliRescue();
+      _showTowOverlay(btn, refuelBtn);
+    });
+  }, 800);
+}
+
+function _showTowOverlay(btn, refuelBtn) {
+    // Show tow notification — compact floating card centered in the scene
     const scene = document.getElementById('spaceCanvas');
     const towDiv = document.createElement('div');
     towDiv.id = 'towOverlay';
     towDiv.style.cssText = `
-      position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;
-      align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50;
+      position:absolute;top:50%;right:18px;transform:translateY(-50%);
+      background:rgba(8,10,18,.92);border:1px solid rgba(255,64,96,.5);
+      border-radius:12px;padding:22px 28px;display:flex;flex-direction:column;
+      align-items:center;gap:12px;z-index:50;width:220px;
+      box-shadow:0 0 40px rgba(255,64,96,.15);
     `;
     towDiv.innerHTML = `
-      <div style="font-size:32px;">🚨</div>
-      <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:.1em;text-shadow:0 0 10px rgba(255,64,96,.7);">Miner Stranded</div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;max-width:260px;line-height:1.7;">Fuel reserves depleted mid-flight.<br>A rescue tow has been dispatched.</div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);padding:8px 16px;border:1px solid var(--red);background:rgba(255,64,96,.08);">
+      <div style="font-size:28px;">🚨</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:.1em;text-shadow:0 0 10px rgba(255,64,96,.7);">Miner Stranded</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;line-height:1.7;">Fuel reserves depleted mid-flight.<br>Calli has you on tow cable.</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);padding:7px 14px;border:1px solid rgba(255,64,96,.4);background:rgba(255,64,96,.08);border-radius:6px;width:100%;text-align:center;">
         Tow cost: <strong style="color:var(--text-bright);">${TOW_COST.toLocaleString()} GC</strong>
       </div>
       <button onclick="payTowBack()"
-        style="padding:12px 28px;background:transparent;border:1px solid var(--orange);color:var(--orange);
-          font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase;
-          letter-spacing:.1em;cursor:pointer;border-radius:10px;transition:all .2s;"
+        style="width:100%;padding:10px;background:transparent;border:1px solid var(--orange);color:var(--orange);
+          font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;
+          letter-spacing:.1em;cursor:pointer;border-radius:8px;transition:all .2s;"
         onmouseover="this.style.background='rgba(232,141,45,.1)'" onmouseout="this.style.background='transparent'">
         Pay Tow — ${TOW_COST.toLocaleString()} GC
       </button>
-      ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);">⚠ Insufficient funds — balance: ${userWallet.toLocaleString()} GC</div>` : ''}
+      ${userWallet < TOW_COST ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--red);text-align:center;">⚠ Insufficient funds — ${userWallet.toLocaleString()} GC available</div>` : ''}
     `;
     if (scene) scene.appendChild(towDiv);
 
     // Store refs for payTowBack
     window._towBtn      = btn;
     window._towRefuel   = refuelBtn;
-  }, 800);
 }
 
 function payTowBack() {
