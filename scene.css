@@ -39,9 +39,9 @@
 }
 
 @keyframes shipBoost {
-  0%,100% { transform: translateY(-50%) translate(0px, 0px)  scaleX(var(--sx, 1)); }
-  30%     { transform: translateY(-50%) translate(3px, -2px) scaleX(var(--sx, 1)); }
-  70%     { transform: translateY(-50%) translate(3px,  1px) scaleX(var(--sx, 1)); }
+  0%,100% { transform: translateY(-50%) translate(0px, 0px);  }
+  30%     { transform: translateY(-50%) translate(3px, -2px); }
+  70%     { transform: translateY(-50%) translate(3px,  1px); }
 }
 
 @keyframes shipTumble {

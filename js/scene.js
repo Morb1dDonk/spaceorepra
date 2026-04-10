@@ -2,32 +2,122 @@
 // SCENE — Parallax starfield, bg asteroids, boost system
 // ═══════════════════════════════════════════
 
-// ── SHIP IMAGE ──
-const SHIP_OFF   = 'img/Ship_0.png';   // engine off — docked, mining, stranded
-const SHIP_ON    = 'img/Ship_1.png';   // engine on  — flying
-const SHIP_BOOST = ['img/Ship_2.png', 'img/Ship_3.png', 'img/Ship_4.png']; // boost frames
+// ── PLAYER SHIP SPRITE SHEET ──
+// img/sprite_sheet.png — 3 rows × 30 frames, 200×150px each frame, 6000×450px total
+// Row 0 (top):    inbound flight  — looping, returning to station
+// Row 1 (middle): outbound flight — looping, flying to asteroid
+// Row 2 (bottom): turnaround      — one-shot, plays when leaving asteroid to head home
+const SHIP_SHEET_URL    = 'img/sprite_sheet.png';
+const SHIP_FRAME_W      = 200;
+const SHIP_FRAME_H      = 150;
+const SHIP_COLS         = 30;
+const SHIP_ROW_INBOUND  = 0;
+const SHIP_ROW_OUTBOUND = 1;
+const SHIP_ROW_TURN     = 2;
+const SHIP_DISP_W       = 80;
+const SHIP_DISP_H       = Math.round(SHIP_DISP_W * SHIP_FRAME_H / SHIP_FRAME_W); // 60
+const SHIP_BG_W         = SHIP_COLS * SHIP_DISP_W;  // 2400
+const SHIP_BG_H         = 3 * SHIP_DISP_H;          // 180
 
-let _boostFrameTimer = null;
-let _boostFrameIdx   = 0;
+let _shipRow    = SHIP_ROW_OUTBOUND;
+let _shipRaf    = null;
+let _shipCol    = 0;
+let _shipFPS    = 15;
+let _shipLoop   = true;
+let _shipLastMs = 0;
+let _shipDoneCb = null;
 
-function setShipImage(src) {
-  const ship = document.getElementById('minerShip');
-  if (ship) ship.src = src;
+function _applyShipFrame(row, col) {
+  const el = document.getElementById('minerShip');
+  if (!el) return;
+  el.style.backgroundImage    = `url('${SHIP_SHEET_URL}')`;
+  el.style.backgroundSize     = `${SHIP_BG_W}px ${SHIP_BG_H}px`;
+  el.style.backgroundRepeat   = 'no-repeat';
+  el.style.backgroundPosition = `-${col * SHIP_DISP_W}px -${row * SHIP_DISP_H}px`;
 }
 
+function _shipAnimTick(now) {
+  if (!_shipRaf) return;
+  if (now - _shipLastMs >= 1000 / _shipFPS) {
+    _shipLastMs = now;
+    _shipCol++;
+    if (_shipCol >= SHIP_COLS) {
+      if (_shipLoop) {
+        _shipCol = 0;
+      } else {
+        // One-shot complete — freeze on last frame and fire callback
+        _applyShipFrame(_shipRow, SHIP_COLS - 1);
+        cancelAnimationFrame(_shipRaf);
+        _shipRaf = null;
+        if (_shipDoneCb) { const cb = _shipDoneCb; _shipDoneCb = null; cb(); }
+        return;
+      }
+    }
+    _applyShipFrame(_shipRow, _shipCol);
+  }
+  _shipRaf = requestAnimationFrame(_shipAnimTick);
+}
+
+function _startShipAnim(row, fps, loop, onDone) {
+  cancelAnimationFrame(_shipRaf);
+  _shipRow    = row;
+  _shipCol    = 0;
+  _shipFPS    = fps || 15;
+  _shipLoop   = loop !== false;
+  _shipDoneCb = onDone || null;
+  _shipLastMs = 0;
+  _applyShipFrame(row, 0);
+  _shipRaf = requestAnimationFrame(_shipAnimTick);
+}
+
+function _stopShipAnim() {
+  cancelAnimationFrame(_shipRaf);
+  _shipRaf = null;
+}
+
+// ── Public ship sprite API ──
+
+// Set facing direction without changing animation state
+function shipSetOutbound() { _shipRow = SHIP_ROW_OUTBOUND; }
+function shipSetInbound()  { _shipRow = SHIP_ROW_INBOUND;  }
+
+// Engines off: freeze on frame 0 of current direction row
+function shipEnginesOff() {
+  _stopShipAnim();
+  _applyShipFrame(_shipRow, 0);
+}
+
+// Engines on: loop current direction row at normal speed
+function shipEnginesOn() {
+  _startShipAnim(_shipRow, 15, true);
+}
+
+// Play one-shot turnaround animation, then loop inbound
+function shipTurnaroundThenInbound() {
+  _shipRow = SHIP_ROW_INBOUND;
+  _startShipAnim(SHIP_ROW_TURN, 15, false, () => {
+    _startShipAnim(SHIP_ROW_INBOUND, 15, true);
+  });
+}
+
+// Boost: speed up animation frames
 function startBoostSprite() {
-  _boostFrameIdx = 0;
-  setShipImage(SHIP_BOOST[0]);
-  clearInterval(_boostFrameTimer);
-  _boostFrameTimer = setInterval(() => {
-    _boostFrameIdx = (_boostFrameIdx + 1) % SHIP_BOOST.length;
-    setShipImage(SHIP_BOOST[_boostFrameIdx]);
-  }, 80); // ~12 fps
+  _startShipAnim(_shipRow, 30, true);
 }
 
 function stopBoostSprite() {
-  clearInterval(_boostFrameTimer);
-  _boostFrameTimer = null;
+  if (_shipRaf) _startShipAnim(_shipRow, 15, true);
+}
+
+// Backward-compat: called from index.html to start outbound flight animation
+function startShipCSprite() {
+  shipSetOutbound();
+  shipEnginesOn();
+}
+
+// Backward-compat: called from index.html to stop flight animation
+function stopShipCSprite() {
+  shipEnginesOff();
 }
 
 // ── PARALLAX STATE ──
@@ -206,10 +296,17 @@ function toggleBoost() {
     return;
   }
 
-  // Snapshot remaining before cut so we know how long to hold visuals
-  const remainingBefore = phaseEtaMs();
-  boostCutPhase(); // halve the remaining transit time
-  const timeSaved = Math.max(1500, remainingBefore - phaseEtaMs());
+  // Complete the current flight phase right when the boost animation ends
+  const BOOST_ANIM_MS = 1500;
+  if (_phaseTimeoutId && _phaseCb) {
+    clearTimeout(_phaseTimeoutId);
+    const cb = _phaseCb;
+    _phaseStartMs   = performance.now();
+    _phaseRemainsMs = BOOST_ANIM_MS;
+    _boostSpeedMult = 1;
+    _phaseTimeoutId = setTimeout(() => { _phaseTimeoutId = null; _phaseCb = null; cb(); }, BOOST_ANIM_MS);
+  }
+  const timeSaved = BOOST_ANIM_MS;
 
   _boostActive = true;
   _boostCount--;
@@ -263,7 +360,7 @@ function deactivateBoost() {
   canvas.classList.remove('scene-boosting');
   stopBoostSprite();
   _boostShowGlow(false);
-  setShipImage(dispatchInterval ? SHIP_ON : SHIP_OFF);
+  if (dispatchInterval) shipEnginesOn(); else shipEnginesOff();
 
   // Ramp stars back to cruise
   if (dispatchInterval) setStarSpeed(0.8, 1200);

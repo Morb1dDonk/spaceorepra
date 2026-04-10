@@ -97,7 +97,7 @@ body{
 .hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:16px;}
 .wallet-box{text-align:right;}
 .wallet-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-main);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
-.wallet-val{font-family:'DM Mono',monospace;font-size:24px;color:var(--cyan);font-weight:500;text-shadow:0 0 14px rgba(0,212,255,0.55);}
+.wallet-val{font-family:'DM Mono',monospace;font-size:35px;color:var(--cyan);font-weight:800;text-shadow:0 0 14px rgba(0,212,255,0.55);}
 
 /* Market ticker in header */
 .hdr-ticker{display:flex;align-items:center;gap:0;background:rgba(0,0,0,.35);border:1px solid var(--border-bright);border-radius:6px;overflow:hidden;}

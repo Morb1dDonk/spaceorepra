@@ -460,10 +460,8 @@
           </div>
 
           <!-- Prospector ship — always centered vertically, moves horizontally -->
-          <img id="minerShip"
-            src="img/Ship_0.png"
-            style="position:absolute;top:50%;left:10%;transform:translate(-50%,-50%);width: 80px;height:auto;opacity:0;z-index:10;filter:drop-shadow(0 0 8px rgba(0,212,255,0.25));"
-            alt="prospector">
+          <div id="minerShip"
+            style="position:absolute;top:50%;left:10%;transform:translate(-50%,-50%);width:80px;height:60px;opacity:0;z-index:10;filter:drop-shadow(0 0 8px rgba(0,212,255,0.25));background-repeat:no-repeat;"></div>
 
         </div><!-- /sceneInner (zoom layer) -->
 
@@ -611,7 +609,7 @@
           <div style="flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">🛡 Hull</span>
-              <span style="font-family:'DM Mono',monospace;font-size:12px;"><span id="hullCurrent" style="color:#4aaef2;">100</span><span style="color:var(--text-dim);" id="hullMaxLabel"> / 100</span></span>
+              <span style="font-family:'DM Mono',monospace;font-size:12px;"><span id="hullCurrent" style="color:#4aaef2;">50</span><span style="color:var(--text-dim);" id="hullMaxLabel"> / 50</span></span>
             </div>
             <div style="height:10px;background:rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
               <div id="hullBar" style="height:100%;width:100%;background:linear-gradient(90deg,#1e3a5f,#4aaef2);transition:width .4s ease;"></div>
@@ -1658,10 +1656,10 @@ const AXIS_DESC   = {
 };
 
 let materials = {
-  gold:  { name:'Gold',         baseVal:650,  rawMult:0.15, color:'#e88d2d', rarity:60 },
-  quant: { name:'Quantainium',  baseVal:1800, rawMult:0.10, color:'#4aaef2', rarity:8  },
-  bex:   { name:'Bexalite',     baseVal:950,  rawMult:0.20, color:'#a855f7', rarity:18 },
-  iron:  { name:'Iron',         baseVal:120,  rawMult:0.30, color:'#94a3b8', rarity:75 },
+  gold:  { name:'Gold',         baseVal:650,  rawMult:0.15, color:'#e88d2d', rarity:60, img:'img/ore_gold.webp'     },
+  quant: { name:'Quantainium',  baseVal:1800, rawMult:0.10, color:'#4aaef2', rarity:8,  img:'img/ore_quant.webp'    },
+  bex:   { name:'Bexalite',     baseVal:950,  rawMult:0.20, color:'#a855f7', rarity:18, img:'img/ore_bexalite.webp' },
+  iron:  { name:'Iron',         baseVal:120,  rawMult:0.30, color:'#94a3b8', rarity:75, img:'img/ore_iron.webp'     },
 };
 
 let grades = [
@@ -1693,7 +1691,9 @@ let PURITY_RANGES = [
 let LOGISTICS = { loadingPerSCU:100, packagingPerSCU:85, conveniencePerSCU:40 };
 let playerOwnsShip    = false; // Act 1: false = Ryker 40% cut active; Act 2+: true = cut removed
 let playerOwnsLoader  = false; // false = Ryker loading fee applies; true = eliminated
+let _fuelCellCount    = 0;
 let playerOwnsStation = false; // Act 2: owns Ryker Station — +2 pips, 50% store discount
+let playerShipClass   = 'C';  // 'C' (50 hull, 75 fuel), 'B' (75 hull, 100 fuel), 'A' (100 hull, 200 fuel)
 let BASE_FEE_PER_UNIT = 25;
 
 // Presets use 1–5 scale: speed / quality / yield
@@ -1866,6 +1866,7 @@ let lifetimeEarned = 0;   // lifetime net GC — persisted to Supabase
 
 let refineryUnits = [], refineryIdx = 0, refineryRunning = false, refineryAborted = false;
 let _refineryHaul = []; // full toRefine array passed from commitManifest
+let _pendingOffload = null; // { haulData, onComplete } queued while refinery cycle is active
 let _dispatchTarget = null; // asteroid selected for current/next dispatch
 let currentTimeout = null, timerInterval = null;
 let refineryTotalMs = 0, refineryStartTime = 0;
@@ -1955,7 +1956,13 @@ let   _fuelTankMax       = 75;   // effective tank size: 75 + (_fuelTankUpgrades
 let   minerFuel          = 75;   // starts at base tank size
 
 // ── HULL INTEGRITY SYSTEM ──
-const HULL_MAX               = 100;  // max hull integrity points
+// Hull max is determined by ship class: C=50, B=75, A=100
+const SHIP_CLASS_STATS = {
+  C: { hullMax: 50,  fuelMax: 75  },
+  B: { hullMax: 75,  fuelMax: 100 },
+  A: { hullMax: 100, fuelMax: 200 },
+};
+let   HULL_MAX               = 50;   // updated when ship class changes
 const HULL_REPAIR_COST_PER_PT = 150; // GC per hull point repaired
 let   hullIntegrity          = HULL_MAX;
 
@@ -2093,6 +2100,9 @@ function updateHullUI() {
   const hullRepCost  = document.getElementById('hullRepairCost');
   const repairBtn    = document.getElementById('repairBtn');
   const hullWarn     = document.getElementById('hullWarning');
+
+  const hullMaxLbl = document.getElementById('hullMaxLabel');
+  if (hullMaxLbl) hullMaxLbl.textContent = ` / ${HULL_MAX}`;
 
   hullBar.style.width = pct + '%';
   hullBar.style.background =
@@ -2756,7 +2766,7 @@ function triggerTowBack(btn, refuelBtn) {
   // Ship drifts aimlessly — tumble animation, engine off, dimmed
   if (ship) {
     ship.style.transition = '';
-    setShipImage(SHIP_OFF);
+    shipEnginesOff();
   }
   if (canvas) {
     canvas.classList.remove('scene-flying', 'scene-boosting');
@@ -2872,7 +2882,7 @@ function triggerHullRescue() {
 
   setStarSpeed(0, 600);
 
-  if (ship) { ship.style.transition = ''; setShipImage(SHIP_OFF); }
+  if (ship) { ship.style.transition = ''; shipEnginesOff(); }
   if (canvas) {
     canvas.classList.remove('scene-flying', 'scene-boosting');
     canvas.classList.add('scene-drifting');
@@ -2995,8 +3005,9 @@ function useFuelCell() {
     ship.style.transition = 'opacity .5s, filter .5s';
     ship.style.opacity    = '1';
     ship.style.filter     = '';
-    ship.style.transform  = 'translate(-50%,-50%) scaleX(-1)';
-    setShipImage(SHIP_ON);
+    ship.style.transform  = 'translate(-50%,-50%)';
+    shipSetInbound();
+    shipEnginesOn();
   }
 
   setStarSpeed(0.8, 1000);
@@ -3031,7 +3042,7 @@ function useFuelCell() {
         document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
         _updateNavLocation('station');
         _updateObjective('Review manifest and process ore', 'var(--cyan)');
-        if (btn)      { btn.disabled = false; btn.textContent = '⬡ Send Again'; }
+        if (btn)      { _resetDispatchBtn(btn); }
         if (refuelBtn){ refuelBtn.disabled = false; refuelBtn.style.opacity = '1'; }
         const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = false; _sb.style.opacity = '1'; _sb.textContent = '🛒 Shop Open'; }
         updateFuelUI(); updateHullUI();
@@ -3042,7 +3053,7 @@ function useFuelCell() {
       document.getElementById('dispatchStatus').style.color = 'var(--cyan)';
       _updateNavLocation('station');
       _updateObjective('Dispatch the miner to an asteroid', 'var(--cyan)');
-      if (btn)      { btn.disabled = false; btn.textContent = '⬡ Send Again'; }
+      if (btn)      { _resetDispatchBtn(btn); }
       if (refuelBtn){ refuelBtn.disabled = false; refuelBtn.style.opacity = '1'; }
       const _sb = document.getElementById('shopHeaderBtn'); if (_sb) { _sb.disabled = false; _sb.style.opacity = '1'; _sb.textContent = '🛒 Shop Open'; }
       updateFuelUI(); updateHullUI();
@@ -3075,15 +3086,16 @@ function payTowBack() {
     overlay.style.opacity = '1';
   }
 
-  // Ship recovers from tumble, faces home (flipped), dim since engine is still dead
+  // Ship recovers from tumble, faces home, dim since engine is still dead
   if (ship) {
     canvas.classList.remove('scene-drifting');
     canvas.classList.add('scene-flying');
     ship.style.transition = 'opacity 1s, filter 1s';
     ship.style.opacity    = '0.6';
     ship.style.filter     = 'grayscale(0.5) brightness(0.8)';
-    ship.style.transform  = 'translate(-50%,-50%) scaleX(-1)'; // facing station
-    setShipImage(SHIP_OFF); // still engine-off — Calli is doing the pulling
+    ship.style.transform  = 'translate(-50%,-50%)';
+    shipSetInbound();
+    shipEnginesOff(); // still engine-off — Calli is doing the pulling
   }
 
   // Stars drift — slow tow speed, not full flight
@@ -3113,7 +3125,7 @@ function payTowBack() {
     if (ship) {
       ship.style.transition = 'none';
       ship.style.opacity    = '0';
-      ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
+      ship.style.transform  = 'translate(-50%,-50%)';
       ship.style.filter     = '';
     }
 
@@ -3142,7 +3154,7 @@ function payTowBack() {
       _updateNavLocation('station');
       _updateObjective('Review manifest and process ore', 'var(--cyan)');
 
-      if (window._towBtn)    { window._towBtn.disabled = false; window._towBtn.textContent = '⬡ Send Again'; }
+      if (window._towBtn)    { _resetDispatchBtn(window._towBtn); }
       if (window._towRefuel) { window._towRefuel.disabled = false; window._towRefuel.style.opacity = '1'; }
       const _sb4 = document.getElementById('shopHeaderBtn'); if (_sb4) { _sb4.disabled = false; _sb4.style.opacity = '1'; _sb4.textContent = '🛒 Shop Open'; }
       updateFuelUI();
@@ -3373,11 +3385,10 @@ function dispatchMiner() {
   if (si) { si.style.transition = 'none'; si.style.transform = 'scale(1)'; }
 
   ship.style.transition = 'none';
-  ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
-  ship.style.setProperty('--sx', '1');
+  ship.style.transform  = 'translate(-50%,-50%)';
   ship.style.left       = '10%';
   ship.style.opacity    = '1';
-  setShipImage(SHIP_ON); // engine on — departing
+  startShipCSprite(); // engine on — departing (outbound animation)
   _stopIdleMusic();
   _calliMusicStop(800);
   _sfx('launch', 'audio/flight.mp3', { volume: 0.6 });
@@ -3508,7 +3519,7 @@ function dispatchMiner() {
     setStarSpeed(0, UNDOCK_MS);
     ship.style.transition = `left ${UNDOCK_MS}ms ease-in, transform ${UNDOCK_MS}ms ease-in`;
     ship.style.left = '8%';
-    ship.style.transform = 'translate(-50%,-50%) scaleX(-1) scale(0.5)';
+    ship.style.transform = 'translate(-50%,-50%) scale(0.5)';
     setTimeout(() => {
       ship.style.transition += `, opacity ${UNDOCK_MS * 0.35}ms ease-in`;
       ship.style.opacity = '0';
@@ -3529,9 +3540,8 @@ function dispatchMiner() {
       ship.style.transition = 'none';
       ship.style.opacity    = '0';
       ship.style.left       = '10%';
-      ship.style.transform  = 'translate(-50%,-50%) scaleX(1)';
-      ship.style.setProperty('--sx', '1');
-      setShipImage(SHIP_OFF);
+      ship.style.transform  = 'translate(-50%,-50%)';
+      shipEnginesOff();
       _sfx('landing', 'audio/589620__jrmythical__gears-dropping.mp3', { volume: 0.55 });
       _sfxFadeOut('flight', 800);
       setTimeout(_startIdleMusic, 1200);
@@ -3556,7 +3566,7 @@ function dispatchMiner() {
           const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
           _updateNavLocation('station');
           _updateObjective('Review manifest and process ore', 'var(--cyan)');
-          btn.disabled = false; btn.textContent = '⬡ Send Again';
+          _resetDispatchBtn(btn);
           refuelBtn.disabled = false; refuelBtn.style.opacity = '1';
           const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; _sb2.textContent = '🛒 Shop Open'; }
           updateFuelUI();
@@ -3573,7 +3583,7 @@ function dispatchMiner() {
         const _io = document.getElementById('sceneIdleOverlay'); if (_io) { _io.style.opacity = '1'; }
         _updateNavLocation('station');
         _updateObjective('Dispatch the miner to an asteroid', 'var(--cyan)');
-        btn.disabled = false; btn.textContent = '⬡ Send Again';
+        _resetDispatchBtn(btn);
         refuelBtn.disabled = false; refuelBtn.style.opacity = '1';
         const _sb2 = document.getElementById('shopHeaderBtn'); if (_sb2) { _sb2.disabled = false; _sb2.style.opacity = '1'; _sb2.textContent = '🛒 Shop Open'; }
       }
@@ -3584,7 +3594,7 @@ function dispatchMiner() {
   const _startMining = () => {
     setStarSpeed(0, 0);
     lockSceneOnMidpoint();
-    setShipImage(SHIP_OFF);
+    shipEnginesOff();
     if (asteroid) {
       asteroid.style.opacity = '1';
       asteroid.style.filter  = 'brightness(1.4) drop-shadow(0 0 6px rgba(232,141,45,.8))';
@@ -3641,9 +3651,8 @@ function dispatchMiner() {
         }
         ship.style.transition = 'none';
         ship.style.left = '50%';
-        ship.style.setProperty('--sx', '-1');
-        ship.style.transform = 'translate(-50%,-50%) scaleX(-1)';
-        setShipImage(SHIP_ON);
+        ship.style.transform = 'translate(-50%,-50%)';
+        shipTurnaroundThenInbound();
         setStarSpeed(0.8, 1000);
         sceneZoomOut();
 
@@ -3659,8 +3668,8 @@ function dispatchMiner() {
           // Second half of return → dock
           const _continueReturnCb = () => {
             _legElapsedMs = FLIGHT_MS / 2;
-            setStarSpeed(0.8, 300);
-            schedulePhase(() => { _dockArrival(true); }, FLIGHT_MS / 2);
+            if (!_boostActive) setStarSpeed(0.8, 300);
+            schedulePhase(() => { _dockArrival(true); }, _boostActive ? 0 : FLIGHT_MS / 2);
           };
 
           // Mid-point: check for encounter, then continue or pause
@@ -3691,9 +3700,8 @@ function dispatchMiner() {
       _starDir = 1;
       setStarSpeed(0.8, 600);
       ship.style.transition = 'none';
-      ship.style.setProperty('--sx', '-1');
-      ship.style.transform = 'translate(-50%,-50%) scaleX(-1)';
-      setShipImage(SHIP_ON);
+      ship.style.transform = 'translate(-50%,-50%)';
+      shipTurnaroundThenInbound();
       document.getElementById('dispatchStatus').textContent = 'Returning';
       document.getElementById('dispatchStatus').style.color = 'var(--orange)';
       overlay.textContent = 'Mission aborted — returning to station...';
@@ -3708,7 +3716,7 @@ function dispatchMiner() {
     // Second half of outbound → asteroid approach → mining
     const _continueOutboundCb = () => {
       _legElapsedMs = FLIGHT_MS / 2;
-      setStarSpeed(0.8, 300);
+      if (!_boostActive) setStarSpeed(0.8, 300);
       schedulePhase(() => {
         // ── Second half complete → Asteroid approach ──
         _inFlightPhase = false;
@@ -3720,7 +3728,7 @@ function dispatchMiner() {
         }
         setStarSpeed(0, APPROACH_MS);
         setTimeout(() => { deactivateBoost(); _startMining(); }, APPROACH_MS);
-      }, FLIGHT_MS / 2);
+      }, _boostActive ? 0 : FLIGHT_MS / 2);
     };
 
     // Mid-point: check for encounter, then continue or pause for player choice
@@ -3742,7 +3750,67 @@ const OFFLOAD_LABELS = [
   '✓ Offload complete',
 ];
 
+function showRykerQueuedPanel() {
+  if (document.getElementById('rykerQueueOverlay')) return; // already showing
+  const scene = document.getElementById('spaceCanvas');
+  if (!scene) return;
+  const panel = document.createElement('div');
+  panel.id = 'rykerQueueOverlay';
+  panel.style.cssText = 'position:absolute;inset:0;display:flex;align-items:stretch;justify-content:flex-end;z-index:50;pointer-events:none;';
+  panel.innerHTML = `
+    <div id="rykerQueueCard" style="width:340px;display:flex;flex-direction:column;background:linear-gradient(135deg,#0d0a04 0%,#160e02 100%);border-left:3px solid rgba(245,180,40,.8);border-top:1px solid rgba(245,180,40,.3);border-bottom:1px solid rgba(245,180,40,.2);box-shadow:-30px 0 60px rgba(200,140,0,.12),inset 0 0 30px rgba(0,0,0,.5);overflow:hidden;opacity:0;transform:translateX(20px);transition:opacity .25s ease,transform .25s ease;pointer-events:auto;">
+      <div style="display:flex;align-items:stretch;flex:1;min-height:0;">
+        <div style="position:relative;width:120px;flex-shrink:0;background:#0a0803;">
+          <img src="img/owner.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;">
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 55%,#0d0a04 100%);"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:4px 0 3px;text-align:center;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-family:'DM Mono',monospace;font-size:10px;color:rgba(245,180,40,.9);text-transform:uppercase;letter-spacing:.12em;font-weight:600;">Ryker</div>
+        </div>
+        <div style="flex:1;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px;overflow:hidden;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(245,180,40,.8);text-transform:uppercase;letter-spacing:.18em;">⬡ Cargo Hold — Queue</div>
+          <div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:rgba(245,200,80,.95);">Harlan Ryker</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#f0e8d0;line-height:1.5;">Hey bub — gonna have to hold that haul. My boys are still knee-deep in your last batch. Why don't you take a seat, grab a coffee. We'll get to it.</div>
+        </div>
+      </div>
+      <div style="padding:10px 14px;border-top:1px solid rgba(245,180,40,.15);background:rgba(0,0,0,.3);">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(245,180,40,.7);text-align:center;letter-spacing:.08em;">⬡ New haul queued — refinery completing current cycle</div>
+      </div>
+    </div>
+  `;
+  scene.appendChild(panel);
+  requestAnimationFrame(() => {
+    const card = document.getElementById('rykerQueueCard');
+    if (card) { card.style.opacity = '1'; card.style.transform = 'translateX(0)'; }
+  });
+  // Auto-dismiss after 7 seconds
+  setTimeout(() => {
+    const card = document.getElementById('rykerQueueCard');
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(20px)';
+      setTimeout(() => { if (panel.parentNode) panel.parentNode.removeChild(panel); }, 300);
+    }
+  }, 17000);
+}
+
 function startOffloadSequence(haulData, onComplete) {
+  // If refinery is mid-cycle (running OR in summary/transfer state), queue the haul
+  const activeProcessingCard = document.getElementById('activeProcessingCard');
+  const refineryCycleActive  = refineryRunning || (activeProcessingCard && activeProcessingCard.style.display !== 'none');
+  if (refineryCycleActive) {
+    _pendingOffload = { haulData, onComplete };
+    showRykerQueuedPanel();
+    const statusEl = document.getElementById('dispatchStatus');
+    if (statusEl) { statusEl.textContent = 'Cargo Queued'; statusEl.style.color = 'var(--orange)'; }
+    const dispatchBtn = document.getElementById('dispatchBtn');
+    if (dispatchBtn) {
+      _resetDispatchBtn(dispatchBtn);
+      dispatchBtn.disabled = true;
+      dispatchBtn.style.opacity = '0.35';
+      dispatchBtn.style.pointerEvents = 'none';
+    }
+    return;
+  }
+
   const totalScu    = haulData.reduce((s, h) => s + h.scu, 0);
   const OFFLOAD_MS  = Math.max(4000, Math.min(10000, totalScu * 180)); // 4–10s based on haul size
   const overlay     = document.getElementById('offloadOverlay');
@@ -4852,7 +4920,7 @@ function finishRefining() {
   // Log
   const ores = _refineryHaul.map(h => ({ name: materials[h.matKey]?.name || h.matKey, color: materials[h.matKey]?.color || '#888', scu: h.scu }));
   const asteroid = _dispatchTarget ? _dispatchTarget.id : null;
-  logRun({profileName,rev,totalScu,inertScu,succeeded:succeeded.length,inert:inert.length,rate,avgPurity,avgGrade,net,roi,ores,asteroid});
+  logRun({profileName,rev,fees,totalScu,inertScu,succeeded:succeeded.length,inert:inert.length,rate,avgPurity,avgGrade,net,roi,ores,asteroid});
 }
 
 // ═══════════════════════════════════════════
@@ -5482,6 +5550,16 @@ function resetProcessingSection() {
     setHint('complete');
     setTimeout(() => dismissHint(), 7000);
   }
+
+  // Flush queued offload — refinery cycle is now fully complete
+  if (_pendingOffload) {
+    const { haulData, onComplete } = _pendingOffload;
+    _pendingOffload = null;
+    haul = haulData; // restore global haul so renderManifest() has data
+    haul.forEach(h => h.refine = true); // queued haul defaults to full refine
+    showContractToast('Refinery clear — loading queued haul now.', 'var(--cyan)');
+    setTimeout(() => startOffloadSequence(haulData, onComplete), 600);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -5533,7 +5611,7 @@ async function sbFetch(path, method='GET', body=null, useAuth=false) {
       'apikey':        SUPABASE_KEY,
       'Authorization': 'Bearer ' + token,
       'Content-Type':  'application/json',
-      'Prefer':        method === 'POST' ? (path.includes('on_conflict') ? 'resolution=ignore-duplicates,return=minimal' : 'return=minimal') : 'return=representation',
+      'Prefer':        method === 'POST' ? (path.includes('on_conflict') ? 'resolution=ignore-duplicates,return=minimal' : 'return=minimal') : method === 'PATCH' ? 'return=minimal' : 'return=representation',
     }
   };
   if (body) opts.body = JSON.stringify(body);
@@ -5701,7 +5779,7 @@ async function loadOrCreateProfile(user) {
       pilot_name:           pilotName,
       wallet:               25000,
       fuel:                 75,
-      hull_integrity:       HULL_MAX,
+      hull_integrity:       50,
       fuel_tank_upgrades:   0,
       boost_charges:        0,
       owns_loader:          false,
@@ -5725,8 +5803,11 @@ async function loadOrCreateProfile(user) {
     document.getElementById('pilotNameDisplay').textContent = p.pilot_name;
 
     // ── Ship state ──
+    playerShipClass   = p.ship_class ?? 'C';
+    const _cls        = SHIP_CLASS_STATS[playerShipClass] || SHIP_CLASS_STATS.C;
+    HULL_MAX          = _cls.hullMax;
     _fuelTankUpgrades = p.fuel_tank_upgrades ?? 0;
-    _fuelTankMax      = 75 + _fuelTankUpgrades * 5;
+    _fuelTankMax      = playerShipClass === 'C' ? 75 + _fuelTankUpgrades * 5 : _cls.fuelMax;
     minerFuel         = Math.min(p.fuel ?? _fuelTankMax, _fuelTankMax);
     hullIntegrity     = Math.min(p.hull_integrity ?? HULL_MAX, HULL_MAX);
 
@@ -5833,6 +5914,7 @@ async function persistProgress() {
       fuel_cells:           _fuelCellCount,
       owns_loader:          playerOwnsLoader,
       owns_ship:            playerOwnsShip,
+      ship_class:           playerShipClass,
       owns_station:         playerOwnsStation,
       hired_crew:           hiredCrew,
       inventory:            playerInventory,
@@ -5973,7 +6055,7 @@ async function fireNextNewsEvent() {
   const rows = await sbFetch('news_events?fired_at=is.null&select=*');
   if (!rows || rows.length === 0) {
     // All fired — reset all events so they can fire again
-    await sbFetch('news_events', 'PATCH', { fired_at: null }, true);
+    await sbFetch('news_events?fired_at=not.is.null', 'PATCH', { fired_at: null }, true);
     return fireNextNewsEvent();
   }
   // Pick a random unfired event
@@ -6263,11 +6345,14 @@ async function adminResetPlayer() {
     const isCurrentUser = currentUser && currentUser.id === _adminSelectedPlayer.id;
     if (isCurrentUser) {
       userWallet = 25000;
-      minerFuel = 100;
-      hullIntegrity = 100;
+      playerShipClass = 'C';
+      HULL_MAX = SHIP_CLASS_STATS.C.hullMax;
+      hullIntegrity = HULL_MAX;
+      _fuelTankUpgrades = 0;
+      _fuelTankMax = SHIP_CLASS_STATS.C.fuelMax;
+      minerFuel = _fuelTankMax;
       _boostCount = 0;
       _fuelCellCount = 0;
-      _fuelTankUpgrades = 0;
       playerOwnsShip    = false;
       playerOwnsLoader  = false;
       playerOwnsStation = false;
@@ -6368,6 +6453,34 @@ async function loadShop() {
     const rows = await res.json();
     shopItems = rows || [];
     // Inject fuel tank upgrade (always local — multi-buy, ship required)
+    if (!shopItems.find(i => i.effect_key === 'own_ship_b')) {
+      shopItems.push({
+        id: 'local_ship_b',
+        name: 'Class-B Mining Vessel',
+        description: 'A purpose-built mid-range mining ship. Reinforced hull plating and a larger fuel reserve make longer belt runs viable. Eliminates Ryker\'s lease if you don\'t already own a ship.',
+        effect_summary: 'Hull integrity: 75 max. Fuel capacity: 100 units. Eliminates Ryker\'s 40% cut.',
+        item_type: 'ship',
+        effect_key: 'own_ship_b',
+        price: 300000,
+        sort_order: 2,
+      });
+    }
+    if (!shopItems.find(i => i.effect_key === 'own_ship_a')) {
+      shopItems.push({
+        id: 'local_ship_a',
+        name: 'Class-A Mining Vessel',
+        description: 'The finest independent mining vessel money can buy. Heavy armor, a massive fuel reserve, and the kind of presence that makes pirates think twice.',
+        effect_summary: 'Hull integrity: 100 max. Fuel capacity: 200 units. Eliminates Ryker\'s 40% cut.',
+        item_type: 'ship',
+        effect_key: 'own_ship_a',
+        price: 500000,
+        sort_order: 3,
+      });
+    }
+    // Override engine_upgrade price and enforce ship ownership requirement
+    const _engineItem = shopItems.find(i => i.effect_key === 'engine_upgrade');
+    if (_engineItem) _engineItem.price = 150000;
+
     if (!shopItems.find(i => i.effect_key === 'fuel_tank_upgrade')) {
       shopItems.push({
         id: 'local_fuel_tank_upgrade',
@@ -6454,7 +6567,7 @@ function renderShopItems() {
     ships:       i => i.item_type === 'ship',
     crew:        i => i.item_type === 'crew',
   };
-  const filtered = shopItems.filter(catMap[_shopCategory] || (() => true));
+  const filtered = shopItems.filter(i => i.effect_key === 'own_station' && !_storySeen.act2 ? false : (catMap[_shopCategory] || (() => true))(i));
 
   // Reset detail pane
   if (detail) detail.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.06em;line-height:2;">← Select an item to view details</div>';
@@ -6470,8 +6583,15 @@ function renderShopItems() {
     const isCrew      = item.item_type === 'crew';
     const isHired     = isCrew && hiredCrew.includes(item.effect_key);
     const fuelMaxed   = isFuelTank && _fuelTankUpgrades >= 5;
-    const fuelLocked  = isFuelTank && !playerOwnsShip;
-    const owned       = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip) || (item.effect_key === 'cargo_loader' && playerOwnsLoader) || (item.effect_key === 'own_station' && playerOwnsStation));
+    const fuelLocked    = isFuelTank && !playerOwnsShip;
+    const engineLocked  = item.effect_key === 'engine_upgrade' && !playerOwnsShip;
+    const _shipOwned  = item.item_type === 'ship' && (
+        (item.effect_key === 'own_ship'   && playerOwnsShip && playerShipClass === 'C') ||
+        (item.effect_key === 'own_ship_b' && playerShipClass === 'B') ||
+        (item.effect_key === 'own_ship_a' && playerShipClass === 'A') ||
+        (!['own_ship','own_ship_b','own_ship_a'].includes(item.effect_key) && playerOwnsShip)
+      );
+    const owned       = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || _shipOwned || (item.effect_key === 'cargo_loader' && playerOwnsLoader) || (item.effect_key === 'own_station' && playerOwnsStation));
     const effPrice    = _shopEffectivePrice(item);
     const canAfford   = userWallet >= effPrice;
     const isOneTime   = !isFuelTank && !isCrew && (item.item_type === 'ship' || item.item_type === 'upgrade');
@@ -6480,19 +6600,21 @@ function renderShopItems() {
     const typeIcon    = _shopTypeIcon(item);
     const hasDiscount = playerOwnsStation && effPrice !== item.price;
 
+    const isShipLocked = fuelLocked || engineLocked;
     const statusDot = showOwned || fuelMaxed || isHired
       ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:#22c55e;">✓</span>`
-      : fuelLocked || (!isCrew && !canAfford)
+      : isShipLocked || (!isCrew && !canAfford)
         ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);opacity:.5;">✕</span>`
         : isFuelTank && _fuelTankUpgrades > 0
           ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);">${_fuelTankUpgrades}/5</span>`
           : '';
 
+    const _lockLabel = isShipLocked ? ' · <span style="color:var(--red);">requires ship</span>' : '';
     const subLabel = isCrew
       ? (item.role || 'Crew')
       : hasDiscount
-        ? `<span style="text-decoration:line-through;opacity:.45;">${item.price.toLocaleString()}</span> <span style="color:#22c55e;">${effPrice.toLocaleString()} GC</span> <span style="color:#22c55e;font-size:9px;">−50%</span>${fuelLocked ? ' · <span style="color:var(--red);">requires ship</span>' : ''}`
-        : `${item.price.toLocaleString()} GC${fuelLocked ? ' · <span style="color:var(--red);">requires ship</span>' : ''}`;
+        ? `<span style="text-decoration:line-through;opacity:.45;">${item.price.toLocaleString()}</span> <span style="color:#22c55e;">${effPrice.toLocaleString()} GC</span> <span style="color:#22c55e;font-size:9px;">−50%</span>${_lockLabel}`
+        : `${item.price.toLocaleString()} GC${_lockLabel}`;
 
     const ITEM_IMAGES = { boost:'img/item_boost.webp', fuel_cell:'img/item_emergencyfuelcell.webp' };
     const itemImg = ITEM_IMAGES[item.effect_key];
@@ -6534,9 +6656,16 @@ function showShopItem(itemId) {
   const isFuelTank = item.effect_key === 'fuel_tank_upgrade';
   const isCrew     = item.item_type === 'crew';
   const isHired    = isCrew && hiredCrew.includes(item.effect_key);
-  const fuelMaxed  = isFuelTank && _fuelTankUpgrades >= 5;
-  const fuelLocked = isFuelTank && !playerOwnsShip;
-  const owned      = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || (item.item_type === 'ship' && playerOwnsShip) || (item.effect_key === 'cargo_loader' && playerOwnsLoader) || (item.effect_key === 'own_station' && playerOwnsStation));
+  const fuelMaxed    = isFuelTank && _fuelTankUpgrades >= 5;
+  const fuelLocked   = isFuelTank && !playerOwnsShip;
+  const engineLocked = item.effect_key === 'engine_upgrade' && !playerOwnsShip;
+  const _shipOwned2 = item.item_type === 'ship' && (
+    (item.effect_key === 'own_ship'   && playerOwnsShip && playerShipClass === 'C') ||
+    (item.effect_key === 'own_ship_b' && playerShipClass === 'B') ||
+    (item.effect_key === 'own_ship_a' && playerShipClass === 'A') ||
+    (!['own_ship','own_ship_b','own_ship_a'].includes(item.effect_key) && playerOwnsShip)
+  );
+  const owned      = !isFuelTank && !isCrew && (playerInventory.includes(item.id) || _shipOwned2 || (item.effect_key === 'cargo_loader' && playerOwnsLoader) || (item.effect_key === 'own_station' && playerOwnsStation));
   const effPrice   = _shopEffectivePrice(item);
   const hasDiscount = playerOwnsStation && effPrice !== item.price;
   const canAfford  = userWallet >= effPrice;
@@ -6545,11 +6674,12 @@ function showShopItem(itemId) {
   const tagColor   = _shopTagColor(item);
   const typeIcon   = _shopTypeIcon(item);
   const isBoost    = item.item_type === 'boost' || item.effect_key === 'boost';
-  const blocked    = showOwned || fuelMaxed || fuelLocked || (isCrew ? isHired : !canAfford);
+  const _anyLocked = fuelLocked || engineLocked;
+  const blocked    = showOwned || fuelMaxed || _anyLocked || (isCrew ? isHired : !canAfford);
 
   const btnStyle = (showOwned || fuelMaxed || isHired)
     ? `background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.4);color:#22c55e;cursor:default;`
-    : fuelLocked
+    : _anyLocked
       ? `background:transparent;border:1px solid rgba(255,80,80,.3);color:var(--red);cursor:not-allowed;opacity:.65;`
       : (!canAfford && !isCrew)
         ? `background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text-dim);cursor:not-allowed;opacity:.45;`
@@ -6558,7 +6688,7 @@ function showShopItem(itemId) {
     ? '✓ On Payroll — Release from shop'
     : (showOwned || fuelMaxed)
       ? (fuelMaxed ? '✓ Max Capacity Reached' : '✓ Already Owned')
-      : fuelLocked
+      : _anyLocked
         ? '🔒 Requires Ship Ownership'
         : isFuelTank
           ? `Install (+5 capacity) — ${effPrice.toLocaleString()} GC`
@@ -6676,11 +6806,14 @@ async function executePurchase(itemId) {
   userWallet -= price;
   updateWallet();
   _sfx('money', 'audio/money.mp3', { volume: 0.6 });
-  await persistWallet();
 
-  // fuel_tank_upgrade and crew are managed separately — don't mark as owned in playerInventory
+  // Apply effects first so all state (inventory, ship ownership, crew, boosts, etc.)
+  // is up to date before the DB write
   if (item.effect_key !== 'fuel_tank_upgrade' && item.item_type !== 'crew') playerInventory.push(item.id);
   applyShopItemEffects(item);
+
+  await persistProgress();
+
   closeShopConfirm();
   renderShopItems();
   logShopPurchase(item);
@@ -6688,12 +6821,36 @@ async function executePurchase(itemId) {
 
 function applyShopItemEffects(item) {
   switch (item.item_type) {
-    case 'ship':
+    case 'ship': {
+      const _newClass = item.effect_key === 'own_ship_a' ? 'A' : item.effect_key === 'own_ship_b' ? 'B' : 'C';
       playerOwnsShip = true;
+      playerShipClass = _newClass;
+      HULL_MAX = SHIP_CLASS_STATS[_newClass].hullMax;
+      hullIntegrity = Math.min(Math.max(hullIntegrity, 1), HULL_MAX);
+      if (_newClass !== 'C') {
+        _fuelTankMax = SHIP_CLASS_STATS[_newClass].fuelMax;
+        minerFuel = Math.min(minerFuel, _fuelTankMax);
+      }
+      updateFuelUI();
+      updateHullUI();
       _updateNavUpgrades();
-      showShopPurchaseToast(`🚀 ${item.name} acquired! Ryker lease removed.`, 'var(--cyan)');
-      if (!_storySeen.act2) _pendingAct2Story = true;
+      if (_newClass === 'A') {
+        showShopPurchaseToast(`⬡ Class-A Mining Vessel purchased — Hull: 100, Fuel: 200. Top of the line.`, '#22c55e');
+      } else if (_newClass === 'B') {
+        showShopPurchaseToast(`⬡ Class-B Mining Vessel purchased — Hull: 75, Fuel: 100. Ryker's cut eliminated.`, 'var(--orange)');
+      } else {
+        showShopPurchaseToast(`🚀 ${item.name} acquired! Ryker lease removed.`, 'var(--cyan)');
+      }
+      if (!_storySeen.act2) {
+        setTimeout(() => {
+          closeShop();
+          setTimeout(() => {
+            if (STORY_BEATS['act2_intro']) showStory('act2_intro');
+          }, 400);
+        }, 1800);
+      }
       break;
+    }
     case 'boost':
       addBoostCharge(1);
       _updateNavUpgrades();
@@ -6715,7 +6872,12 @@ function applyShopItemEffects(item) {
         showShopPurchaseToast(`⬡ Cargo Loader installed — Ryker loading fee eliminated.`, 'var(--cyan)');
       } else if (item.effect_key === 'own_ship') {
         playerOwnsShip = true;
+        playerShipClass = 'C';
+        HULL_MAX = SHIP_CLASS_STATS.C.hullMax;
+        hullIntegrity = Math.min(hullIntegrity, HULL_MAX);
+        _fuelTankMax = 75 + _fuelTankUpgrades * 5;
         updateFuelUI(); // unlocks fuel tank upgrades
+        updateHullUI();
         _updateNavUpgrades();
         showShopPurchaseToast(`⬡ Class-C Mining Vessel purchased — Ryker's 40% cut eliminated. She's yours now.`, 'var(--orange)');
         // Trigger Act 2 story — station is now for sale
@@ -6981,13 +7143,16 @@ function renderContractCards() {
 
     const card = document.createElement('div');
     card.style.cssText = `flex:1;display:flex;flex-direction:column;gap:12px;padding:20px;min-width:0;border-right:${isLast ? 'none' : '1px solid var(--border)'};`;
+    const oreImgHtml = mat?.img
+      ? `<img src="${mat.img}" alt="${mat.name}" style="height:50px;width:auto;object-fit:cover;flex-shrink:0;border:1px solid ${diff.color}40;box-shadow:0 0 12px ${diff.color}30;">`
+      : '';
     card.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-        <div>
+      <div style="display:flex;justify-content:space-between;align-items:stretch;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border);min-height:56px;">
+        <div style="display:flex;flex-direction:column;justify-content:center;">
           <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:.12em;text-shadow:0 0 8px rgba(0,212,255,.4);">${c.title}</div>
           <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:3px;">${c.issued_by}</div>
         </div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:${diff.color};border:1px solid ${diff.color}60;padding:3px 8px;white-space:nowrap;flex-shrink:0;">${c.difficulty.toUpperCase()}</div>
+        ${oreImgHtml}
       </div>
       <div style="font-size:13px;color:var(--text-main);line-height:1.7;flex:1;">${c.description}</div>
       <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);padding:12px 14px;">
@@ -7095,6 +7260,18 @@ function startContractTimer() {
     const rem = Math.max(0, new Date(activeContract.deadline) - Date.now());
     updateActiveContractStrip();
     if (rem <= 0) {
+      // If the ship is currently out on a trip or refinery is mid-cycle, grant a one-time
+      // grace extension so the player can complete the run and get credit
+      const dispatchBtn = document.getElementById('dispatchBtn');
+      const shipOut = dispatchBtn && dispatchBtn.disabled;
+      const activeProcessingCard = document.getElementById('activeProcessingCard');
+      const refineryCycleActive = refineryRunning || (activeProcessingCard && activeProcessingCard.style.display !== 'none');
+      if ((shipOut || refineryCycleActive) && !activeContract._graceGiven) {
+        activeContract._graceGiven = true;
+        activeContract.deadline = new Date(Date.now() + 3 * 60 * 1000).toISOString(); // 3-min grace
+        showContractToast('Contract deadline reached — 3-minute grace period granted to finish your current run.', 'var(--orange)');
+        return;
+      }
       clearInterval(contractTimerInterval);
       await failContract();
     }
@@ -7103,17 +7280,48 @@ function startContractTimer() {
 
 async function failContract() {
   if (!activeContract) return;
+
+  // Capture everything before nulling state
+  const mat        = materials[activeContract.material_id];
+  const matName    = mat?.name || activeContract.material_id;
+  const delivered  = activeContract.scu_delivered || 0;
+  const required   = activeContract.scu_required;
+  const penalty    = activeContract.penalty || 0;
+  const hasProgress = delivered > 0;
+
   await sbFetch(`player_contracts?id=eq.${activeContract.id}`, 'PATCH', { status: 'failed' }, true);
-  if (activeContract.penalty > 0) {
-    userWallet = Math.max(0, userWallet - activeContract.penalty);
+
+  if (penalty > 0) {
+    userWallet = Math.max(0, userWallet - penalty);
     updateWallet();
-    showContractToast(`Contract FAILED — ${activeContract.penalty.toLocaleString()} GC penalty deducted`, 'var(--red)');
-  } else {
-    showContractToast('Contract expired — no delivery made', 'var(--orange)');
+    await persistProgress();
   }
+
   activeContract = null;
   document.getElementById('activeContractStrip').style.display = 'none';
-  setTimeout(() => offerRandomContract(), 2000);
+
+  // Show a modal-style failure notice — not just a toast
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:4000;display:flex;align-items:center;justify-content:center;`;
+  overlay.innerHTML = `
+    <div style="background:var(--bg-card);border:1px solid var(--red);max-width:380px;width:90%;padding:32px;font-family:'DM Mono',monospace;text-align:center;">
+      <div style="font-size:11px;color:var(--red);letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px;">// CONTRACT EXPIRED</div>
+      <div style="font-size:22px;font-weight:700;color:var(--text-bright);margin-bottom:8px;">Mission Failed</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;line-height:1.7;">
+        ${hasProgress
+          ? `Delivered <span style="color:var(--orange);">${delivered} / ${required} SCU</span> of ${matName} before time ran out.`
+          : `No ${matName} was delivered before the deadline.`}
+      </div>
+      <div style="font-size:13px;color:var(--red);margin-bottom:24px;">
+        ${penalty > 0 ? `Penalty: −${penalty.toLocaleString()} GC deducted` : 'No penalty applied.'}
+      </div>
+      <button onclick="this.closest('div[style*=\'position:fixed\']').remove();"
+        style="background:var(--red);border:none;color:#fff;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:10px 28px;cursor:pointer;">
+        Understood
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => offerRandomContract(), 500);
 }
 
 let _abandonArmed = false;
@@ -7299,6 +7507,7 @@ let _storyBeatKey  = null; // tracks which beat is currently open
 
 function showStory(beatKey, onClose) {
   _calliMusicStop(600);
+  _stopIdleMusic();
   _storyBeatKey = beatKey;
   const beat = STORY_BEATS[beatKey];
   if (!beat) { console.warn(`[Story] Beat not found: ${beatKey}`); return; }
@@ -7397,6 +7606,7 @@ function showStory(beatKey, onClose) {
 function closeStoryModal() {
   document.getElementById('storyModal').style.display = 'none';
   if (storyOnClose) { storyOnClose(); storyOnClose = null; }
+  if (!dispatchInterval) setTimeout(_startIdleMusic, 400);
 }
 
 function closeStoryModalAnimated() {
@@ -7815,6 +8025,26 @@ function _positionHintBar(targetId) {
 // Reposition on scroll/resize so bar stays above its target
 window.addEventListener('scroll', () => { if (_hintTargetId) _positionHintBar(_hintTargetId); }, { passive: true });
 window.addEventListener('resize', () => { if (_hintTargetId) _positionHintBar(_hintTargetId); }, { passive: true });
+
+// ── RESTORE DISPATCH BUTTON TO "SEND AGAIN" STATE ───────────
+function _resetDispatchBtn(btn) {
+  if (!btn) return;
+  btn.disabled = false;
+  btn.innerHTML = `
+    <div style="position:absolute;left:0;top:0;bottom:0;width:14px;background:repeating-linear-gradient(45deg,#000,#000 8px,#b45309 8px,#b45309 16px);opacity:.7;pointer-events:none;transition:opacity .15s;"></div>
+    <div style="position:absolute;right:0;top:0;bottom:0;width:14px;background:repeating-linear-gradient(45deg,#000,#000 8px,#b45309 8px,#b45309 16px);opacity:.7;pointer-events:none;transition:opacity .15s;"></div>
+    <div style="position:absolute;top:6px;left:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+    <div style="position:absolute;bottom:6px;left:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+    <div style="position:absolute;top:6px;right:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+    <div style="position:absolute;bottom:6px;right:18px;width:6px;height:6px;border-radius:50%;background:#222;box-shadow:inset 0 2px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1;z-index:1;flex:1;margin-left:6px;">
+      <span style="font-size:9px;font-weight:900;color:#5a4a2a;letter-spacing:.22em;font-style:italic;margin-bottom:4px;text-transform:uppercase;">SCAN_SYS_ACTIVE</span>
+      <span class="dispatch-label-main" style="font-size:26px;font-weight:900;color:#f59e0b;letter-spacing:-.02em;text-transform:uppercase;line-height:1;transition:color .15s,text-shadow .15s;">SEND AGAIN</span>
+    </div>
+    <div class="dispatch-icon-box" style="border:2px solid #78350f;background:rgba(120,53,15,.15);padding:8px;flex-shrink:0;z-index:1;margin-right:6px;transition:border-color .15s,background .15s,box-shadow .15s;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    </div>`;
+}
 
 // ── CALLI FIRST DISPATCH SCENE ──────────────────────────────
 function _calliDispatchScene() {

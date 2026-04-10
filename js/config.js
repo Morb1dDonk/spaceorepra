@@ -15,10 +15,10 @@ const AXIS_DESC   = {
 };
 
 let materials = {
-  gold:  { name:'Gold',         baseVal:650,  rawMult:0.15, color:'#e88d2d', rarity:60 },
-  quant: { name:'Quantainium',  baseVal:1800, rawMult:0.10, color:'#4aaef2', rarity:8  },
-  bex:   { name:'Bexalite',     baseVal:950,  rawMult:0.20, color:'#a855f7', rarity:18 },
-  iron:  { name:'Iron',         baseVal:120,  rawMult:0.30, color:'#94a3b8', rarity:75 },
+  gold:  { name:'Gold',         baseVal:650,  rawMult:0.15, color:'#e88d2d', rarity:60, img:'img/ore_gold.webp'     },
+  quant: { name:'Quantainium',  baseVal:1800, rawMult:0.10, color:'#4aaef2', rarity:8,  img:'img/ore_quant.webp'    },
+  bex:   { name:'Bexalite',     baseVal:950,  rawMult:0.20, color:'#a855f7', rarity:18, img:'img/ore_bexalite.webp' },
+  iron:  { name:'Iron',         baseVal:120,  rawMult:0.30, color:'#94a3b8', rarity:75, img:'img/ore_iron.webp'     },
 };
 
 let grades = [
